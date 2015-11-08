@@ -6,7 +6,7 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
 package org.scalegraph.io;
@@ -18,33 +18,79 @@ import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
 public class GenericFile {
+	public static val NATIVEFILE: Int = 0n;
+	public static val HDFSFILE: Int = 1n;
+
 	public static val BEGIN: Int = 0n;
 	public static val CURRENT: Int = 1n;
 	public static val END: Int = 2n;
 
-	private transient val nativeFile: NativeFile;
-	
+	private val fileSystem: Int;
+	private transient var nativeFile: NativeFile;
+	private transient var hdfsFile: HDFSFile;
+
 	public def this(path: SString, fileMode :Int, fileAccess :Int) {
-		nativeFile = new NativeFile(path, fileMode, fileAccess);
+		fileSystem = HDFSFILE;
+		switch (fileSystem) {
+			case NATIVEFILE:
+				nativeFile = new NativeFile(path, fileMode, fileAccess);
+				break;
+			case HDFSFILE:
+				hdfsFile = new HDFSFile(path, fileMode, fileAccess);
+				break;
+		}
 	}
 
 	public def close(): void {
-		nativeFile.close();
+		switch (fileSystem) {
+			case NATIVEFILE:
+				nativeFile.close();
+				break;
+			case HDFSFILE:
+				hdfsFile.close();
+				break;
+		}
 	}
 
 	public def read(buffer: MemoryChunk[Byte]): Long {
-		return nativeFile.read(buffer);
+		switch (fileSystem) {
+			case NATIVEFILE:
+				return nativeFile.read(buffer);
+			case HDFSFILE:
+				return hdfsFile.read(buffer);
+		}
+		return 0n;
 	}
 
 	public def write(buffer: MemoryChunk[Byte]): void {
-		nativeFile.write(buffer);
+		switch (fileSystem) {
+			case NATIVEFILE:
+				nativeFile.write(buffer);
+				break;
+			case HDFSFILE:
+				hdfsFile.write(buffer);
+				break;
+		}
 	}
 
 	public def seek(offset: Long, origin: Int): void {
-		nativeFile.seek(offset, origin);
+		switch (fileSystem) {
+			case NATIVEFILE:
+				nativeFile.seek(offset, origin);
+				break;
+			case HDFSFILE:
+				hdfsFile.seek(offset, origin);
+				break;
+		}
 	}
 
 	public def getpos(): Long {
-		return nativeFile.getpos();
+		switch (fileSystem) {
+			case NATIVEFILE:
+				return nativeFile.getpos();
+			case HDFSFILE:
+				return hdfsFile.getpos();
+		}
+		return 0n;
 	}
  }
