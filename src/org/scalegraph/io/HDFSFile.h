@@ -12,6 +12,7 @@
 #ifndef __ORG_SCALEGRAPH_IO_HDFSFILE_H
 #define __ORG_SCALEGRAPH_IO_HDFSFILE_H
 
+#include <hdfs.h>
 #include <x10rt.h>
 
 
@@ -25,24 +26,28 @@
 #include <org/scalegraph/util/MemoryChunk.h>
 #undef ORG_SCALEGRAPH_UTIL_MEMORYCHUNK_H_NODEPS
 
+
 namespace org { namespace scalegraph { namespace io {
 
 struct HDFSFile {
 protected:
-	int FMGL(fd);
-
+    //	int FMGL(fd);
+    hdfsBuilder*    FMGL(builder);
+    hdfsFS          FMGL(fs);
+    hdfsFile        FMGL(file);
+    int             FMGL(flags);
+    
 public:
 	RTT_H_DECLS_CLASS;
 
-	explicit HDFSFile(int fd_) : FMGL(fd)(fd_) { }
-	HDFSFile() : FMGL(fd)(-1) { }
-
+    //	explicit HDFSFile(int fd_) : FMGL(fd)(fd_) { }
+    //	HDFSFile() : FMGL(fd)(-1) { }
+    HDFSFile() {}
+        
 	static HDFSFile _make(org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 	void _constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 
 	HDFSFile* operator->() { return this; }
-
-	int handle() { return FMGL(fd); }
 
 	void close();
 	x10_long read(org::scalegraph::util::MemoryChunk<x10_byte> b);

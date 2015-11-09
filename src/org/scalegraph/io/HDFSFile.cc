@@ -40,81 +40,164 @@ HDFSFile HDFSFile::_make(org::scalegraph::util::SString name, int  fileMode, int
 }
 
 void HDFSFile::_constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
-	int flags = 0;
+    FMGL(builder) = hdfsNewBuilder();
+    assert(FMGL(builder) != NULL);
+    hdfsBuilderSetNameNode(FMGL(builder), "default");
+    FMGL(fs) = hdfsBuilderConnect(FMGL(builder));
+    assert(FMGL(fs) != NULL);
+    
+    FMGL(flags) = 0;
 	switch(fileAccess) {
 	case 0: // Read
-		flags |= O_RDONLY;
+		FMGL(flags) |= O_RDONLY;
 		break;
 	case 1: // Write
-		flags |= O_WRONLY;
+		FMGL(flags) |= O_WRONLY;
 		break;
 	case 2: // ReadWrite
-		flags |= O_RDWR;
+		FMGL(flags) |= O_RDWR;
 		break;;
 	default:
 		x10aux::throwException(IllegalArgumentException::_make(String::Lit("FileAccess is out of range.")));
 	}
 	switch(fileMode) {
 	case 0: // Append
-		flags |= O_APPEND | O_CREAT;
+		FMGL(flags) |= O_APPEND | O_CREAT;
 		break;
 	case 1: // Create
-		flags |= O_CREAT | O_TRUNC;
+		FMGL(flags) |= O_CREAT | O_TRUNC;
 		break;
 	case 2: // CreateNew
-		flags |= O_CREAT | O_EXCL;
+		FMGL(flags) |= O_CREAT | O_EXCL;
 		break;
 	case 3: // Open
-		flags |= 0;
+		FMGL(flags) |= 0;
 		break;
 	case 4: // OpenOrCreate
-		flags |= O_CREAT;
+		FMGL(flags) |= O_CREAT;
 		break;
 	case 5: // Truncate
-		flags |= O_TRUNC;
+		FMGL(flags) |= O_TRUNC;
 		break;
 	default:
 		x10aux::throwException(IllegalArgumentException::_make(String::Lit("FileMode is out of range.")));
 	}
-	FMGL(fd) = ::open((char*)name->c_str(), flags, 0666);
+
+#if 0
+    /** 
+     * hdfsOpenFile - Open a hdfs file in given mode.
+     * @param fs The configured filesystem handle.
+     * @param path The full path to the file.
+     * @param flags - an | of bits/fcntl.h file flags - supported flags are O_RDONLY, O_WRONLY (meaning create or overwrite i.e., implies O_TRUNCAT), 
+     * O_WRONLY|O_APPEND. Other flags are generally ignored other than (O_RDWR || (O_EXCL & O_CREAT)) which return NULL and set errno equal ENOTSUP.
+     * @param bufferSize Size of buffer for read/write - pass 0 if you want
+     * to use the default configured values.
+     * @param replication Block replication - pass 0 if you want to use
+     * the default configured values.
+     * @param blocksize Size of block - pass 0 if you want to use the
+     * default configured values.
+     * @return Returns the handle to the open file or NULL on error.
+     */
+    LIBHDFS_EXTERNAL
+    hdfsFile hdfsOpenFile(hdfsFS fs, const char* path, int flags,
+                          int bufferSize, short replication, tSize blocksize);
+#endif    
+
+    FMGL(file) = hdfsOpenFile(FMGL(fs), 
+                              (char*)name->c_str(), FMGL(flags),
+                              0, 0, 0);
+    if (FMGL(file) == NULL) {
+		x10aux::throwException(FileNotFoundException::_make(String::__plus(name->toString(), x10aux::makeStringLit(" couldn't be opened"))));
+    }
+    
+#if 0
+    FMGL(fd) = ::open((char*)name->c_str(), flags, 0666);
 	if (FMGL(fd) == -1)
 		x10aux::throwException(FileNotFoundException::_make(String::__plus(
 				String::__plus(name->toString(), x10aux::makeStringLit(" -> ERRNO: ")), (x10_int)errno)));
+#endif
 }
 
 void HDFSFile::close() {
-	if(FMGL(fd) != -1) {
-		::close(FMGL(fd));
-		FMGL(fd) = -1;
-	}
+    int ret;
+    ret = hdfsCloseFile(FMGL(fs), FMGL(file));
+    assert(ret == 0);
 }
 
 x10_long HDFSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
-	int readBytes = ::read(FMGL(fd), b.pointer(), b.size());
+    tSize bytes;
+    bytes = hdfsRead(FMGL(fs), FMGL(file), b.pointer(), b.size());
+    assert(bytes >= 0);
+
+    return (x10_long)bytes;
+    
+    /*
+    int readBytes = ::read(FMGL(fd), b.pointer(), b.size());
 	if(readBytes == -1)
 		x10aux::throwException(IOException::_make(String::Lit("read error")));
 	return readBytes;
+    */
 }
 
 void HDFSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
-	int writeBytes = ::write(FMGL(fd), b.pointer(), b.size());
+    tSize bytes;
+    bytes = hdfsWrite(FMGL(fs), FMGL(file), b.pointer(), b.size());
+    assert(bytes >= 0);
+    assert(bytes == b.size());
+    
+    /*
+    int writeBytes = ::write(FMGL(fd), b.pointer(), b.size());
 	if(writeBytes != b.size())
 		x10aux::throwException(IOException::_make(String::Lit("write error")));
+    */
 }
 
 void HDFSFile::seek(x10_long offset, int origin) {
 	if(origin < 0 || origin > 2)
 		x10aux::throwException(FileNotFoundException::_make());
 	int map[] = {SEEK_SET, SEEK_CUR, SEEK_END};
-	if(::lseek(FMGL(fd), offset, map[origin]) == -1)
+
+    assert(FMGL(flags) & O_RDONLY);
+    tOffset offsetFromBegin;
+    switch (map[origin]) {
+        case SEEK_SET:
+            offsetFromBegin = offset;
+            break;
+        case SEEK_CUR:
+            offsetFromBegin = hdfsTell(FMGL(fs), FMGL(file));
+            assert(offsetFromBegin >= 0);
+            offsetFromBegin += offset;
+            break;
+        default:
+            // SEEK_END is not supported now
+            assert(false);
+    }
+    int ret;
+    ret = hdfsSeek(FMGL(fs), FMGL(file), offsetFromBegin);
+    if (ret != 0) {
+		x10aux::throwException(IOException::_make(String::Lit("hdfsSeek error")));
+    }
+    
+    /*
+    if(::lseek(FMGL(fd), offset, map[origin]) == -1)
 		x10aux::throwException(IOException::_make(String::Lit("seek error")));
+    */
+        
 }
 
 x10_long HDFSFile::getpos() {
-	x10_long pos = ::lseek(FMGL(fd), 0, SEEK_CUR);
+    tOffset offset;
+    offset = hdfsTell(FMGL(fs), FMGL(file));
+    if (offset == -1) {
+		x10aux::throwException(IOException::_make(String::Lit("hdfsTell error")));
+    }
+    return offset;
+    
+    /*
+    x10_long pos = ::lseek(FMGL(fd), 0, SEEK_CUR);
 	if(pos == -1)
 		x10aux::throwException(IOException::_make(String::Lit("seek error")));
-	return pos;
+    */
 }
 
 RTT_CC_DECLS0(HDFSFile, "org.scalegraph.io.HDFSFile", x10aux::RuntimeType::class_kind)
