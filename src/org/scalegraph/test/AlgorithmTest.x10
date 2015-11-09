@@ -123,7 +123,7 @@ public abstract class AlgorithmTest extends STest {
 		}
 		else if (args(0).equals("file") || args(0).equals("file-renumbering")) {
 			/*
-			file format
+			file format when random or constant edge weight is used
 			---input.txt---
 			source, target
 			1, 2
@@ -131,23 +131,59 @@ public abstract class AlgorithmTest extends STest {
 			2, 3
 			---------------
 			(double quote can be used)
+
+			file format when edge weight value is read from CSV
+			---input.txt---
+			source, target, weight
+			1, 2, 2.34234
+			1, 3, 4.22311
+			2, 3, 1.23444
+			---------------
 			*/
-			val randomEdge :Boolean = (args.size > 2) ? args(2).equals("random") : true;
-			val edgeConstVal = randomEdge ? 0.0 : Double.parse(args(2));
+
+			val randomEdge :Boolean;
+			val readWeight :Boolean;
+			val edgeConstVal :Double;
+			if (args.size > 2) {
+				if (args(2).equals("random")) {
+					randomEdge = true;
+					readWeight = false;
+					edgeConstVal = 0.0;
+				} else if (args(2).equals("weight")) {
+					randomEdge = false;
+					readWeight = true;
+					edgeConstVal = 0.0;
+				} else {
+					randomEdge = false;
+					readWeight = false;
+					edgeConstVal = Double.parse(args(2));
+				}
+			} else {
+				randomEdge = true;
+				readWeight = false;
+				edgeConstVal = 0.0;
+			}
 			val colTypes = [Type.Long as Int, Type.Long];
 
 			val renumbering = args(0).equals("file-renumbering");
 			val sw = Config.get().stopWatch();
-			val g = Graph.make(CSV.read(args(1), colTypes, true), renumbering);
+			val edgeCSV = CSV.read(args(1), colTypes, true);
+			val g = Graph.make(edgeCSV, renumbering);
 			sw.lap("Read graph[path=" + args(1) + "]");
 			@Ifdef("PROF_IO") { Config.get().dumpProfIO("Graph Load (AlgorithmTest):"); }
 			val srcList = g.source();
 			val getSize = ()=>srcList().size();
-			val edgeList = randomEdge
-					? GraphGenerator.genRandomEdgeValue(getSize, new Random(2, 3))
-					: genConstanceValueEdges(getSize, edgeConstVal);
-			g.setEdgeAttribute("weight", edgeList);
-			sw.lap("Generate the edge weights");
+			val edgeWeight :DistMemoryChunk[Double];
+			if (randomEdge) {
+				edgeWeight = GraphGenerator.genRandomEdgeValue(getSize, new Random(2, 3));
+			} else if (readWeight) {
+				val weightIdx = edgeCSV.nameToIndex("weight");
+				edgeWeight = edgeCSV.data()(weightIdx) as DistMemoryChunk[Double];
+			} else {
+				edgeWeight = genConstanceValueEdges(getSize, edgeConstVal);
+			}
+			g.setEdgeAttribute("weight", edgeWeight);
+			sw.lap("Generate(or read) the edge weights");
 			return g;
 		}
 		else {
