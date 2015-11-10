@@ -21,10 +21,10 @@ import x10.compiler.Pinned;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
-@NativeCPPInclude("HDFSFile.h")
-@NativeCPPCompilationUnit("HDFSFile.cc")
-@NativeRep("c++", "org::scalegraph::io::HDFSFile", "org::scalegraph::io::HDFSFile", null)
-@Pinned public struct HDFSFile {
+@NativeCPPInclude("NativeHDFSFile.h")
+@NativeCPPCompilationUnit("NativeHDFSFile.cc")
+@NativeRep("c++", "org::scalegraph::io::NativeHDFSFile", "org::scalegraph::io::NativeHDFSFile", null)
+@Pinned public struct NativeHDFSFile {
 	@Native("c++", "0")
 	public static val BEGIN: Int = 0n;
 	@Native("c++", "1")

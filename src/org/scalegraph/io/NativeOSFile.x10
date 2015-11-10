@@ -6,7 +6,7 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
 package org.scalegraph.io;
@@ -21,10 +21,10 @@ import x10.compiler.Pinned;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
-@NativeCPPInclude("NativeFile.h")
-@NativeCPPCompilationUnit("NativeFile.cc")
-@NativeRep("c++", "org::scalegraph::io::NativeFile", "org::scalegraph::io::NativeFile", null)
-@Pinned public struct NativeFile {
+@NativeCPPInclude("NativeOSFile.h")
+@NativeCPPCompilationUnit("NativeOSFile.cc")
+@NativeRep("c++", "org::scalegraph::io::NativeOSFile", "org::scalegraph::io::NativeOSFile", null)
+@Pinned public struct NativeOSFile {
 	@Native("c++", "0")
 	public static val BEGIN: Int = 0n;
 	@Native("c++", "1")

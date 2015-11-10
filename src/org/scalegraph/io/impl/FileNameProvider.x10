@@ -10,12 +10,11 @@
  */
 package org.scalegraph.io.impl;
 
-import x10.io.File;
-
 import org.scalegraph.util.SString;
 import org.scalegraph.io.FileReader;
 import org.scalegraph.io.FileWriter;
 import org.scalegraph.io.FileMode;
+import org.scalegraph.io.GenericFile;
 
 public abstract class FileNameProvider implements Iterable[SString] {
 	protected val path : SString;

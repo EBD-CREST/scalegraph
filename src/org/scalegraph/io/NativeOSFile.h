@@ -6,11 +6,11 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
-#ifndef __ORG_SCALEGRAPH_IO_NATIVEFILE_H
-#define __ORG_SCALEGRAPH_IO_NATIVEFILE_H
+#ifndef __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
+#define __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
 
 #include <x10rt.h>
 
@@ -27,20 +27,20 @@
 
 namespace org { namespace scalegraph { namespace io {
 
-struct NativeFile {
+struct NativeOSFile {
 protected:
 	int FMGL(fd);
 
 public:
 	RTT_H_DECLS_CLASS;
 
-	explicit NativeFile(int fd_) : FMGL(fd)(fd_) { }
-	NativeFile() : FMGL(fd)(-1) { }
+	explicit NativeOSFile(int fd_) : FMGL(fd)(fd_) { }
+	NativeOSFile() : FMGL(fd)(-1) { }
 
-	static NativeFile _make(org::scalegraph::util::SString name, int  fileMode, int fileAccess);
+	static NativeOSFile _make(org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 	void _constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 
-	NativeFile* operator->() { return this; }
+	NativeOSFile* operator->() { return this; }
 
 	int handle() { return FMGL(fd); }
 
@@ -51,15 +51,15 @@ public:
 	x10_long getpos();
 
 	// Serialization
-	static void _serialize(NativeFile this_, x10aux::serialization_buffer& buf) {
+	static void _serialize(NativeOSFile this_, x10aux::serialization_buffer& buf) {
 		assert (false);
 	}
-	static NativeFile _deserializer(x10aux::deserialization_buffer& buf) {
+	static NativeOSFile _deserializer(x10aux::deserialization_buffer& buf) {
 		assert (false);
 	}
 };
 
 }}} // namespace org { namespace scalegraph { namespace io {
 
-#endif // __ORG_SCALEGRAPH_IO_NATIVEFILE_H
+#endif // __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
 

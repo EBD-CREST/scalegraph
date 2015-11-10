@@ -18,7 +18,7 @@
 #include <org/scalegraph/util/SString.h>
 #include <org/scalegraph/util/MemoryChunk.h>
 
-#include <org/scalegraph/io/HDFSFile.h>
+#include <org/scalegraph/io/NativeHDFSFile.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -33,13 +33,13 @@ using ::x10::io::FileNotFoundException;
 using ::x10::io::IOException;
 using ::x10::lang::IllegalArgumentException;
 
-HDFSFile HDFSFile::_make(org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
-	HDFSFile ret;
+NativeHDFSFile NativeHDFSFile::_make(org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
+	NativeHDFSFile ret;
 	ret._constructor(name, fileMode, fileAccess);
 	return ret;
 }
 
-void HDFSFile::_constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
+void NativeHDFSFile::_constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
     FMGL(builder) = hdfsNewBuilder();
     assert(FMGL(builder) != NULL);
     hdfsBuilderSetNameNode(FMGL(builder), "default");
@@ -118,13 +118,13 @@ void HDFSFile::_constructor (org::scalegraph::util::SString name, int  fileMode,
 #endif
 }
 
-void HDFSFile::close() {
+void NativeHDFSFile::close() {
     int ret;
     ret = hdfsCloseFile(FMGL(fs), FMGL(file));
     assert(ret == 0);
 }
 
-x10_long HDFSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
+x10_long NativeHDFSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
     tSize bytes;
     bytes = hdfsRead(FMGL(fs), FMGL(file), b.pointer(), b.size());
     assert(bytes >= 0);
@@ -139,7 +139,7 @@ x10_long HDFSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
     */
 }
 
-void HDFSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
+void NativeHDFSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
     tSize bytes;
     bytes = hdfsWrite(FMGL(fs), FMGL(file), b.pointer(), b.size());
     assert(bytes >= 0);
@@ -152,7 +152,7 @@ void HDFSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
     */
 }
 
-void HDFSFile::seek(x10_long offset, int origin) {
+void NativeHDFSFile::seek(x10_long offset, int origin) {
 	if(origin < 0 || origin > 2)
 		x10aux::throwException(FileNotFoundException::_make());
 	int map[] = {SEEK_SET, SEEK_CUR, SEEK_END};
@@ -185,7 +185,7 @@ void HDFSFile::seek(x10_long offset, int origin) {
         
 }
 
-x10_long HDFSFile::getpos() {
+x10_long NativeHDFSFile::getpos() {
     tOffset offset;
     offset = hdfsTell(FMGL(fs), FMGL(file));
     if (offset == -1) {
@@ -200,6 +200,6 @@ x10_long HDFSFile::getpos() {
     */
 }
 
-RTT_CC_DECLS0(HDFSFile, "org.scalegraph.io.HDFSFile", x10aux::RuntimeType::class_kind)
+RTT_CC_DECLS0(NativeHDFSFile, "org.scalegraph.io.NativeHDFSFile", x10aux::RuntimeType::class_kind)
 
 }}} // namespace org { namespace scalegraph { namespace io {
