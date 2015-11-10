@@ -39,4 +39,61 @@ public class GenericFileSystem {
 		}
 	}
 
+	public def isFile() :Boolean {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.isFile();
+			case HDFS:
+				return hdfsFileSystem.isFile();
+		}
+		return false;
+	}
+
+	public def isDirectory() :Boolean {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.isDirectory();
+			case HDFS:
+				return hdfsFileSystem.isDirectory();
+		}
+		return false;
+	}
+
+	public def exists() :Boolean {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.exists();
+			case HDFS:
+				return hdfsFileSystem.exists();
+		}
+		return false;
+	}
+
+	public def delete() :void {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.delete();
+			case HDFS:
+				return hdfsFileSystem.delete();
+		}
+	}
+
+	public def mkdirs() :void {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.mkdirs();
+			case HDFS:
+				return hdfsFileSystem.mkdirs();
+		}
+	}
+
+	public def size() :Long {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.size();
+			case HDFS:
+				return hdfsFileSystem.size();
+		}
+		return -1;
+	}
 }

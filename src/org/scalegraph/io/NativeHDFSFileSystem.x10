@@ -18,5 +18,33 @@ import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
 public struct NativeOSFileSystem {
-	public native def this(name: SString);
+	private val file: File;
+
+	public native def this(name: SString) {
+		file = new File(name);
+	}
+
+	public def isFile() :Boolean {
+		return file.isFile();
+	}
+
+	public def isDirectory() :Boolean {
+		return file.isDirectory();
+	}
+
+	public def exists() :Boolean {
+		return file.exists();
+	}
+
+	public def delete() :void {
+		file.delete();
+	}
+
+	public def mkdirs() :void {
+		file.mkdirs();
+	}
+
+	public def size() :Long {
+		return file.size();
+	}
 }

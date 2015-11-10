@@ -12,12 +12,12 @@ package org.scalegraph.io.impl;
 
 import x10.util.Team;
 import x10.util.concurrent.Monitor; 
-import x10.io.File;
 import x10.io.IOException;
 
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.GrowableMemory;
 import org.scalegraph.util.SString;
+import org.scalegraph.io.GenericFileSystem;
 import org.scalegraph.io.FileReader;
 import org.scalegraph.test.STest;
 import org.scalegraph.Config;
@@ -191,13 +191,13 @@ public abstract class InputSplitter {
 		for(path in fman) {
 			val fileSize :Long;
 			if(numFiles == 0L) {
-				fileSize = new File(path.toString()).size() - offset;
+				fileSize = new GenericFileSystem(path.toString()).size() - offset;
 				if(fileSize < 0) {
 					throw new IOException("The first file must include whole header.");
 				}
 			}
 			else {
-				fileSize = new File(path.toString()).size();
+				fileSize = new GenericFileSystem(path.toString()).size();
 			}
 			allSize += fileSize;
 			++numFiles;
@@ -206,7 +206,7 @@ public abstract class InputSplitter {
 		var headerFile :Boolean = true;
 
 		for(path in fman) {
-			val file = new File(path.toString());
+			val file = new GenericFileSystem(path.toString());
 			val fileOffset :Long;
 			if(headerFile) {
 				fileOffset = offset;
