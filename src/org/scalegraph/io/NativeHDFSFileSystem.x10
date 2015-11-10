@@ -11,44 +11,36 @@
 
 package org.scalegraph.io;
 
-import x10.io.File;
-import x10.io.IOException;
+import x10.compiler.Native;
+import x10.compiler.NativeRep;
+import x10.compiler.NativeCPPInclude;
+import x10.compiler.NativeCPPCompilationUnit;
+
+import x10.compiler.Pinned;
 
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
-public struct NativeHDFSFileSystem {
-	private val file: File;
+@NativeCPPInclude("NativeHDFSFileSystem.h")
+@NativeCPPCompilationUnit("NativeHDFSFileSystem.cc")
+@NativeRep("c++", "org::scalegraph::io::NativeHDFSFileSystem", "org::scalegraph::io::NativeHDFSFileSystem", null)
+@Pinned public struct NativeHDFSFileSystem {
 
-	public def this(name: String) {
-		file = new File(name);
-	}
-
-	public def isFile() :Boolean {
-		return file.isFile();
-	}
-
-	public def isDirectory() :Boolean {
-		return file.isDirectory();
-	}
-
-	public def exists() :Boolean {
-		return file.exists();
-	}
-
+	public native def this(name: String);
+	public native def isFile() :Boolean;
+	public native def isDirectory() :Boolean;
+	public native def exists() :Boolean;
 	public def delete() :void {
-		file.delete();
+		// no implementation
+		assert(false);
 	}
-
 	public def mkdirs() :void {
-		file.mkdirs();
+		// do nothing
 	}
-
-	public def size() :Long {
-		return file.size();
-	}
-
+	public native def size() :Long;
 	public def list() :Rail[String] {
-		return file.list();
+		// no implementation
+		assert(false);
+		return new Rail[String]();
 	}
 }
