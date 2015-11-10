@@ -73,8 +73,10 @@ public class GenericFileSystem {
 		switch (fileSystem) {
 			case OS:
 				osFileSystem.delete();
+				return;
 			case HDFS:
 				hdfsFileSystem.delete();
+				return;
 		}
 	}
 
@@ -82,8 +84,10 @@ public class GenericFileSystem {
 		switch (fileSystem) {
 			case OS:
 				osFileSystem.mkdirs();
+				return;
 			case HDFS:
 				hdfsFileSystem.mkdirs();
+				return;
 		}
 	}
 
