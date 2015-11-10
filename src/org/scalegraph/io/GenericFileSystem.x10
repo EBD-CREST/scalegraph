@@ -28,7 +28,7 @@ public class GenericFileSystem {
 	private transient var hdfsFileSystem: NativeHDFSFileSystem;
 
 	public def this(path: String) {
-		fileSystem = OS;
+		fileSystem = HDFS;
 		switch (fileSystem) {
 			case OS:
 				osFileSystem = new NativeOSFileSystem(path);

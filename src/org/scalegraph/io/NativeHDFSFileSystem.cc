@@ -67,35 +67,35 @@ void NativeHDFSFileSystem::_constructor(::x10::lang::String* name) {
     }
 }
 
-x10_boolean isFile() {
+x10_boolean NativeHDFSFileSystem::isFile() {
     return fileInfoIsFile;
 }
 
-x10_boolean isDirectory() {
+x10_boolean NativeHDFSFileSystem::isDirectory() {
     return fileInfoIsDirectory;
 }
 
-x10_boolean exists() {
+x10_boolean NativeHDFSFileSystem::exists() {
     return fileInfoExists;
 }
 
-void _kwd__delete() {
+void NativeHDFSFileSystem::_kwd__delete() {
     // do nothing
 }
 
-void mkdirs() {
+void NativeHDFSFileSystem::mkdirs() {
     // do nothing
 }
 
-x10_long size() {
-    return fileInfoSize;
+x10_long NativeHDFSFileSystem::size() {
+    return fileInfoFileSize;
 }
 
-::x10::lang::Rail<::x10::lang::String* >* list() {
-    return ::x10::lang::Rail<::x10::lang::String* >::_make();
+::x10::lang::Rail< ::x10::lang::String* >* NativeHDFSFileSystem::list() {
+    return ::x10::lang::Rail< ::x10::lang::String* >::_make();
 }
 
 
-RTT_CC_DECLS0(NativeHDFSFile, "org.scalegraph.io.NativeHDFSFileSystem", x10aux::RuntimeType::class_kind)
+RTT_CC_DECLS0(NativeHDFSFileSystem, "org.scalegraph.io.NativeHDFSFileSystem", x10aux::RuntimeType::class_kind)
 
 }}} // namespace org { namespace scalegraph { namespace io {

@@ -11,7 +11,6 @@
 
 package org.scalegraph.io;
 
-import x10.io.File;
 import x10.io.IOException;
 
 // import org.scalegraph.util.SString;

@@ -157,7 +157,7 @@ void NativeHDFSFile::seek(x10_long offset, int origin) {
 		x10aux::throwException(FileNotFoundException::_make());
 	int map[] = {SEEK_SET, SEEK_CUR, SEEK_END};
 
-    assert(FMGL(flags) & O_RDONLY);
+    assert(FMGL(flags) == O_RDONLY);
     tOffset offsetFromBegin;
     switch (map[origin]) {
         case SEEK_SET:
