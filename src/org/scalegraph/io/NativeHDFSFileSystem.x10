@@ -17,10 +17,10 @@ import x10.io.IOException;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 
-public struct NativeOSFileSystem {
+public struct NativeHDFSFileSystem {
 	private val file: File;
 
-	public native def this(name: SString) {
+	public def this(name: String) {
 		file = new File(name);
 	}
 
@@ -46,5 +46,9 @@ public struct NativeOSFileSystem {
 
 	public def size() :Long {
 		return file.size();
+	}
+
+	public def list() :Rail[String] {
+		return file.list();
 	}
 }

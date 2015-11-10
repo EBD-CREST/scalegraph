@@ -20,14 +20,14 @@ import org.scalegraph.util.SString;
 
 public final class FileReader {
 	private static val BUFFER_SIZE = 128*1024L;
-	private transient val nf: NativeFile;
+	private transient val nf: NativeOSFile;
 	private val buffer: GrowableMemory[Byte];
 	private var offset: Long;
 	private var length: Long;
 	private var fileOffset: Long;
 	
 	public def this(path: SString) {
-		nf = new NativeFile(path, FileMode.Open, FileAccess.Read);
+		nf = new NativeOSFile(path, FileMode.Open, FileAccess.Read);
 		buffer = new GrowableMemory[Byte]();
 		buffer.setSize(BUFFER_SIZE);
 		offset = length = 0L;
@@ -37,7 +37,7 @@ public final class FileReader {
 	public def reset():void {
 		offset = length = 0L;
 		fileOffset = 0L;
-		nf.seek(0L, NativeFile.BEGIN);
+		nf.seek(0L, NativeOSFile.BEGIN);
 	}
 
 	public def skip(n: Long):void {
@@ -48,7 +48,7 @@ public final class FileReader {
 		}
 		else {
 			offset = length = 0L;
-			nf.seek(n - buffered, NativeFile.CURRENT);
+			nf.seek(n - buffered, NativeOSFile.CURRENT);
 		}
 	}
 

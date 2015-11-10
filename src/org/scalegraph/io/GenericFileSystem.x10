@@ -25,9 +25,9 @@ public class GenericFileSystem {
 
 	private val fileSystem: Int;
 	private transient var osFileSystem: NativeOSFileSystem;
-	private transient var hdfsFileSystem: NatieHDFSFileSystem;
+	private transient var hdfsFileSystem: NativeHDFSFileSystem;
 
-	public def this(path: SString) {
+	public def this(path: String) {
 		fileSystem = OS;
 		switch (fileSystem) {
 			case OS:
@@ -72,18 +72,18 @@ public class GenericFileSystem {
 	public def delete() :void {
 		switch (fileSystem) {
 			case OS:
-				return osFileSystem.delete();
+				osFileSystem.delete();
 			case HDFS:
-				return hdfsFileSystem.delete();
+				hdfsFileSystem.delete();
 		}
 	}
 
 	public def mkdirs() :void {
 		switch (fileSystem) {
 			case OS:
-				return osFileSystem.mkdirs();
+				osFileSystem.mkdirs();
 			case HDFS:
-				return hdfsFileSystem.mkdirs();
+				hdfsFileSystem.mkdirs();
 		}
 	}
 
@@ -95,5 +95,15 @@ public class GenericFileSystem {
 				return hdfsFileSystem.size();
 		}
 		return -1;
+	}
+
+	public def list() :Rail[String] {
+		switch (fileSystem) {
+			case OS:
+				return osFileSystem.list();
+			case HDFS:
+				return hdfsFileSystem.list();
+		}
+		return new Rail[String]();
 	}
 }

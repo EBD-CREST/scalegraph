@@ -112,7 +112,7 @@ public abstract class FileNameProvider implements Iterable[SString] {
 	private static def create(path :SString, isRead :Boolean, scattered :Boolean) {
 		val num_pos = path.indexOf("%d");
 		if(num_pos != -1n) {
-			val last_sep = path.lastIndexOf(File.SEPARATOR);
+			val last_sep = path.lastIndexOf(GenericFileSystem.SEPARATOR);
 			if(last_sep > num_pos) {
 				throw new IllegalArgumentException("Number position may not be on a directory name.");
 			}
