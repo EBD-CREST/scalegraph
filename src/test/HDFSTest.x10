@@ -24,8 +24,8 @@ import org.scalegraph.id.Type;
 
 final class HDFSTest extends AlgorithmTest {
 	public static def main(args: Rail[String]) {
-//		new HDFSTest().execute(args);
-		generateTestCSV(args);
+		new HDFSTest().execute(args);
+//		generateTestCSV(args);
 	}
     
     public def run(args :Rail[String], g :Graph): Boolean {

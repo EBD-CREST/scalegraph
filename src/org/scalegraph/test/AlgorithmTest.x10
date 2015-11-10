@@ -125,19 +125,19 @@ public abstract class AlgorithmTest extends STest {
 			/*
 			file format when random or constant edge weight is used
 			---input.txt---
-			source, target
-			1, 2
-			1, 3
-			2, 3
+			ID, source, target
+			0, 1, 2
+			4, 1, 3
+			8, 2, 3
 			---------------
 			(double quote can be used)
 
 			file format when edge weight value is read from CSV
 			---input.txt---
-			source, target, weight
-			1, 2, 2.34234
-			1, 3, 4.22311
-			2, 3, 1.23444
+			ID, source, target, weight
+			0, 1, 2, 2.34234
+			4, 1, 3, 4.22311
+			8, 2, 3, 1.23444
 			---------------
 			*/
 
@@ -163,7 +163,12 @@ public abstract class AlgorithmTest extends STest {
 				readWeight = false;
 				edgeConstVal = 0.0;
 			}
-			val colTypes = [Type.Long as Int, Type.Long];
+			val colTypes :Rail[Int];
+			if (readWeight) {
+				colTypes = [Type.Long as Int, Type.Long, Type.Long, Type.Double];
+			} else {
+				colTypes = [Type.Long as Int, Type.Long, Type.Long];
+			}
 
 			val renumbering = args(0).equals("file-renumbering");
 			val sw = Config.get().stopWatch();
