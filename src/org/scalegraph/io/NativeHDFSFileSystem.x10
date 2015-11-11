@@ -30,17 +30,8 @@ import org.scalegraph.util.SString;
 	public native def isFile() :Boolean;
 	public native def isDirectory() :Boolean;
 	public native def exists() :Boolean;
-	public def delete() :void {
-		// no implementation
-		assert(false);
-	}
-	public def mkdirs() :void {
-		// do nothing
-	}
+	public native def delete() :void;
+	public native def mkdirs() :void;
 	public native def size() :Long;
-	public def list() :Rail[String] {
-		// no implementation
-		assert(false);
-		return new Rail[String]();
-	}
+	public native def list() :Rail[String];
 }
