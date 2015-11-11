@@ -68,8 +68,21 @@ public class Algorithm {
 	public static val NAME_PAGERANK_EPS				:String = "--eps";
 	public static val NAME_PAGERANK_NITER			:String = "--niter";
 
+
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
-	public var algorithm: Int;
+
+	public var algorithm :Int = ALGORITHM_PASSTHROUGH;
+	public var optInputFs :Int = OPT_INPUT_FS_OS;
+	public var optInputData :Int = OPT_INPUT_DATA_RMAT;
+	public var valueInputDataFile :String = "";
+	public var valueInputDataRmat :Double = 0.0;
+	public var optInputWeight :Int = OPT_INPUT_WEIGHT_RANDOM;
+	public var valueInputWeightConstant :Double = 0.0;
+	public var optOutputFs :Int = OPT_OUTPUT_FS_OS;
+	public var valueOutputDataFile :String = "";
+	public var valuePagerankDamping :Double = 0.05;
+	public var valuePagerankEps :Double = 0.001;
+	public var valuePagerankNiter :Int = 30n;
 
 	public static def main(args: Rail[String]) {
 		if (args.size < 1) {
@@ -100,6 +113,7 @@ public class Algorithm {
 
 	public def execute(args: Rail[String]) {
 		algorithm = dirArgKeywords.getOrThrow(args(0));
+
 		switch (algorithm) {
 			case ALGORITHM_PASSTHROUGH:
 			case ALGORITHM_PAGERANK:
@@ -110,41 +124,75 @@ public class Algorithm {
 		}
 
 		for (i in 1..(args.size - 1)) {
-			val option = dirArgKeywords.getOrThrow(args(i));
+			val splits :Rail[String] = args(i).split("=");
+			val option = dirArgKeywords.getOrThrow(splits(0));
+
 			switch (option) {
 				case OPT_INPUT_FS_OS:
+					optInputFs = OPT_INPUT_FS_OS;
 					break;
 				case OPT_INPUT_FS_HDFS:
+					optInputFs = OPT_INPUT_FS_HDFS;
 					break;
 				case OPT_INPUT_DATA_FILE:
+					optInputData = OPT_INPUT_DATA_FILE;
+					valueInputDataFile = splits(1);
 					break;
 				case OPT_INPUT_DATA_FILE_RENUMBERING:
+					optInputData = OPT_INPUT_DATA_FILE_RENUMBERING;
+					valueInputDataFile = splits(1);
 					break;
 				case OPT_INPUT_DATA_RMAT:
+					optInputData = OPT_INPUT_DATA_RMAT;
+					valueInputDataRmat = Double.parse(splits(1));
 					break;
 				case OPT_INPUT_WEIGHT_FILE:
+					optInputWeight = OPT_INPUT_WEIGHT_FILE;
 					break;
 				case OPT_INPUT_WEIGHT_RANDOM:
+					optInputWeight = OPT_INPUT_WEIGHT_RANDOM;
 					break;
 				case OPT_INPUT_WEIGHT_CONSTANT:
+					optInputWeight = OPT_INPUT_WEIGHT_CONSTANT;
+					valueInputWeightConstant = Double.parse(splits(1));
 					break;
 				case OPT_OUTPUT_FS_OS:
+					optOutputFs = OPT_OUTPUT_FS_OS;
 					break;
 				case OPT_OUTPUT_FS_HDFS:
+					optOutputFs = OPT_OUTPUT_FS_HDFS;
 					break;
 				case OPT_OUTPUT_DATA_FILE:
+					valueOutputDataFile = splits(1);
 					break;
 				case OPT_PAGERANK_DAMPING:
+					valuePagerankDamping = Double.parse(splits(1));
 					break;
 				case OPT_PAGERANK_EPS:
+					valuePagerankEps = Double.parse(splits(1));
 					break;
 				case OPT_PAGERANK_NITER:
+					valuePagerankNiter = Int.parse(splits(1));
 					break;
 				default:
 					Console.ERR.println("no implementation!");
 					return;
 			}
 		}
+
+		Console.ERR.printf("Algorithm: %d\n", algorithm);
+		Console.ERR.printf("Options:\n");
+		Console.ERR.printf("    optInputFs = %d\n", optInputFs);
+		Console.ERR.printf("    optInputData = %d\n", optInputData);
+		Console.ERR.printf("    valueInputDataFile = %s\n", valueInputDataFile);
+		Console.ERR.printf("    valueInputDataRmat = %f\n", valueInputDataRmat);
+		Console.ERR.printf("    optInputWeight = %d\n", optInputWeight);
+		Console.ERR.printf("    valueInputWeightConstant = %f\n", valueInputWeightConstant);
+		Console.ERR.printf("    optOutputFs = %d\n", optOutputFs);
+		Console.ERR.printf("    valueOutputDataFile = %s\n", valueOutputDataFile);
+		Console.ERR.printf("    valuePagerankDamping = %f\n", valuePagerankDamping);
+		Console.ERR.printf("    valuePagerankEps = %f\n", valuePagerankEps);
+		Console.ERR.printf("    valuePagerankNiter = %d\n", valuePagerankNiter);
 
 		// call algorithm
 	}
