@@ -11,18 +11,12 @@
 
 package org.scalegraph.io;
 
-import x10.io.IOException;
-
-// import org.scalegraph.util.SString;
-import org.scalegraph.util.MemoryChunk;
-import org.scalegraph.util.SString;
-
 public class FileWriter {
 	private transient val gf: GenericFile;
 	private var fileOffset: Long;
 	
-	public def this(path: SString, fileMode :Int) {
-		gf = new GenericFile(path, fileMode, FileAccess.Write);
+	public def this(filePath :FilePath, fileMode :Int) {
+		gf = new GenericFile(filePath, fileMode, FileAccess.Write);
 		fileOffset = 0L;
 	}
 	

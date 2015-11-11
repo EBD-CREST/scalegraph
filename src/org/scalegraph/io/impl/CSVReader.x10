@@ -27,6 +27,7 @@ import org.scalegraph.util.SString;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.MemoryPointer;
 import org.scalegraph.util.GrowableMemory;
+import org.scalegraph.io.FilePath;
 import org.scalegraph.io.FileReader;
 import org.scalegraph.io.ID;
 import org.scalegraph.io.NamedDistData;
@@ -118,8 +119,14 @@ public class CSVReader {
 	 * T_CHUNK: Each P_CHUNK is split into T_CHUNK. Each T_CHUNK is assigned to a thread.
 	 * H_CHUNK: Each P_CHUNK is split into H_CHUNK. Attribute handlers can process H_CHUNK at once.
 	 */
-	
+
 	public static def read(team :Team, path :SString, columnDef :Rail[Int],
+			columnNames :Rail[String], includeHeader :Boolean) {
+		val filePath :FilePath = new FilePath(FilePath.FILEPATH_FS_OS, path.toString());
+		return read(team, filePath, columnDef, columnNames, includeHeader);
+	}
+
+	public static def read(team :Team, filePath :FilePath, columnDef :Rail[Int],
 			columnNames :Rail[String], includeHeader :Boolean) {
 		//
 		@Ifdef("PROF_IO") val mtimer = Config.get().profIO().timer(IO.MAIN_FRAME as Int, 0n);
@@ -129,7 +136,7 @@ public class CSVReader {
 		var columnNamesInHeader :Rail[SString] = null;
 		val attHandler = new Rail[CSVAttributeHandler](columnDef.size);
 
-		val fman = FileNameProvider.createForRead(path);
+		val fman = FileNameProvider.createForRead(filePath);
 		var includeDQ :Boolean = false;
 		var dataOffset :Long = 0;
 		

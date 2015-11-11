@@ -11,12 +11,6 @@
 
 package org.scalegraph.io;
 
-import x10.io.File;
-import x10.io.IOException;
-
-import org.scalegraph.util.MemoryChunk;
-import org.scalegraph.util.SString;
-
 public class GenericFileSystem {
 	public static val OS :Int = 0n;
 	public static val HDFS :Int = 1n;
@@ -27,15 +21,26 @@ public class GenericFileSystem {
 	private transient var osFileSystem: NativeOSFileSystem;
 	private transient var hdfsFileSystem: NativeHDFSFileSystem;
 
-	public def this(path: String) {
-		fileSystem = HDFS;
+	public def this(filePath: FilePath) {
+		switch (filePath.fsType) {
+			case FilePath.FILEPATH_FS_OS:
+				fileSystem = OS;
+				break;
+			case FilePath.FILEPATH_FS_HDFS:
+				fileSystem = HDFS;
+				break;
+			default:
+				assert(false);
+		}
 		switch (fileSystem) {
 			case OS:
-				osFileSystem = new NativeOSFileSystem(path);
+				osFileSystem = new NativeOSFileSystem(filePath.pathString);
 				break;
 			case HDFS:
-				hdfsFileSystem = new NativeHDFSFileSystem(path);
+				hdfsFileSystem = new NativeHDFSFileSystem(filePath.pathString);
 				break;
+			default:
+				assert(false);
 		}
 	}
 
@@ -45,6 +50,8 @@ public class GenericFileSystem {
 				return osFileSystem.isFile();
 			case HDFS:
 				return hdfsFileSystem.isFile();
+			default:
+				assert(false);
 		}
 		return false;
 	}
@@ -55,6 +62,8 @@ public class GenericFileSystem {
 				return osFileSystem.isDirectory();
 			case HDFS:
 				return hdfsFileSystem.isDirectory();
+			default:
+				assert(false);
 		}
 		return false;
 	}
@@ -65,6 +74,8 @@ public class GenericFileSystem {
 				return osFileSystem.exists();
 			case HDFS:
 				return hdfsFileSystem.exists();
+			default:
+				assert(false);
 		}
 		return false;
 	}
@@ -77,6 +88,8 @@ public class GenericFileSystem {
 			case HDFS:
 				hdfsFileSystem.delete();
 				return;
+			default:
+				assert(false);
 		}
 	}
 
@@ -88,6 +101,8 @@ public class GenericFileSystem {
 			case HDFS:
 				hdfsFileSystem.mkdirs();
 				return;
+			default:
+				assert(false);
 		}
 	}
 
@@ -97,6 +112,8 @@ public class GenericFileSystem {
 				return osFileSystem.size();
 			case HDFS:
 				return hdfsFileSystem.size();
+			default:
+				assert(false);
 		}
 		return -1;
 	}
@@ -107,6 +124,8 @@ public class GenericFileSystem {
 				return osFileSystem.list();
 			case HDFS:
 				return hdfsFileSystem.list();
+			default:
+				assert(false);
 		}
 		return new Rail[String]();
 	}

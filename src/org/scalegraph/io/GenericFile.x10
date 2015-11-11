@@ -11,10 +11,6 @@
 
 package org.scalegraph.io;
 
-import x10.io.IOException;
-import org.scalegraph.util.MemoryChunk;
-import org.scalegraph.util.SString;
-
 public class GenericFile {
 	public static val OS: Int = 0n;
 	public static val HDFS: Int = 1n;
@@ -27,15 +23,26 @@ public class GenericFile {
 	private transient var osFile: NativeOSFile;
 	private transient var hdfsFile: NativeHDFSFile;
 
-	public def this(path: SString, fileMode :Int, fileAccess :Int) {
-		fileSystem = HDFS;
+	public def this(filePath: FilePath, fileMode :Int, fileAccess :Int) {
+		switch (filePath.fsType) {
+			case FilePath.FILEPATH_FS_OS:
+				fileSystem = OS;
+				break;
+			case FilePath.FILEPATH_FS_HDFS:
+				fileSystem = HDFS;
+				break;
+			default:
+				assert(false);
+		}
 		switch (fileSystem) {
 			case OS:
-				osFile = new NativeOSFile(path, fileMode, fileAccess);
+				osFile = new NativeOSFile(filePath.pathString, fileMode, fileAccess);
 				break;
 			case HDFS:
-				hdfsFile = new NativeHDFSFile(path, fileMode, fileAccess);
+				hdfsFile = new NativeHDFSFile(filePath.pathString, fileMode, fileAccess);
 				break;
+			default:
+				assert(false);
 		}
 	}
 
@@ -47,6 +54,8 @@ public class GenericFile {
 			case HDFS:
 				hdfsFile.close();
 				break;
+			default:
+				assert(false);
 		}
 	}
 
@@ -56,6 +65,8 @@ public class GenericFile {
 				return osFile.read(buffer);
 			case HDFS:
 				return hdfsFile.read(buffer);
+			default:
+				assert(false);
 		}
 		return 0n;
 	}
@@ -68,6 +79,8 @@ public class GenericFile {
 			case HDFS:
 				hdfsFile.write(buffer);
 				break;
+			default:
+				assert(false);
 		}
 	}
 
@@ -79,6 +92,8 @@ public class GenericFile {
 			case HDFS:
 				hdfsFile.seek(offset, origin);
 				break;
+			default:
+				assert(false);
 		}
 	}
 
@@ -88,6 +103,8 @@ public class GenericFile {
 				return osFile.getpos();
 			case HDFS:
 				return hdfsFile.getpos();
+			default:
+				assert(false);
 		}
 		return 0n;
 	}
