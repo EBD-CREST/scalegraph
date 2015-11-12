@@ -36,21 +36,36 @@ public class Algorithm {
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
-	public static val OPT_INPUT_DATA_FILE	:Int = 1010n;
-	public static val OPT_INPUT_DATA_FILE_RENUMBERING :Int = 1011n;
-	public static val OPT_INPUT_DATA_RMAT	:Int = 1020n;
-	public static val OPT_INPUT_WEIGHT_FILE	:Int = 1030n;
-	public static val OPT_INPUT_WEIGHT_RANDOM :Int = 1031n;
-	public static val OPT_INPUT_WEIGHT_CONSTANT :Int = 1032n;
+
+	public static val OPT_INPUT_DATA_FILE				:Int = 1010n;
+	public static val OPT_INPUT_DATA_FILE_RENUMBERING	:Int = 1011n;
+	public static val OPT_INPUT_DATA_FILE_WEIGHT_CSV	:Int = 1012n;
+	public static val OPT_INPUT_DATA_FILE_WEIGHT_RANDOM	:Int = 1013n;
+	public static val OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT :Int = 1014n;
+
+	public static val OPT_INPUT_DATA_RMAT				:Int = 1020n;
+	public static val OPT_INPUT_DATA_RMAT_SCALE			:Int = 1021n;
+	public static val OPT_INPUT_DATA_RMAT_EDGEFACTOR	:Int = 1022n;
+	public static val OPT_INPUT_DATA_RMAT_A				:Int = 1023n;
+	public static val OPT_INPUT_DATA_RMAT_B				:Int = 1024n;
+	public static val OPT_INPUT_DATA_RMAT_C				:Int = 1025n;
 	
 	public static val NAME_INPUT_FS_OS			:String = "--input-fs-os";
 	public static val NAME_INPUT_FS_HDFS		:String = "--input-fs-hdfs";
+
 	public static val NAME_INPUT_DATA_FILE		:String = "--input-data-file";
 	public static val NAME_INPUT_DATA_FILE_RENUMBERING	:String = "--input-data-file-renumbering";
-	public static val NAME_INPUT_DATA_RMAT		:String = "--input-data-rmat";
-	public static val NAME_INPUT_WEIGHT_FILE	:String = "--input-weight-file";
-	public static val NAME_INPUT_WEIGHT_RANDOM	:String = "--input-weight-random";
-	public static val NAME_INPUT_WEIGHT_CONSTANT	:String = "--input-weight-constant";
+	public static val NAME_INPUT_DATA_FILE_WEIGHT_CSV		:String = "--input-data-file-weight-csv";
+	public static val NAME_INPUT_DATA_FILE_WEIGHT_RANDOM	:String = "--input-data-file-weight-random";
+	public static val NAME_INPUT_DATA_FILE_WEIGHT_CONSTANT	:String = "--input-data-file-weight-constant";
+
+	public static val NAME_INPUT_DATA_RMAT				:String = "--input-data-rmat";
+	public static val NAME_INPUT_DATA_RMAT_SCALE		:String = "--input-data-rmat-scale";
+	public static val NAME_INPUT_DATA_RMAT_EDGEFACTOR	:String = "--input-data-rmat-edgefactor";
+	public static val NAME_INPUT_DATA_RMAT_A			:String = "--input-data-rmat-A";
+	public static val NAME_INPUT_DATA_RMAT_B			:String = "--input-data-rmat-B";
+	public static val NAME_INPUT_DATA_RMAT_C			:String = "--input-data-rmat-C";
+
 	
 	public static val OPT_OUTPUT_FS_OS		:Int = 2000n;
 	public static val OPT_OUTPUT_FS_HDFS	:Int = 2001n;
@@ -72,14 +87,24 @@ public class Algorithm {
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
 	public var algorithm :Int = ALGORITHM_PASSTHROUGH;
+
 	public var optInputFs :Int = OPT_INPUT_FS_OS;
 	public var optInputData :Int = OPT_INPUT_DATA_RMAT;
+
 	public var valueInputDataFile :String = "";
-	public var valueInputDataRmat :Double = 0.0;
-	public var optInputWeight :Int = OPT_INPUT_WEIGHT_RANDOM;
-	public var valueInputWeightConstant :Double = 0.0;
+	public var optInputDataFileRenumbering :Boolean = false;
+	public var optInputDataFileWeight :Int = OPT_INPUT_WEIGHT_RANDOM;
+	public var valueInputDataFileWeightConstant :Double = 0.0;
+
+	public var valueInputDataRmatScale		:Int = 8;
+	public var valueInputDataRmatEdgefactor :Int = 16n;
+	public var valueInputDataRmatA			:Double = 0.45;
+	public var valueInputDataRmatB			:Double = 0.15;
+	public var valueInputDataRmatC			:Double = 0.15;
+
 	public var optOutputFs :Int = OPT_OUTPUT_FS_OS;
 	public var valueOutputDataFile :String = "";
+
 	public var valuePagerankDamping :Double = 0.05;
 	public var valuePagerankEps :Double = 0.001;
 	public var valuePagerankNiter :Int = 30n;
@@ -95,17 +120,27 @@ public class Algorithm {
 	public def this() {
 		dirArgKeywords.put(NAME_PASSTHROUGH,		ALGORITHM_PASSTHROUGH);
 		dirArgKeywords.put(NAME_PAGERANK,			ALGORITHM_PAGERANK);
+
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
-		dirArgKeywords.put(NAME_INPUT_DATA_FILE,	OPT_INPUT_DATA_FILE);
-		dirArgKeywords.put(NAME_INPUT_DATA_FILE_RENUMBERING, OPT_INPUT_DATA_FILE_RENUMBERING);
-		dirArgKeywords.put(NAME_INPUT_DATA_RMAT,	OPT_INPUT_DATA_RMAT);
-		dirArgKeywords.put(NAME_INPUT_WEIGHT_FILE,	OPT_INPUT_WEIGHT_FILE);
-		dirArgKeywords.put(NAME_INPUT_WEIGHT_RANDOM, OPT_INPUT_WEIGHT_RANDOM);
-		dirArgKeywords.put(NAME_INPUT_WEIGHT_CONSTANT, OPT_INPUT_WEIGHT_CONSTANT);
+
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE,				OPT_INPUT_DATA_FILE);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_RENUMBERING,	OPT_INPUT_DATA_FILE_RENUMBERING);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_WEIGHT_CSV,		OPT_INPUT_DATA_FILE_WEIGHT_CSV);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_WEIGHT_RANDOM,	OPT_INPUT_DATA_FILE_WEIGHT_RANDOM);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_WEIGHT_CONSTANT,OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT);
+
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT,			OPT_INPUT_DATA_RMAT);
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_SCALE,		OPT_INPUT_DATA_RMAT_SCALE);
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_EDGEFACTOR,	OPT_INPUT_DATA_RMAT_EDGEFACTOR);
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_A,			OPT_INPUT_DATA_RMAT_A);
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_B,			OPT_INPUT_DATA_RMAT_B);
+		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_C,			OPT_INPUT_DATA_RMAT_C);
+
 		dirArgKeywords.put(NAME_OUTPUT_FS_OS,		OPT_OUTPUT_FS_OS);
 		dirArgKeywords.put(NAME_OUTPUT_FS_HDFS,		OPT_OUTPUT_FS_HDFS);
 		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE,	OPT_OUTPUT_DATA_FILE);
+
 		dirArgKeywords.put(NAME_PAGERANK_DAMPING,	OPT_PAGERANK_DAMPING);
 		dirArgKeywords.put(NAME_PAGERANK_EPS,		OPT_PAGERANK_EPS);
 		dirArgKeywords.put(NAME_PAGERANK_NITER,		OPT_PAGERANK_NITER);
@@ -137,24 +172,39 @@ public class Algorithm {
 				case OPT_INPUT_DATA_FILE:
 					optInputData = OPT_INPUT_DATA_FILE;
 					valueInputDataFile = splits(1);
+					assert(valueInputDataFile.size > 0);
 					break;
 				case OPT_INPUT_DATA_FILE_RENUMBERING:
 					optInputData = OPT_INPUT_DATA_FILE_RENUMBERING;
-					valueInputDataFile = splits(1);
+					optInputDataFileRenumbering = true;
+					break;
+				case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
+					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+					break;
+				case OPT_INPUT_DATA_FILE_WEIGHT_RANDOM:
+					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
+					break;
+				case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
+					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+					valueInputWeightConstant = Double.parse(splits(1));
 					break;
 				case OPT_INPUT_DATA_RMAT:
 					optInputData = OPT_INPUT_DATA_RMAT;
-					valueInputDataRmat = Double.parse(splits(1));
 					break;
-				case OPT_INPUT_WEIGHT_FILE:
-					optInputWeight = OPT_INPUT_WEIGHT_FILE;
+				case OPT_INPUT_DATA_RMAT_SCALE:
+					valueInputDataRmatScale = Int.parse(splits(1));
 					break;
-				case OPT_INPUT_WEIGHT_RANDOM:
-					optInputWeight = OPT_INPUT_WEIGHT_RANDOM;
+				case OPT_INPUT_DATA_RMAT_EDGEFACTOR:
+					valueInputDataRmatEdgefactor = Int.parse(splits(1));
 					break;
-				case OPT_INPUT_WEIGHT_CONSTANT:
-					optInputWeight = OPT_INPUT_WEIGHT_CONSTANT;
-					valueInputWeightConstant = Double.parse(splits(1));
+				case OPT_INPUT_DATA_RMAT_A:
+					valueInputDataRmatA = Double.parse(splits(1));
+					break;
+				case OPT_INPUT_DATA_RMAT_B:
+					valueInputDataRmatB = Double.parse(splits(1));
+					break;
+				case OPT_INPUT_DATA_RMAT_C:
+					valueInputDataRmatC = Double.parse(splits(1));
 					break;
 				case OPT_OUTPUT_FS_OS:
 					optOutputFs = OPT_OUTPUT_FS_OS;
@@ -185,16 +235,183 @@ public class Algorithm {
 		Console.ERR.printf("    optInputFs = %d\n", optInputFs);
 		Console.ERR.printf("    optInputData = %d\n", optInputData);
 		Console.ERR.printf("    valueInputDataFile = %s\n", valueInputDataFile);
-		Console.ERR.printf("    valueInputDataRmat = %f\n", valueInputDataRmat);
-		Console.ERR.printf("    optInputWeight = %d\n", optInputWeight);
+		Console.ERR.printf("    optInputDataFileRenumbering = %s\n", optInputDataFileRenumbering ? "true" : "false");
+		Console.ERR.printf("    optInputDataFileWeight = %d\n", optInputDataFileWeight);
 		Console.ERR.printf("    valueInputWeightConstant = %f\n", valueInputWeightConstant);
+		Console.ERR.printf("    valueInputDataRmatScale = %d\n", valueInputDataRmatScale);
+		Console.ERR.printf("    valueInputDataRmatEdgefactor = %d\n", valueInputDataRmatEdgefactor);
+		Console.ERR.printf("    valueInputDataRmatA = %f\n", valueInputDataRmatA);
+		Console.ERR.printf("    valueInputDataRmatB = %f\n", valueInputDataRmatB);
+		Console.ERR.printf("    valueInputDataRmatC = %f\n", valueInputDataRmatC);
 		Console.ERR.printf("    optOutputFs = %d\n", optOutputFs);
 		Console.ERR.printf("    valueOutputDataFile = %s\n", valueOutputDataFile);
 		Console.ERR.printf("    valuePagerankDamping = %f\n", valuePagerankDamping);
 		Console.ERR.printf("    valuePagerankEps = %f\n", valuePagerankEps);
 		Console.ERR.printf("    valuePagerankNiter = %d\n", valuePagerankNiter);
 
-		// call algorithm
+		checkOptionValidity();
+
+		// Call algorithm
+
+		switch (algorithm) {
+			case ALGORITHM_PASSTHROUGH:
+				callPassThrough(makeGraph());
+			case ALGORITHM_PAGERANK:
+				callPagerank(makeGraph());
+				break;
+			default:
+				assert(false);
+				break;
+		}
+
+	}
+
+	private def checkOptionValidity() {
+		switch(algorithm) {
+			case ALGORITHM_PASSTHROUGH:
+				assert(valueOutputDataFile.size > 0);
+				break;
+			case ALGORITHM_PAGERANK:
+				assert(valueOutputDataFile.size > 0);
+				break;
+			default:
+				break;
+		}
+	}
+
+	private def makeGraph() :Graph {
+		switch (optInputData) {
+			case OPT_INPUT_DATA_RMAT:
+				return makeGraphByRmat();
+			case OPT_INPUT_DATA_FILE:
+			case OPT_INPUT_DATA_FILE_RENUMBERING:
+				return makeGraphByFile();
+			default:
+				assert(false);
+				break;
+		}
+	}
+
+	private def makeGraphByRmat() {
+		val rnd = new Random(2, 3);
+		val edgeList = GraphGenerator.genRMAT(valueInputDataRmatScale,
+											  valueInputDataRmatEdgefactor,
+											  valueInputDataRmatA,
+											  valueInputDataRmatB,
+											  valueInputDataRmatC,
+											  rnd);
+		val rawWeight = GraphGenerator.genRandomEdgeValue(valueInputDataRmatScale,
+														  valueInputDataRmatEdgefactor,
+														  rnd);
+		val g = Graph.make(edgeList);
+		g.setEdgeAttribute[Double]("weight", rawWeight);
+		return g;
+	}
+
+	private def getFilePathInput() {
+		val filePath :FilePath;
+		assert(valueInputDataFile.size > 0);
+		switch (optInputFs) {
+			case OPT_INPUT_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueInputDataFile);
+				break;
+			case OPT_INPUT_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueInputDataFile);
+				break;
+			default:
+				assert(false);
+		}
+		return filePath;
+	}
+
+	private def getFilePathOutput() {
+		val filePath :FilePath;
+		assert(valueOutputDataFile.size > 0);
+		switch (optOutputFs) {
+			case OPT_OUTPUT_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutputDataFile);
+				break;
+			case OPT_OUTPUT_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueOutputDataFile);
+				break;
+			default:
+				assert(false);
+		}
+		return filePath;
+	}
+
+	private def makeGraphByFile() {
+		val colTypes :Rail[Int];
+		if (optInputDataFileWeight == OPT_INPUT_DATA_FILE_WEIGHT_CSV) {
+			colTypes = [Type.Long as Int, Type.Long, Type.Long, Type.Double];
+		} else {
+			colTypes = [Type.Long as Int, Type.Long, Type.Long];
+		}
+		val edgeCSV = CSV.read(getFilePathInput(), colTypes, true);
+		val g = Graph.make(edgeCSV, optInputDataFileRenumbering);
+		val srcList = g.source();
+		val getSize = ()=>srcList().size();
+		val edgeWeight :DistMemoryChunk[Double];
+		switch (optInputDataFileWeight) {
+			case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
+				val weightIdx = edgeCSV.nameToIndex("weight");
+				edgeWeight = edgeCSV.data()(weightIdx) as DistMemoryChunk[Double];
+				break;
+			case OPT_INPUT_DATA_FILE_WEIGHT_RANDOM:
+				edgeWeight = GraphGenerator.genRandomEdgeValue(getSize, new Random(2, 3));
+				break;
+			case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
+				edgeWeight = genConstanceValueEdges(getSize, valueInputDataFileWeightConstant);
+				break;
+				default:
+				assert(false);
+		}
+		g.setEdgeAttribute("weight", edgeWeight);
+		return g;
+	}
+
+	private static def genConstanceValueEdges(getSize :()=>Long, value :Double)
+	{
+		val team = Config.get().worldTeam();
+		
+		val edgeMemory = new DistMemoryChunk[Double](team.placeGroup(),
+				() => MemoryChunk.make[Double](getSize()));
+		
+		team.placeGroup().broadcastFlat(() => {
+			val role = team.role()(0);
+			Parallel.iter(0..(getSize() - 1), (tid :Long, r :LongRange) => {
+				val edgeMem_ = edgeMemory();
+				for(i in r) {
+					edgeMem_(i) = value;
+				}
+			});
+		});
+		
+		return edgeMemory;
+	}
+
+	public def callPassThrough(graph :Graph) {
+		CSV.write(getFilePathOutput(),
+				  new NamedDistData(["source" as String,
+									 "target",
+									 "weight"],
+									[graph.source(),
+									 graph.target(),
+									 graph.getEdgeAttribute[Double]("weight")]),
+				  true);
+	}
+
+	public def callPagerank(graph :Graph) {
+    	val matrix = graph.createDistSparseMatrix[Double](
+    		Config.get().distXPregel(), "weight", true, false);
+    	// delete the graph object in order to reduce the memory consumption
+    	graph.del();
+    	Config.get().stopWatch().lap("Graph construction: ");
+    	val pg = new org.scalegraph.api.PageRank();
+    	pg.niter = 30n;
+    	pg.eps = 0.0;
+    	result = pg.execute(matrix);
+		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
 
 }
