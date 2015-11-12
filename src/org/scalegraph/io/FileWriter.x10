@@ -11,6 +11,8 @@
 
 package org.scalegraph.io;
 
+import org.scalegraph.util.MemoryChunk;
+
 public class FileWriter {
 	private transient val gf: GenericFile;
 	private var fileOffset: Long;

@@ -11,6 +11,8 @@
 
 package org.scalegraph.io;
 
+import x10.io.File;
+
 public class GenericFileSystem {
 	public static val OS :Int = 0n;
 	public static val HDFS :Int = 1n;

@@ -142,7 +142,7 @@ public class CSVReader {
 		
 		// read header and create attribute handler
 		{
-			val reader = new FileReader(fman.fileName(0n));
+			val reader = fman.openRead(0n);
 			val headerLine = reader.fastReadLine();
 			if(includeHeader) {
 				val header = NativeCSVHeader.make(headerLine);

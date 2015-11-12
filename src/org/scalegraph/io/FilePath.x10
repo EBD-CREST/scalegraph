@@ -13,8 +13,8 @@ package org.scalegraph.io;
 
 public struct FilePath {
 
-	public val FILEPATH_FS_OS		:Int = 0n;
-	public val FILEPATH_FS_HDFS		:Int = 1000n;
+	public static val FILEPATH_FS_OS		:Int = 0n;
+	public static val FILEPATH_FS_HDFS		:Int = 1000n;
 
 	public val fsType		:Int;
 	public val pathString	:String;

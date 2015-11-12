@@ -11,6 +11,8 @@
 
 package org.scalegraph.io;
 
+import org.scalegraph.util.MemoryChunk;
+
 public class GenericFile {
 	public static val OS: Int = 0n;
 	public static val HDFS: Int = 1n;

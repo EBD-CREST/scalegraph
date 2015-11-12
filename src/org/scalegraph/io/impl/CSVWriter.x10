@@ -28,6 +28,7 @@ import org.scalegraph.util.MathAppend;
 import org.scalegraph.io.NamedDistData;
 import org.scalegraph.id.Type;
 import org.scalegraph.io.FileWriter;
+import org.scalegraph.io.FilePath;
 import x10.util.ArrayList;
 
 public class CSVWriter {
@@ -137,12 +138,17 @@ public class CSVWriter {
 	/* header
 	 * "Name1 <Int>" ,"Name2...
 	 */
-	
+
+	public static def write(team :Team, path :SString, data :NamedDistData, putIdFlag :Boolean) {
+		val filePath :FilePath = new FilePath(FilePath.FILEPATH_FS_OS, path.toString());
+		write(team, filePath, data, putIdFlag);
+	}
+
 	//data: all data
-	public static def write(team :Team, path :SString, data :NamedDistData, putIdFlag :Boolean){
+	public static def write(team :Team, filePath :FilePath, data :NamedDistData, putIdFlag :Boolean) {
 		@Ifdef("PROF_IO") val mtimer_ = Config.get().profIO().timer(IO.MAIN_FRAME as Int, 0n);
 		@Ifdef("PROF_IO") { mtimer_.start(); }
-		val fman = FileNameProvider.createForWrite(path,true);
+		val fman = FileNameProvider.createForWrite(filePath, true);
 		// create directory if it is not exists.
 		fman.mkdir();
 

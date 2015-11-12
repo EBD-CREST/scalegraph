@@ -21,6 +21,7 @@ import org.scalegraph.graph.GraphGenerator;
 import org.scalegraph.graph.EdgeList;
 import org.scalegraph.io.NamedDistData;
 import org.scalegraph.io.CSV;
+import org.scalegraph.io.FilePath;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.DistMemoryChunk;
 import org.scalegraph.util.random.Random;
@@ -93,10 +94,10 @@ public class Algorithm {
 
 	public var valueInputDataFile :String = "";
 	public var optInputDataFileRenumbering :Boolean = false;
-	public var optInputDataFileWeight :Int = OPT_INPUT_WEIGHT_RANDOM;
+	public var optInputDataFileWeight :Int = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
 	public var valueInputDataFileWeightConstant :Double = 0.0;
 
-	public var valueInputDataRmatScale		:Int = 8;
+	public var valueInputDataRmatScale		:Int = 8n;
 	public var valueInputDataRmatEdgefactor :Int = 16n;
 	public var valueInputDataRmatA			:Double = 0.45;
 	public var valueInputDataRmatB			:Double = 0.15;
@@ -172,7 +173,7 @@ public class Algorithm {
 				case OPT_INPUT_DATA_FILE:
 					optInputData = OPT_INPUT_DATA_FILE;
 					valueInputDataFile = splits(1);
-					assert(valueInputDataFile.size > 0);
+					assert(valueInputDataFile.length() > 0);
 					break;
 				case OPT_INPUT_DATA_FILE_RENUMBERING:
 					optInputData = OPT_INPUT_DATA_FILE_RENUMBERING;
@@ -186,7 +187,7 @@ public class Algorithm {
 					break;
 				case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
 					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
-					valueInputWeightConstant = Double.parse(splits(1));
+					valueInputDataFileWeightConstant = Double.parse(splits(1));
 					break;
 				case OPT_INPUT_DATA_RMAT:
 					optInputData = OPT_INPUT_DATA_RMAT;
@@ -237,7 +238,7 @@ public class Algorithm {
 		Console.ERR.printf("    valueInputDataFile = %s\n", valueInputDataFile);
 		Console.ERR.printf("    optInputDataFileRenumbering = %s\n", optInputDataFileRenumbering ? "true" : "false");
 		Console.ERR.printf("    optInputDataFileWeight = %d\n", optInputDataFileWeight);
-		Console.ERR.printf("    valueInputWeightConstant = %f\n", valueInputWeightConstant);
+		Console.ERR.printf("    valueInputDataFileWeightConstant = %f\n", valueInputDataFileWeightConstant);
 		Console.ERR.printf("    valueInputDataRmatScale = %d\n", valueInputDataRmatScale);
 		Console.ERR.printf("    valueInputDataRmatEdgefactor = %d\n", valueInputDataRmatEdgefactor);
 		Console.ERR.printf("    valueInputDataRmatA = %f\n", valueInputDataRmatA);
@@ -269,10 +270,10 @@ public class Algorithm {
 	private def checkOptionValidity() {
 		switch(algorithm) {
 			case ALGORITHM_PASSTHROUGH:
-				assert(valueOutputDataFile.size > 0);
+				assert(valueOutputDataFile.length() > 0);
 				break;
 			case ALGORITHM_PAGERANK:
-				assert(valueOutputDataFile.size > 0);
+				assert(valueOutputDataFile.length() > 0);
 				break;
 			default:
 				break;
@@ -310,7 +311,7 @@ public class Algorithm {
 
 	private def getFilePathInput() {
 		val filePath :FilePath;
-		assert(valueInputDataFile.size > 0);
+		assert(valueInputDataFile.length() > 0);
 		switch (optInputFs) {
 			case OPT_INPUT_FS_OS:
 				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueInputDataFile);
@@ -326,7 +327,7 @@ public class Algorithm {
 
 	private def getFilePathOutput() {
 		val filePath :FilePath;
-		assert(valueOutputDataFile.size > 0);
+		assert(valueOutputDataFile.length() > 0);
 		switch (optOutputFs) {
 			case OPT_OUTPUT_FS_OS:
 				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutputDataFile);
@@ -410,7 +411,7 @@ public class Algorithm {
     	val pg = new org.scalegraph.api.PageRank();
     	pg.niter = 30n;
     	pg.eps = 0.0;
-    	result = pg.execute(matrix);
+    	val result = pg.execute(matrix);
 		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
 
