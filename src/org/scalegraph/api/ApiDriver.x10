@@ -28,10 +28,13 @@ import org.scalegraph.util.random.Random;
 import org.scalegraph.util.Parallel;
 import org.scalegraph.id.Type;
 
-public class Algorithm {
+import org.scalegraph.exception.ApiException;
+import x10.util.NoSuchElementException;
 
-	public static val ALGORITHM_PASSTHROUGH	:Int = 0n;
-	public static val ALGORITHM_PAGERANK	:Int = 3000n;
+public class ApiDriver {
+
+	public static val API_PASSTHROUGH	:Int = 0n;
+	public static val API_PAGERANK	:Int = 3000n;
 	
 	public static val NAME_PASSTHROUGH		:String = "passthrough";
 	public static val NAME_PAGERANK			:String = "pagerank";
@@ -88,7 +91,7 @@ public class Algorithm {
 
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
-	public var algorithm :Int = ALGORITHM_PASSTHROUGH;
+	public var apiType :Int = API_PASSTHROUGH;
 
 	public var optInputFs :Int = OPT_INPUT_FS_OS;
 	public var optInputData :Int = OPT_INPUT_DATA_RMAT;
@@ -113,15 +116,19 @@ public class Algorithm {
 
 	public static def main(args: Rail[String]) {
 		if (args.size < 1) {
-			Console.ERR.println("Usage: <algorithm_name> [common_options] [algorithm_options]");
+			Console.ERR.println("Usage: <api_name> [common_options] [api_options]");
 			return;
 		}
-		new Algorithm().execute(args);
+		try {
+			new ApiDriver().execute(args);
+		} catch (exception :ApiException) {
+			exception.printError();
+		}
 	}
 
 	public def this() {
-		dirArgKeywords.put(NAME_PASSTHROUGH,		ALGORITHM_PASSTHROUGH);
-		dirArgKeywords.put(NAME_PAGERANK,			ALGORITHM_PAGERANK);
+		dirArgKeywords.put(NAME_PASSTHROUGH,		API_PASSTHROUGH);
+		dirArgKeywords.put(NAME_PAGERANK,			API_PAGERANK);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -148,21 +155,27 @@ public class Algorithm {
 		dirArgKeywords.put(NAME_PAGERANK_NITER,		OPT_PAGERANK_NITER);
 	}
 
-	public def execute(args: Rail[String]) {
-		algorithm = dirArgKeywords.getOrThrow(args(0));
+	public def execute(args: Rail[String]) throws ApiException {
+		apiType = dirArgKeywords.getOrThrow(args(0));
 
-		switch (algorithm) {
-			case ALGORITHM_PASSTHROUGH:
-			case ALGORITHM_PAGERANK:
+		switch (apiType) {
+			case API_PASSTHROUGH:
+			case API_PAGERANK:
 				break;
 			default:
-				Console.ERR.println("Invalid algorithm name");
+				Console.ERR.println("Invalid api name");
 				return;
 		}
 
 		for (i in 1..(args.size - 1)) {
 			val splits :Rail[String] = args(i).split("=");
-			val option = dirArgKeywords.getOrThrow(splits(0));
+			val option :Int;
+
+			try {
+				option = dirArgKeywords.getOrThrow(splits(0));
+			} catch(e: NoSuchElementException) {
+				throw new ApiException.InvalidOptionException(splits(0));
+			}
 
 			switch (option) {
 				case OPT_INPUT_FS_OS:
@@ -174,6 +187,9 @@ public class Algorithm {
 				case OPT_INPUT_DATA_FILE:
 					optInputData = OPT_INPUT_DATA_FILE;
 					valueInputDataFile = splits(1);
+					if  (valueInputDataFile.length() == 0n) {
+						throw new ApiException.PathRequiredException(NAME_INPUT_DATA_FILE);
+					}
 					assert(valueInputDataFile.length() > 0);
 					break;
 				case OPT_INPUT_DATA_FILE_RENUMBERING:
@@ -232,7 +248,7 @@ public class Algorithm {
 			}
 		}
 
-		Console.ERR.printf("Algorithm: %d\n", algorithm);
+		Console.ERR.printf("apiDriver: %d\n", apiType);
 		Console.ERR.printf("Options:\n");
 		Console.ERR.printf("    optInputFs = %d\n", optInputFs);
 		Console.ERR.printf("    optInputData = %d\n", optInputData);
@@ -253,13 +269,13 @@ public class Algorithm {
 
 		checkOptionValidity();
 
-		// Call algorithm
+		// Call API
 
-		switch (algorithm) {
-			case ALGORITHM_PASSTHROUGH:
+		switch (apiType) {
+			case API_PASSTHROUGH:
 				callPassThrough(makeGraph());
 				break;
-			case ALGORITHM_PAGERANK:
+			case API_PAGERANK:
 				callPagerank(makeGraph());
 				break;
 			default:
@@ -270,11 +286,11 @@ public class Algorithm {
 	}
 
 	private def checkOptionValidity() {
-		switch(algorithm) {
-			case ALGORITHM_PASSTHROUGH:
+		switch(apiType) {
+			case API_PASSTHROUGH:
 				assert(valueOutputDataFile.length() > 0);
 				break;
-			case ALGORITHM_PAGERANK:
+			case API_PAGERANK:
 				assert(valueOutputDataFile.length() > 0);
 				break;
 			default:
