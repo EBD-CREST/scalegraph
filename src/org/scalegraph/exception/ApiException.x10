@@ -59,4 +59,11 @@ public abstract class ApiException extends CheckedThrowable {
 		}
 		public def this(name :String) = super(name);
 	}
+
+	public static class OptionRequiredException extends ApiException {
+		protected def getErrorMsg() :String {
+			return String.format("Option %s should be specified", [name as Any]);
+		}
+		public def this(name :String) = super(name);
+	}
 }

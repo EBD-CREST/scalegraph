@@ -291,16 +291,21 @@ public class ApiDriver {
 				assert(false);
 				break;
 		}
-
 	}
 
-	private def checkOptionValidity() {
+	private def checkOptionValidity() throws ApiException {
 		switch(apiType) {
 			case API_PASSTHROUGH:
-				assert(valueOutputDataFile.length() > 0);
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				assert(valueOutputDataFile.length() > 0n);
 				break;
 			case API_PAGERANK:
-				assert(valueOutputDataFile.length() > 0);
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				assert(valueOutputDataFile.length() > 0n);
 				break;
 			default:
 				break;
