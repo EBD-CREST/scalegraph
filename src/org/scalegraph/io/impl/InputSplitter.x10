@@ -19,6 +19,7 @@ import org.scalegraph.util.GrowableMemory;
 import org.scalegraph.util.SString;
 import org.scalegraph.io.GenericFileSystem;
 import org.scalegraph.io.FileReader;
+import org.scalegraph.io.FilePath;
 import org.scalegraph.test.STest;
 import org.scalegraph.Config;
 import x10.compiler.Ifdef;
@@ -49,11 +50,11 @@ public abstract class InputSplitter {
 	// End of InputSplitter definition //
 	
 	public static struct InputSplit {
-		public val path : SString;
+		public val path : FilePath;
 		public val start : Long;
 		public val end : Long;
 		
-		public def this(path : SString, start : Long, end : Long) {
+		public def this(path : FilePath, start : Long, end : Long) {
 			this.path = path;
 			this.start = start;
 			this.end = end;
@@ -191,13 +192,13 @@ public abstract class InputSplitter {
 		for(path in fman) {
 			val fileSize :Long;
 			if(numFiles == 0L) {
-				fileSize = new GenericFileSystem(path.toString()).size() - offset;
+				fileSize = new GenericFileSystem(path).size() - offset;
 				if(fileSize < 0) {
 					throw new IOException("The first file must include whole header.");
 				}
 			}
 			else {
-				fileSize = new GenericFileSystem(path.toString()).size();
+				fileSize = new GenericFileSystem(path).size();
 			}
 			allSize += fileSize;
 			++numFiles;
@@ -206,7 +207,7 @@ public abstract class InputSplitter {
 		var headerFile :Boolean = true;
 
 		for(path in fman) {
-			val file = new GenericFileSystem(path.toString());
+			val file = new GenericFileSystem(path);
 			val fileOffset :Long;
 			if(headerFile) {
 				fileOffset = offset;

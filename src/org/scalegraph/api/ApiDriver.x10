@@ -25,6 +25,7 @@ import org.scalegraph.io.FilePath;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.DistMemoryChunk;
 import org.scalegraph.util.random.Random;
+import org.scalegraph.util.Parallel;
 import org.scalegraph.id.Type;
 
 public class Algorithm {
@@ -257,6 +258,7 @@ public class Algorithm {
 		switch (algorithm) {
 			case ALGORITHM_PASSTHROUGH:
 				callPassThrough(makeGraph());
+				break;
 			case ALGORITHM_PAGERANK:
 				callPagerank(makeGraph());
 				break;
@@ -291,6 +293,7 @@ public class Algorithm {
 				assert(false);
 				break;
 		}
+		return makeGraphByRmat();
 	}
 
 	private def makeGraphByRmat() {
@@ -321,6 +324,7 @@ public class Algorithm {
 				break;
 			default:
 				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueInputDataFile);
 		}
 		return filePath;
 	}
@@ -337,6 +341,7 @@ public class Algorithm {
 				break;
 			default:
 				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutputDataFile);
 		}
 		return filePath;
 	}
@@ -364,8 +369,9 @@ public class Algorithm {
 			case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
 				edgeWeight = genConstanceValueEdges(getSize, valueInputDataFileWeightConstant);
 				break;
-				default:
+			default:
 				assert(false);
+				edgeWeight = genConstanceValueEdges(getSize, valueInputDataFileWeightConstant);
 		}
 		g.setEdgeAttribute("weight", edgeWeight);
 		return g;

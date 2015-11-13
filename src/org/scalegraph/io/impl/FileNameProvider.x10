@@ -16,22 +16,23 @@ import org.scalegraph.io.FileMode;
 import org.scalegraph.io.GenericFileSystem;
 import org.scalegraph.io.FilePath;
 
-public abstract class FileNameProvider implements Iterable[String] {
+public abstract class FileNameProvider implements Iterable[FilePath] {
 	protected val filePath :FilePath;
 	public def this(_filePath :FilePath) {
 		this.filePath = _filePath;
 	}
 	public abstract def isScattered() : Boolean;
-	public abstract def fileName(index :Int) :String;
-	public def filePath(index :Int) :FilePath {
-		return new FilePath(filePath.fsType, fileName(index));
-	}
+	public abstract def getIndexedFileName(index :Int) :String;
+	public def getIndexedFilePath(index :Int) =
+		new FilePath(filePath.fsType, getIndexedFileName(index));
+	public def getFilePath(path :String) =
+		new FilePath(filePath.fsType, path);
 	public def mkdir() {
 		// default method assumes the path pointing to the normal file
-		val last_sep = filePath.pathString.lastIndexOf(GenericFileSystem.SEPARATOR);
+		val path = filePath.pathString;
+		val last_sep = path.lastIndexOf(GenericFileSystem.SEPARATOR);
 		if(last_sep > 0) {
-			(new GenericFileSystem(new FilePath(filePath.fsType,
-												filePath.pathString.substring(0n, last_sep).toString()))).mkdirs();
+			(new GenericFileSystem(getFilePath(path.substring(0n, last_sep)))).mkdirs();
 		}
 	}
 	public abstract def deleteFile() :void;
@@ -40,14 +41,13 @@ public abstract class FileNameProvider implements Iterable[String] {
 	
 	// End of FileNameProvider definition //
 	
-	private static class PathIterator implements Iterator[String] {
+	private static class PathIterator implements Iterator[FilePath] {
 		private val th :FileNameProvider;
 		private var index :Int;
 		public def this(th :FileNameProvider) { index = 0n; this.th = th; }
 		public def hasNext() = 
-			new GenericFileSystem(new FilePath(th.filePath.fsType,
-											   th.fileName(index))).exists();
-		public def next() = th.fileName(index++);
+			(new GenericFileSystem(th.getIndexedFilePath(index))).exists();
+		public def next() = th.getIndexedFilePath(index++);
 	}
 
 	private static class SingleFileNameProvider extends FileNameProvider {
@@ -55,7 +55,7 @@ public abstract class FileNameProvider implements Iterable[String] {
 			super(_filePath);
 		}
 		public def isScattered() = false;
-		public def fileName(index :Int) = filePath.pathString;
+		public def getIndexedFileName(index :Int) = filePath.pathString;
 		public def deleteFile() {
 			(new GenericFileSystem(filePath)).delete();
 		}
@@ -76,21 +76,21 @@ public abstract class FileNameProvider implements Iterable[String] {
 			super(_filePath);
 		}
 		public def isScattered() = true;
-		public def fileName(index :Int) :String = 
-			String.format(filePath.pathString, index);
+		public def getIndexedFileName(index :Int) :String {
+			return String.format(filePath.pathString, [index as Any]);
+		}
 		public def deleteFile() {
 			var index :Int = 0n;
 			do {
-				val file = new GenericFileSystem(new FilePath(filePath.fsType,
-															  fileName(index).toString()));
+				val file = new GenericFileSystem(getIndexedFilePath(index));
 				if (!file.exists()) break;
 				file.delete();
 			} while(true);
 		}
 		public def openRead(index :Int) = 
-			new FileReader(filePath(index));
+			new FileReader(getIndexedFilePath(index));
 		public def openWrite(index :Int) = 
-			new FileWriter(filePath(index), FileMode.Create);
+			new FileWriter(getIndexedFilePath(index), FileMode.Create);
 		public def iterator() = new PathIterator(this);
 		
 	}
@@ -100,22 +100,22 @@ public abstract class FileNameProvider implements Iterable[String] {
 			super(_filePath);
 		}
 		public def isScattered() = true;
-		public def fileName(index :Int) :String = 
-			String.format("%s/part-%05d" as String, filePath.pathString, index);
+		public def getIndexedFileName(index :Int) :String { 
+			return String.format("%s/part-%05d" as String, [filePath.pathString, index]);
+		}
 		public def mkdir() {
 			(new GenericFileSystem(filePath)).mkdirs();
 		}
 		public def deleteFile() {
 			val dir = new GenericFileSystem(filePath);
 			for(i in 0..(dir.list().size-1)) {
-				new GenericFileSystem(new FilePath(filePath.fsType, 
-												   fileName(i as Int))).delete();
+				new GenericFileSystem(getIndexedFilePath(i as Int)).delete();
 			}
 		}
 		public def openRead(index :Int) = 
-				new FileReader(filePath(index));
+			new FileReader(getIndexedFilePath(index));
 		public def openWrite(index :Int) = 
-			new FileWriter(filePath(index), FileMode.Create);
+			new FileWriter(getIndexedFilePath(index), FileMode.Create);
 		public def iterator() = new PathIterator(this);
 		
 	}

@@ -33,6 +33,7 @@ public class GenericFileSystem {
 				break;
 			default:
 				assert(false);
+				fileSystem = OS; // suppress compile error
 		}
 		switch (fileSystem) {
 			case OS:

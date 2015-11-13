@@ -35,6 +35,7 @@ public class GenericFile {
 				break;
 			default:
 				assert(false);
+				fileSystem = OS; // supress compile error
 		}
 		switch (fileSystem) {
 			case OS:
