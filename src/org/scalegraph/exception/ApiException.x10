@@ -34,7 +34,28 @@ public abstract class ApiException extends CheckedThrowable {
 
 	public static class InvalidOptionException extends ApiException {
 		protected def getErrorMsg() :String {
-			return String.format("Invalid argument specified: %s", [name as Any]);
+			return String.format("Invalid option specified: %s", [name as Any]);
+		}
+		public def this(name :String) = super(name);
+	}
+
+	public static class InvalidApiNameException extends ApiException {
+		protected def getErrorMsg() :String {
+			return String.format("Invalid API name specified: %s", [name as Any]);
+		}
+		public def this(name :String) = super(name);
+	}
+
+	public static class NoOptionValueException extends ApiException {
+		protected def getErrorMsg() :String {
+			return String.format("No option value specified for %s", [name as Any]);
+		}
+		public def this(name :String) = super(name);
+	}
+
+	public static class InvalidOptionValueException extends ApiException {
+		protected def getErrorMsg() :String {
+			return String.format("Invalid option value specified: %s", [name as Any]);
 		}
 		public def this(name :String) = super(name);
 	}

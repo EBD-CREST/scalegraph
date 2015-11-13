@@ -156,15 +156,19 @@ public class ApiDriver {
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
-		apiType = dirArgKeywords.getOrThrow(args(0));
+
+		try {
+			apiType = dirArgKeywords.getOrThrow(args(0));
+		} catch(e :NoSuchElementException) {
+			throw new ApiException.InvalidApiNameException(args(0));
+		}
 
 		switch (apiType) {
 			case API_PASSTHROUGH:
 			case API_PAGERANK:
 				break;
 			default:
-				Console.ERR.println("Invalid api name");
-				return;
+				throw new ApiException.InvalidApiNameException(args(0));
 		}
 
 		for (i in 1..(args.size - 1)) {
@@ -177,74 +181,79 @@ public class ApiDriver {
 				throw new ApiException.InvalidOptionException(splits(0));
 			}
 
-			switch (option) {
-				case OPT_INPUT_FS_OS:
-					optInputFs = OPT_INPUT_FS_OS;
-					break;
-				case OPT_INPUT_FS_HDFS:
-					optInputFs = OPT_INPUT_FS_HDFS;
-					break;
-				case OPT_INPUT_DATA_FILE:
-					optInputData = OPT_INPUT_DATA_FILE;
-					valueInputDataFile = splits(1);
-					if  (valueInputDataFile.length() == 0n) {
-						throw new ApiException.PathRequiredException(NAME_INPUT_DATA_FILE);
-					}
-					assert(valueInputDataFile.length() > 0);
-					break;
-				case OPT_INPUT_DATA_FILE_RENUMBERING:
-					optInputData = OPT_INPUT_DATA_FILE_RENUMBERING;
-					optInputDataFileRenumbering = true;
-					break;
-				case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
-					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
-					break;
-				case OPT_INPUT_DATA_FILE_WEIGHT_RANDOM:
-					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
-					break;
-				case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
-					optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
-					valueInputDataFileWeightConstant = Double.parse(splits(1));
-					break;
-				case OPT_INPUT_DATA_RMAT:
-					optInputData = OPT_INPUT_DATA_RMAT;
-					break;
-				case OPT_INPUT_DATA_RMAT_SCALE:
-					valueInputDataRmatScale = Int.parse(splits(1));
-					break;
-				case OPT_INPUT_DATA_RMAT_EDGEFACTOR:
-					valueInputDataRmatEdgefactor = Int.parse(splits(1));
-					break;
-				case OPT_INPUT_DATA_RMAT_A:
-					valueInputDataRmatA = Double.parse(splits(1));
-					break;
-				case OPT_INPUT_DATA_RMAT_B:
-					valueInputDataRmatB = Double.parse(splits(1));
-					break;
-				case OPT_INPUT_DATA_RMAT_C:
-					valueInputDataRmatC = Double.parse(splits(1));
-					break;
-				case OPT_OUTPUT_FS_OS:
-					optOutputFs = OPT_OUTPUT_FS_OS;
-					break;
-				case OPT_OUTPUT_FS_HDFS:
-					optOutputFs = OPT_OUTPUT_FS_HDFS;
-					break;
-				case OPT_OUTPUT_DATA_FILE:
-					valueOutputDataFile = splits(1);
-					break;
-				case OPT_PAGERANK_DAMPING:
-					valuePagerankDamping = Double.parse(splits(1));
-					break;
-				case OPT_PAGERANK_EPS:
-					valuePagerankEps = Double.parse(splits(1));
-					break;
-				case OPT_PAGERANK_NITER:
-					valuePagerankNiter = Int.parse(splits(1));
-					break;
-				default:
-					Console.ERR.println("no implementation!");
-					return;
+			try {
+				switch (option) {
+					case OPT_INPUT_FS_OS:
+						optInputFs = OPT_INPUT_FS_OS;
+						break;
+					case OPT_INPUT_FS_HDFS:
+						optInputFs = OPT_INPUT_FS_HDFS;
+						break;
+					case OPT_INPUT_DATA_FILE:
+						optInputData = OPT_INPUT_DATA_FILE;
+						valueInputDataFile = splits(1);
+						if  (valueInputDataFile.length() == 0n) {
+							throw new ApiException.PathRequiredException(NAME_INPUT_DATA_FILE);
+						}
+						assert(valueInputDataFile.length() > 0);
+						break;
+					case OPT_INPUT_DATA_FILE_RENUMBERING:
+						optInputData = OPT_INPUT_DATA_FILE_RENUMBERING;
+						optInputDataFileRenumbering = true;
+						break;
+					case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
+						optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+						break;
+					case OPT_INPUT_DATA_FILE_WEIGHT_RANDOM:
+						optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
+						break;
+					case OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT:
+						optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+						valueInputDataFileWeightConstant = Double.parse(splits(1));
+						break;
+					case OPT_INPUT_DATA_RMAT:
+						optInputData = OPT_INPUT_DATA_RMAT;
+						break;
+					case OPT_INPUT_DATA_RMAT_SCALE:
+						valueInputDataRmatScale = Int.parse(splits(1));
+						break;
+					case OPT_INPUT_DATA_RMAT_EDGEFACTOR:
+						valueInputDataRmatEdgefactor = Int.parse(splits(1));
+						break;
+					case OPT_INPUT_DATA_RMAT_A:
+						valueInputDataRmatA = Double.parse(splits(1));
+						break;
+					case OPT_INPUT_DATA_RMAT_B:
+						valueInputDataRmatB = Double.parse(splits(1));
+						break;
+					case OPT_INPUT_DATA_RMAT_C:
+						valueInputDataRmatC = Double.parse(splits(1));
+						break;
+					case OPT_OUTPUT_FS_OS:
+						optOutputFs = OPT_OUTPUT_FS_OS;
+						break;
+					case OPT_OUTPUT_FS_HDFS:
+						optOutputFs = OPT_OUTPUT_FS_HDFS;
+						break;
+					case OPT_OUTPUT_DATA_FILE:
+						valueOutputDataFile = splits(1);
+						break;
+					case OPT_PAGERANK_DAMPING:
+						valuePagerankDamping = Double.parse(splits(1));
+						break;
+					case OPT_PAGERANK_EPS:
+						valuePagerankEps = Double.parse(splits(1));
+						break;
+					case OPT_PAGERANK_NITER:
+						valuePagerankNiter = Int.parse(splits(1));
+						break;
+						default:
+						throw new ApiException.InvalidOptionException(splits(0));
+				}
+			} catch (e :ArrayIndexOutOfBoundsException) {
+				throw new ApiException.NoOptionValueException(splits(0));
+			} catch (e :NumberFormatException) {
+				throw new ApiException.InvalidOptionValueException(args(i));
 			}
 		}
 
