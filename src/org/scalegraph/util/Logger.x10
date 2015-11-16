@@ -8,16 +8,46 @@
  * 
  *  (C) Copyright ScaleGraph Team 2011-2016.
  */
+
 package org.scalegraph.util;
 
+import x10.util.ArrayList;
 import x10.util.StringBuilder;
 import x10.io.Console;
 
+/*
+ * Buffers log messages and flushes the messages.
+ * 
+ * A static ArrayList logLines keeps the buffered messages on each place.
+ * 
+ */
 public class Logger {
 	private static val buffer = new StringBuilder();
 	private static val linebreak = "\n";
 
-    private atomic static def printStacktrace(e :CheckedThrowable, nested :Int) {
+	private static val logLines = new ArrayList[LogLine]();
+
+	static private struct LogLine {
+		public val placeId: Long;
+		public val timestamp: Long;
+		public val msg: String;
+		public def this(s: String) {
+			placeId = here.id;
+			timestamp = System.nanoTime();
+			msg = s;
+		}
+	}
+
+    public static def printStackTrace(e :CheckedThrowable) {
+		atomic {
+    		printStackTrace(e, 0n);
+			recordLog(buffer.toString());
+			buffer.clear();
+		}
+		flush();
+    }
+    
+    private static def printStackTrace(e :CheckedThrowable, nested :Int) {
     	var nested_prefix :String = "";
     	for(n in 0..(nested-1)) nested_prefix += "| ";
 
@@ -40,53 +70,76 @@ public class Logger {
     		buffer.add("Caused by ");
     		buffer.add(linebreak);
     		for(i in excs.range()) {
-    			printStacktrace(excs(i), nested + 1n);
+    			printStackTrace(excs(i), nested + 1n);
     		}
     	}
     }
-    
-    public static def flush() {
-    	val out :String;
-		val pid :Int;
-    	atomic {
-	    	out = buffer.toString();
-	    	buffer.clear();
-    	}
-		pid = here.id as Int;
-    	if(here != Place.FIRST_PLACE) {
-    		finish at(Place.FIRST_PLACE) {
-				x10.io.Console.ERR.println("======== Place: " + pid + " ========");
-    			x10.io.Console.ERR.print(out);
-    		}
-    	}
-    	else {
-			x10.io.Console.ERR.println("======== Place: " + pid + " ========");
-    		x10.io.Console.ERR.print(out);
-    	}
-    }
-    
-    public static def printStacktrace(e :CheckedThrowable) {
-    	printStacktrace(e, 0n);
-		flush();
-    }
-    
+
     public static def print(obj :Any) {
-    	bufferedPrint(obj);
+    	recordLog(obj.toString());
     	flush();
     }
     
-    public static def println(obj :Any) {
-    	bufferedPrintln(obj);
-    	flush();
+    public static def bufferedPrint(obj :Any) {
+    	recordLog(obj.toString());
     }
-    
-    public atomic static def bufferedPrint(obj :Any) {
-    	buffer.add(obj.toString());
+
+	private static def recordLog(msg: String) {
+		logLines.add(LogLine(msg));
+	}
+
+    public static def flush() {
+		if (here == Place.FIRST_PLACE) {
+			flushLocalRecords();
+		}
+		GatherAndOutputRecords();
     }
-    
-    public atomic static def bufferedPrintln(obj :Any) {
-    	buffer.add(obj.toString());
-    	buffer.add(linebreak);
-    }
+
+	private atomic static def flushLocalRecords() {
+		for (line in logLines) {
+			val timeinsec :Long = line.timestamp / 1000000000;
+			val sec :Long = timeinsec % 60;
+			val min :Long = (timeinsec / 60) % 60;
+			val hour :Long = (timeinsec / 60 / 60) % 24;
+			Console.ERR.print(String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
+							  line.msg);
+			if (!line.msg.endsWith(linebreak)) {
+				Console.ERR.print(linebreak);
+			}
+		}
+	}
+
+	private atomic static def outputGatheredRecords(from: Long, logLinesReceived :ArrayList[LogLine]) {
+		x10.io.Console.ERR.println("======== Place: " + from + " ========");
+		for (line in logLinesReceived) {
+			val timeinsec :Long = line.timestamp / 1000000000;
+			val sec :Long = timeinsec % 60;
+			val min :Long = (timeinsec / 60) % 60;
+			val hour :Long = (timeinsec / 60 / 60) % 24;
+			Console.ERR.print("[" + line.placeId + "] " +
+							  String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
+							  line.msg);
+			if (!line.msg.endsWith(linebreak)) {
+				Console.ERR.print(linebreak);
+			}
+		}
+	}
+
+	private static def GatherAndOutputRecords() {
+		val _logLines :ArrayList[LogLine];
+		val _placeId :Long;
+		atomic {
+			_logLines = logLines.clone();
+			_placeId = here.id;
+			logLines.clear();
+		}
+		if (here != Place.FIRST_PLACE) {
+			finish at (Place.FIRST_PLACE) {
+				outputGatheredRecords(_placeId, _logLines);
+			};
+		} else {
+			outputGatheredRecords(_placeId, _logLines);
+		}
+	}
 
 }

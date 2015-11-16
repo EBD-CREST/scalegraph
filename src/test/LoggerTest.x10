@@ -17,15 +17,15 @@ public class LoggerTest {
 		try {
 			foo();
 		} catch (e :CheckedThrowable) {
-			Logger.printStacktrace(e);
+			Logger.printStackTrace(e);
 		}
 	}
 	public static def foo() throws CheckedThrowable {
 		if (here.id == 3) {
 			throw new CheckedThrowable();
 		}
-//		assert(here.id != 2);
-		Logger.println("abcdefg HIJKLMN " + here.id.toString());
+		assert(here.id != 2);
+		Logger.print("abcdefg HIJKLMN " + here.id.toString());
 	}
 
 	public static def main(Rail[String]) {
