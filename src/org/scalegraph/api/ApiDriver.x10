@@ -427,6 +427,21 @@ public class ApiDriver {
 		return edgeMemory;
 	}
 
+    protected static def reportResult(b: boolean): void = {
+        if (b) success(); else failure();
+    }
+
+    public static def success(): void = {
+	   at (Place.FIRST_PLACE) 
+	     System.setExitCode(0n);
+    }
+
+    public static def failure(): void = {
+        at (Place.FIRST_PLACE)
+           System.setExitCode(1n);
+    }
+
+
 	public def callPassThrough(graph :Graph) {
 		CSV.write(getFilePathOutput(),
 				  new NamedDistData(["source" as String,
