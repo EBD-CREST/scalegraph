@@ -14,6 +14,13 @@ package org.scalegraph.util;
 import x10.util.ArrayList;
 import x10.util.StringBuilder;
 import x10.io.Console;
+import x10.io.Printer;
+import org.scalegraph.io.FilePath;
+import org.scalegraph.io.FileMode;
+import org.scalegraph.io.FileAccess;
+import org.scalegraph.io.GenericFile;
+import org.scalegraph.util.SString;
+
 
 /*
  * Buffers log messages and flushes the messages.
@@ -22,10 +29,22 @@ import x10.io.Console;
  * 
  */
 public class Logger {
+	private static val logLines = new ArrayList[LogLine]();
 	private static val buffer = new StringBuilder();
 	private static val linebreak = "\n";
-
-	private static val logLines = new ArrayList[LogLine]();
+	private static val sstrLinebreak = SString(linebreak);
+	private static val enablePlaceLocalLogFile = true;
+	private static val enableGlobalLogFile = true;
+	private static val enableGlobalLogPrinter = true;
+	private static val placeLocalLogFilePath = FilePath(FilePath.FILEPATH_FS_OS, "logplace_%05ld");
+	private static val globalLogFilePath = FilePath(FilePath.FILEPATH_FS_OS, "logglobal");
+	private static val globalLogPrinter = Console.ERR;
+	private static val placeLocalLogFile =
+		new GenericFile(FilePath(placeLocalLogFilePath.fsType,
+								 String.format(placeLocalLogFilePath.pathString, [here.id as Any])),
+						FileMode.Append, FileAccess.Write);
+	private static val globalLogFile =
+		new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
 
 	static private struct LogLine {
 		public val placeId: Long;
@@ -89,22 +108,23 @@ public class Logger {
 	}
 
     public static def flush() {
-		if (here == Place.FIRST_PLACE) {
-			flushLocalRecords();
-		}
+		flushLocalRecords();
 		GatherAndOutputRecords();
     }
 
 	private atomic static def flushLocalRecords() {
-		for (line in logLines) {
-			val timeinsec :Long = line.timestamp / 1000000000;
-			val sec :Long = timeinsec % 60;
-			val min :Long = (timeinsec / 60) % 60;
-			val hour :Long = (timeinsec / 60 / 60) % 24;
-			Console.ERR.print(String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
-							  line.msg);
-			if (!line.msg.endsWith(linebreak)) {
-				Console.ERR.print(linebreak);
+		if (enablePlaceLocalLogFile) {
+			for (line in logLines) {
+				val timeinsec :Long = line.timestamp / 1000000000;
+				val sec :Long = timeinsec % 60;
+				val min :Long = (timeinsec / 60) % 60;
+				val hour :Long = (timeinsec / 60 / 60) % 24;
+				val sstr = SString(String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
+								  line.msg);
+				placeLocalLogFile.write(sstr.bytes());
+				if (!line.msg.endsWith(linebreak)) {
+					placeLocalLogFile.write(sstrLinebreak.bytes());
+				}
 			}
 		}
 	}
@@ -116,11 +136,20 @@ public class Logger {
 			val sec :Long = timeinsec % 60;
 			val min :Long = (timeinsec / 60) % 60;
 			val hour :Long = (timeinsec / 60 / 60) % 24;
-			Console.ERR.print("[" + line.placeId + "] " +
-							  String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
-							  line.msg);
-			if (!line.msg.endsWith(linebreak)) {
-				Console.ERR.print(linebreak);
+			val sstr = SString("[" + line.placeId + "] " +
+							   String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
+							   line.msg);
+			if (enableGlobalLogFile) {
+				globalLogFile.write(sstr.bytes());
+				if (!line.msg.endsWith(linebreak)) {
+					globalLogFile.write(sstrLinebreak.bytes());
+				}
+			}
+			if (enableGlobalLogPrinter) {
+				globalLogPrinter.print(sstr.toString());
+				if (!line.msg.endsWith(linebreak)) {
+					globalLogPrinter.print(linebreak);
+				}
 			}
 		}
 	}
