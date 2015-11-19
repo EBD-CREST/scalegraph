@@ -137,7 +137,7 @@ public class ApiDriver {
 
 	public var optEnableLogLocal :Boolean = false;
 	public var optEnableLogGlobal :Boolean = false;
-	public var optEnableLogSTDERR :Boolean = false;
+	public var optEnableLogStderr :Boolean = false;
 
 	public var optLogLocalFs :Int = OPT_LOG_LOCAL_FS_OS;
 	public var optLogGlobalFs :Int = OPT_LOG_GLOBAL_FS_OS;
@@ -157,7 +157,7 @@ public class ApiDriver {
 		try {
 			new ApiDriver().execute(args);
 		} catch (exception :ApiException) {
-			if (Logger.initialized) {
+			if (Logger.initialized()) {
 				Logger.recordLog(String.format("ERROR: %d", [exception.code as Any]));
 				Logger.recordLog(exception.getErrorMsg());
 				Logger.printStackTrace(exception);
@@ -166,7 +166,7 @@ public class ApiDriver {
 			}
 			System.setExitCode(exception.code);
 		} catch (exception :CheckedThrowable) {
-			if (logger.initialized) {
+			if (Logger.initialized()) {
 				Logger.recordLog(String.format("ERROR: %d", [ReturnCode.ERROR_INTERNAL as Any]));
 				Logger.printStackTrace(exception);
 			} else {
@@ -314,7 +314,7 @@ public class ApiDriver {
 						optLogLocalFs = OPT_LOG_LOCAL_FS_HDFS;
 						break;
 					case OPT_LOG_LOCAL_FILE:
-						valueLogLocalFile = spits(1);
+						valueLogLocalFile = splits(1);
 						if (valueLogLocalFile.lastIndexOf("%") < 0) {
 							throw new ApiException.OptionStringFormatException(splits(0));
 						}
@@ -322,11 +322,11 @@ public class ApiDriver {
 					case OPT_LOG_GLOBAL_FS_OS:
 						optLogGlobalFs = OPT_LOG_GLOBAL_FS_OS;
 						break;
-					case OPT_LOG_LOCAL_FS_HDFS:
+					case OPT_LOG_GLOBAL_FS_HDFS:
 						optLogGlobalFs = OPT_LOG_GLOBAL_FS_HDFS;
 						break;
 					case OPT_LOG_GLOBAL_FILE:
-						valueLogGlobalFile = spits(1);
+						valueLogGlobalFile = splits(1);
 						break;
 					case OPT_PAGERANK_DAMPING:
 						valuePagerankDamping = Double.parse(splits(1));
@@ -371,7 +371,7 @@ public class ApiDriver {
 		checkOptionValidity();
 		Logger.init(optEnableLogLocal,
 					optEnableLogGlobal,
-					optEnableLogSTDERR,
+					optEnableLogStderr,
 					FilePath(optLogLocalFs, valueLogLocalFile),
 					FilePath(optLogGlobalFs, valueLogGlobalFile),
 					Console.ERR);

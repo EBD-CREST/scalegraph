@@ -15,11 +15,12 @@ public class ReturnCode {
 	public static val SUCCESS							= 0n;
 
 	public static val ERROR_PATH_REQUIRED				= 30001n;
-	public static val ERROR_INVALID_API_NAME			= 30002n;
-	public static val ERROR_NO_OPTION_VALUE				= 30003n;
-	public static val ERROR_INVALID_OPTION_VALUE		= 30004n;
-	public static val ERROR_OPTION_REQUIRED				= 30005n;
-	public static val ERROR_OPTION_STRING_FORMAT		= 30006n;
+	public static val ERROR_INVALID_OPTION				= 30002n;
+	public static val ERROR_INVALID_API_NAME			= 30003n;
+	public static val ERROR_NO_OPTION_VALUE				= 30004n;
+	public static val ERROR_INVALID_OPTION_VALUE		= 30005n;
+	public static val ERROR_OPTION_REQUIRED				= 30006n;
+	public static val ERROR_OPTION_STRING_FORMAT		= 30007n;
 
 	public static val ERROR_INTERNAL					= 39999n;
 }

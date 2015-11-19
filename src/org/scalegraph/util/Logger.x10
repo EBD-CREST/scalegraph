@@ -35,17 +35,6 @@ public class Logger {
 	private static val linebreak = "\n";
 	private static val sstrLinebreak = SString(linebreak);
 
-	public static var initialized = false;
-
-	private static var enablePlaceLocalLogFile = false;
-	private static var enableGlobalLogFile = false;
-	private static var enableGlobalLogPrinter = false;
-	private static var placeLocalLogFilePath :FilePath;
-	private static var globalLogFilePath :FilePath;
-	private static var globalLogPrinter :Printer;
-	private static var placeLocalLogFile :GenericFile;
-	private static var globalLogFile :GenericFile;
-
 /*
 	private static val enablePlaceLocalLogFile = true;
 	private static val enableGlobalLogFile = true;
@@ -61,7 +50,54 @@ public class Logger {
 		new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
 */
 
-	static private struct LogLine {
+	private static struct Config {
+		public val initialized :Boolean;
+		public val enablePlaceLocalLogFile :Boolean;
+		public val enableGlobalLogFile :Boolean;
+		public val enableGlobalLogPrinter :Boolean;
+		public val placeLocalLogFilePath :FilePath;
+		public val globalLogFilePath :FilePath;
+		public val globalLogPrinter :Printer;
+		public val placeLocalLogFile :GenericFile;
+		public val globalLogFile :GenericFile;
+		public def this() {
+			initialized = false;
+			enablePlaceLocalLogFile = false;
+			enableGlobalLogFile = false;
+			enableGlobalLogPrinter = false;
+			placeLocalLogFilePath = FilePath(FilePath.FILEPATH_FS_OS, "");
+			globalLogFilePath = FilePath(FilePath.FILEPATH_FS_OS, "");
+			globalLogPrinter = Console.ERR;
+			placeLocalLogFile = null;
+			globalLogFile = null;
+		}
+		public def this(flagPlaceLocalLogFile :Boolean,
+						flagGlobalLogFile :Boolean,
+						flagGlobalLogPrinter :Boolean,
+						localFilePath :FilePath,
+						globalFilePath :FilePath,
+						globalPrinter :Printer) {
+			initialized = true;
+			enablePlaceLocalLogFile = flagPlaceLocalLogFile;
+			enableGlobalLogFile = flagGlobalLogFile;
+			enableGlobalLogPrinter = flagGlobalLogPrinter;
+			placeLocalLogFilePath = localFilePath;
+			globalLogFilePath = globalFilePath;
+			globalLogPrinter = globalPrinter;
+			
+			placeLocalLogFile =
+				new GenericFile(FilePath(placeLocalLogFilePath.fsType,
+										 String.format(placeLocalLogFilePath.pathString,
+													   [here.id as Any])),
+								FileMode.Append, FileAccess.Write);
+			globalLogFile =
+				new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
+		}
+	}
+
+	private static val config :Cell[Config] = new Cell[Config](Config());
+
+	private static struct LogLine {
 		public val placeId: Long;
 		public val timestamp: Long;
 		public val msg: String;
@@ -78,25 +114,21 @@ public class Logger {
 						   localFilePath :FilePath,
 						   globalFilePath :FilePath,
 						   globalPrinter :Printer) {
-		Team.WORLD.placeGroup().boradcastFlat(
+		Team.WORLD.placeGroup().broadcastFlat(
 			() => {
-				enablePlaceLocalLogFile = flagPlaceLogFile;
-				enableGlobalLogFile = flagGlobalLogFile;
-				enableGlobalLogPrinter = flagGlobalLogPrinter;
-				placeLocalLogFilePath = localFilePath;
-				globalLogFilePath = globalFilePath;
-				globalLogPrinter = globalPrinter;
-
-				placeLocalLogFile =
-					new GenericFile(FilePath(placeLocalLogFilePath.fsType,
-											 String.format(placeLocalLogFilePath.pathString,
-														   [here.id as Any])),
-									FileMode.Append, FileAccess.Write);
-				globalLogFile =
-					new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
-				initialized = true;
+				config() = Config(
+					flagPlaceLocalLogFile,
+					flagGlobalLogFile,
+					flagGlobalLogPrinter,
+					localFilePath,
+					globalFilePath,
+					globalPrinter);
 			}
 		);
+	}
+
+	public static def initialized() :Boolean {
+		return config().initialized;
 	}
 
     public static def printStackTrace(e :CheckedThrowable) {
@@ -145,7 +177,7 @@ public class Logger {
     	recordLog(obj.toString());
     }
 
-	private static def recordLog(msg: String) {
+	public static def recordLog(msg: String) {
 		logLines.add(LogLine(msg));
 	}
 
@@ -155,7 +187,7 @@ public class Logger {
     }
 
 	private atomic static def flushLocalRecords() {
-		if (enablePlaceLocalLogFile) {
+		if (config().enablePlaceLocalLogFile) {
 			for (line in logLines) {
 				val timeinsec :Long = line.timestamp / 1000000000;
 				val sec :Long = timeinsec % 60;
@@ -163,16 +195,16 @@ public class Logger {
 				val hour :Long = (timeinsec / 60 / 60) % 24;
 				val sstr = SString(String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
 								  line.msg);
-				placeLocalLogFile.write(sstr.bytes());
+				config().placeLocalLogFile.write(sstr.bytes());
 				if (!line.msg.endsWith(linebreak)) {
-					placeLocalLogFile.write(sstrLinebreak.bytes());
+					config().placeLocalLogFile.write(sstrLinebreak.bytes());
 				}
 			}
 		}
 	}
 
 	private atomic static def outputGatheredRecords(from: Long, logLinesReceived :ArrayList[LogLine]) {
-		x10.io.Console.ERR.println("======== Place: " + from + " ========");
+//		x10.io.Console.ERR.println("======== Place: " + from + " ========");
 		for (line in logLinesReceived) {
 			val timeinsec :Long = line.timestamp / 1000000000;
 			val sec :Long = timeinsec % 60;
@@ -181,16 +213,16 @@ public class Logger {
 			val sstr = SString("[" + line.placeId + "] " +
 							   String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
 							   line.msg);
-			if (enableGlobalLogFile) {
-				globalLogFile.write(sstr.bytes());
+			if (config().enableGlobalLogFile) {
+				config().globalLogFile.write(sstr.bytes());
 				if (!line.msg.endsWith(linebreak)) {
-					globalLogFile.write(sstrLinebreak.bytes());
+					config().globalLogFile.write(sstrLinebreak.bytes());
 				}
 			}
-			if (enableGlobalLogPrinter) {
-				globalLogPrinter.print(sstr.toString());
+			if (config().enableGlobalLogPrinter) {
+				config().globalLogPrinter.print(sstr.toString());
 				if (!line.msg.endsWith(linebreak)) {
-					globalLogPrinter.print(linebreak);
+					config().globalLogPrinter.print(linebreak);
 				}
 			}
 		}
