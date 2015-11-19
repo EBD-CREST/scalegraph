@@ -13,6 +13,7 @@ package org.scalegraph.util;
 
 import x10.util.ArrayList;
 import x10.util.StringBuilder;
+import x10.util.Team;
 import x10.io.Console;
 import x10.io.Printer;
 import org.scalegraph.io.FilePath;
@@ -26,13 +27,26 @@ import org.scalegraph.util.SString;
  * Buffers log messages and flushes the messages.
  * 
  * A static ArrayList logLines keeps the buffered messages on each place.
- * 
+ * StrinbBuilder buffer is used as a temprary buffer to construct stack trace message.
  */
 public class Logger {
 	private static val logLines = new ArrayList[LogLine]();
 	private static val buffer = new StringBuilder();
 	private static val linebreak = "\n";
 	private static val sstrLinebreak = SString(linebreak);
+
+	public static var initialized = false;
+
+	private static var enablePlaceLocalLogFile = false;
+	private static var enableGlobalLogFile = false;
+	private static var enableGlobalLogPrinter = false;
+	private static var placeLocalLogFilePath :FilePath;
+	private static var globalLogFilePath :FilePath;
+	private static var globalLogPrinter :Printer;
+	private static var placeLocalLogFile :GenericFile;
+	private static var globalLogFile :GenericFile;
+
+/*
 	private static val enablePlaceLocalLogFile = true;
 	private static val enableGlobalLogFile = true;
 	private static val enableGlobalLogPrinter = true;
@@ -45,6 +59,7 @@ public class Logger {
 						FileMode.Append, FileAccess.Write);
 	private static val globalLogFile =
 		new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
+*/
 
 	static private struct LogLine {
 		public val placeId: Long;
@@ -55,6 +70,33 @@ public class Logger {
 			timestamp = System.nanoTime();
 			msg = s;
 		}
+	}
+
+	public static def init(flagPlaceLocalLogFile :Boolean,
+						   flagGlobalLogFile :Boolean,
+						   flagGlobalLogPrinter :Boolean,
+						   localFilePath :FilePath,
+						   globalFilePath :FilePath,
+						   globalPrinter :Printer) {
+		Team.WORLD.placeGroup().boradcastFlat(
+			() => {
+				enablePlaceLocalLogFile = flagPlaceLogFile;
+				enableGlobalLogFile = flagGlobalLogFile;
+				enableGlobalLogPrinter = flagGlobalLogPrinter;
+				placeLocalLogFilePath = localFilePath;
+				globalLogFilePath = globalFilePath;
+				globalLogPrinter = globalPrinter;
+
+				placeLocalLogFile =
+					new GenericFile(FilePath(placeLocalLogFilePath.fsType,
+											 String.format(placeLocalLogFilePath.pathString,
+														   [here.id as Any])),
+									FileMode.Append, FileAccess.Write);
+				globalLogFile =
+					new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
+				initialized = true;
+			}
+		);
 	}
 
     public static def printStackTrace(e :CheckedThrowable) {

@@ -26,6 +26,7 @@ import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.DistMemoryChunk;
 import org.scalegraph.util.random.Random;
 import org.scalegraph.util.Parallel;
+import org.scalegraph.util.Logger;
 import org.scalegraph.id.Type;
 
 import org.scalegraph.exception.ApiException;
@@ -34,7 +35,7 @@ import x10.util.NoSuchElementException;
 public class ApiDriver {
 
 	public static val API_PASSTHROUGH	:Int = 0n;
-	public static val API_PAGERANK	:Int = 3000n;
+	public static val API_PAGERANK	:Int = 10000n;
 	
 	public static val NAME_PASSTHROUGH		:String = "passthrough";
 	public static val NAME_PAGERANK			:String = "pagerank";
@@ -80,9 +81,33 @@ public class ApiDriver {
 	public static val NAME_OUTPUT_FS_HDFS		:String = "--output-fs-hdfs";
 	public static val NAME_OUTPUT_DATA_FILE		:String = "--output-data-file";
 	
-	public static val OPT_PAGERANK_DAMPING			:Int = 3001n;
-	public static val OPT_PAGERANK_EPS				:Int = 3002n;
-	public static val OPT_PAGERANK_NITER			:Int = 3003n;
+	public static val OPT_LOG_LOCAL			:Int = 3000n;
+	public static val OPT_LOG_GLOBAL		:Int = 3100n;
+	public static val OPT_LOG_STDERR		:Int = 3200n;
+
+	public static val OPT_LOG_LOCAL_FS_OS	:Int = 3010n;
+	public static val OPT_LOG_LOCAL_FS_HDFS	:Int = 3011n;
+	public static val OPT_LOG_LOCAL_FILE	:Int = 3020n;
+
+	public static val OPT_LOG_GLOBAL_FS_OS		:Int = 3110n;
+	public static val OPT_LOG_GLOBAL_FS_HDFS	:Int = 3111n;
+	public static val OPT_LOG_GLOBAL_FILE		:Int = 3121n;
+
+	public static val NAME_LOG_LOCAL				:String = "--enable-log-local";
+	public static val NAME_LOG_GLOBAL				:String = "--enable-log-global";
+	public static val NAME_LOG_STDERR				:String = "--enable-log-stderr";
+
+	public static val NAME_LOG_LOCAL_FS_OS			:String = "--log-local-fs-os";
+	public static val NAME_LOG_LOCAL_FS_HDFS		:String = "--log-local-fs-hdfs";
+	public static val NAME_LOG_LOCAL_FILE			:String = "--log-local-file";
+
+	public static val NAME_LOG_GLOBAL_FS_OS			:String = "--log-global-fs-os";
+	public static val NAME_LOG_GLOBAL_FS_HDFS		:String = "--log-global-fs-hdfs";
+	public static val NAME_LOG_GLOBAL_FILE			:String = "--log-global-file";
+
+	public static val OPT_PAGERANK_DAMPING			:Int = 10001n;
+	public static val OPT_PAGERANK_EPS				:Int = 10002n;
+	public static val OPT_PAGERANK_NITER			:Int = 10003n;
 	
 	public static val NAME_PAGERANK_DAMPING			:String = "--damping";
 	public static val NAME_PAGERANK_EPS				:String = "--eps";
@@ -110,6 +135,16 @@ public class ApiDriver {
 	public var optOutputFs :Int = OPT_OUTPUT_FS_OS;
 	public var valueOutputDataFile :String = "";
 
+	public var optEnableLogLocal :Boolean = false;
+	public var optEnableLogGlobal :Boolean = false;
+	public var optEnableLogSTDERR :Boolean = false;
+
+	public var optLogLocalFs :Int = OPT_LOG_LOCAL_FS_OS;
+	public var optLogGlobalFs :Int = OPT_LOG_GLOBAL_FS_OS;
+
+	public var valueLogLocalFile :String = "apiDriver_%05d.log";
+	public var valueLogGlobalFile :String = "apiDriver.log";
+
 	public var valuePagerankDamping :Double = 0.05;
 	public var valuePagerankEps :Double = 0.001;
 	public var valuePagerankNiter :Int = 30n;
@@ -122,7 +157,22 @@ public class ApiDriver {
 		try {
 			new ApiDriver().execute(args);
 		} catch (exception :ApiException) {
-			exception.printError();
+			if (Logger.initialized) {
+				Logger.recordLog(String.format("ERROR: %d", [exception.code as Any]));
+				Logger.recordLog(exception.getErrorMsg());
+				Logger.printStackTrace(exception);
+			} else {
+				exception.printError();
+			}
+			System.setExitCode(exception.code);
+		} catch (exception :CheckedThrowable) {
+			if (logger.initialized) {
+				Logger.recordLog(String.format("ERROR: %d", [ReturnCode.ERROR_INTERNAL as Any]));
+				Logger.printStackTrace(exception);
+			} else {
+				exception.printStackTrace();
+			}
+			System.setExitCode(ReturnCode.ERROR_INTERNAL);
 		}
 	}
 
@@ -149,6 +199,16 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_OUTPUT_FS_OS,		OPT_OUTPUT_FS_OS);
 		dirArgKeywords.put(NAME_OUTPUT_FS_HDFS,		OPT_OUTPUT_FS_HDFS);
 		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE,	OPT_OUTPUT_DATA_FILE);
+
+		dirArgKeywords.put(NAME_LOG_LOCAL,			OPT_LOG_LOCAL);
+		dirArgKeywords.put(NAME_LOG_GLOBAL,			OPT_LOG_GLOBAL);
+		dirArgKeywords.put(NAME_LOG_STDERR,			OPT_LOG_STDERR);
+		dirArgKeywords.put(NAME_LOG_LOCAL_FS_OS,	OPT_LOG_LOCAL_FS_OS);
+		dirArgKeywords.put(NAME_LOG_LOCAL_FS_HDFS,	OPT_LOG_LOCAL_FS_HDFS);
+		dirArgKeywords.put(NAME_LOG_LOCAL_FILE,		OPT_LOG_LOCAL_FILE);
+		dirArgKeywords.put(NAME_LOG_GLOBAL_FS_OS,	OPT_LOG_GLOBAL_FS_OS);
+		dirArgKeywords.put(NAME_LOG_GLOBAL_FS_HDFS,	OPT_LOG_GLOBAL_FS_HDFS);
+		dirArgKeywords.put(NAME_LOG_GLOBAL_FILE,	OPT_LOG_GLOBAL_FILE);
 
 		dirArgKeywords.put(NAME_PAGERANK_DAMPING,	OPT_PAGERANK_DAMPING);
 		dirArgKeywords.put(NAME_PAGERANK_EPS,		OPT_PAGERANK_EPS);
@@ -238,6 +298,36 @@ public class ApiDriver {
 					case OPT_OUTPUT_DATA_FILE:
 						valueOutputDataFile = splits(1);
 						break;
+					case OPT_LOG_LOCAL:
+						optEnableLogLocal = true;
+						break;
+					case OPT_LOG_GLOBAL:
+						optEnableLogGlobal = true;
+						break;
+					case OPT_LOG_STDERR:
+						optEnableLogStderr = true;
+						break;
+					case OPT_LOG_LOCAL_FS_OS:
+						optLogLocalFs = OPT_LOG_LOCAL_FS_OS;
+						break;
+					case OPT_LOG_LOCAL_FS_HDFS:
+						optLogLocalFs = OPT_LOG_LOCAL_FS_HDFS;
+						break;
+					case OPT_LOG_LOCAL_FILE:
+						valueLogLocalFile = spits(1);
+						if (valueLogLocalFile.lastIndexOf("%") < 0) {
+							throw new ApiException.OptionStringFormatException(splits(0));
+						}
+						break;
+					case OPT_LOG_GLOBAL_FS_OS:
+						optLogGlobalFs = OPT_LOG_GLOBAL_FS_OS;
+						break;
+					case OPT_LOG_LOCAL_FS_HDFS:
+						optLogGlobalFs = OPT_LOG_GLOBAL_FS_HDFS;
+						break;
+					case OPT_LOG_GLOBAL_FILE:
+						valueLogGlobalFile = spits(1);
+						break;
 					case OPT_PAGERANK_DAMPING:
 						valuePagerankDamping = Double.parse(splits(1));
 						break;
@@ -257,6 +347,7 @@ public class ApiDriver {
 			}
 		}
 
+/*
 		Console.ERR.printf("apiDriver: %d\n", apiType);
 		Console.ERR.printf("Options:\n");
 		Console.ERR.printf("    optInputFs = %d\n", optInputFs);
@@ -275,8 +366,15 @@ public class ApiDriver {
 		Console.ERR.printf("    valuePagerankDamping = %f\n", valuePagerankDamping);
 		Console.ERR.printf("    valuePagerankEps = %f\n", valuePagerankEps);
 		Console.ERR.printf("    valuePagerankNiter = %d\n", valuePagerankNiter);
+*/
 
 		checkOptionValidity();
+		Logger.init(optEnableLogLocal,
+					optEnableLogGlobal,
+					optEnableLogSTDERR,
+					FilePath(optLogLocalFs, valueLogLocalFile),
+					FilePath(optLogGlobalFs, valueLogGlobalFile),
+					Console.ERR);
 
 		// Call API
 
