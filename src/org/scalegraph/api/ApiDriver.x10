@@ -315,7 +315,14 @@ public class ApiDriver {
 						break;
 					case OPT_LOG_LOCAL_FILE:
 						valueLogLocalFile = splits(1);
+/*
 						if (valueLogLocalFile.lastIndexOf("%") < 0) {
+							throw new ApiException.OptionStringFormatException(splits(0));
+						}
+*/
+						try {
+							checkStringFormat(valueLogLocalFile);
+						} catch (e :CheckedThrowable) {
 							throw new ApiException.OptionStringFormatException(splits(0));
 						}
 						break;
@@ -372,9 +379,8 @@ public class ApiDriver {
 		Logger.init(optEnableLogLocal,
 					optEnableLogGlobal,
 					optEnableLogStderr,
-					FilePath(optLogLocalFs, valueLogLocalFile),
-					FilePath(optLogGlobalFs, valueLogGlobalFile),
-					Console.ERR);
+					getFilePathLogLocal(),
+					getFilePathLogGlobal());
 
 		// Call API
 
@@ -391,7 +397,31 @@ public class ApiDriver {
 		}
 	}
 
+	/* Format string for local log file should contain %d so that
+	 * the Logger outputs separated files for each place.
+	 */
+	private def checkStringFormat(fmt :String) throws CheckedThrowable {
+		val tmp1 = String.format(fmt, [1234n as Any]).lastIndexOf("1234");
+		val tmp2 = String.format(fmt, [5678n as Any]).lastIndexOf("5678");
+/*
+		Console.ERR.print(String.format("===> %d, %d\n", [tmp1 as Any, tmp2]) +
+						  String.format(fmt, [1234n as Any]) + " " +
+						  String.format(fmt, [5678n as Any]));
+*/
+		assert(tmp1 > 0 && tmp2 > 0 && tmp1 == tmp2);
+	}
+
 	private def checkOptionValidity() throws ApiException {
+		if (optEnableLogLocal) {
+			if (valueLogLocalFile.length() == 0n) {
+				throw new ApiException.InvalidOptionValueException(NAME_LOG_LOCAL_FILE);
+			}
+		}
+		if (optEnableLogGlobal) {
+			if (valueLogGlobalFile.length() == 0n) {
+				throw new ApiException.InvalidOptionValueException(NAME_LOG_GLOBAL_FILE);
+			}
+		}
 		switch(apiType) {
 			case API_PASSTHROUGH:
 				if (valueOutputDataFile.length() == 0n) {
@@ -470,6 +500,40 @@ public class ApiDriver {
 			default:
 				assert(false);
 				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutputDataFile);
+		}
+		return filePath;
+	}
+
+	private def getFilePathLogLocal() {
+		val filePath :FilePath;
+		assert(valueLogLocalFile.length() > 0);
+		switch (optLogLocalFs) {
+			case OPT_LOG_LOCAL_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueLogLocalFile);
+				break;
+			case OPT_LOG_LOCAL_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueLogLocalFile);
+				break;
+			default:
+				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueLogLocalFile);
+		}
+		return filePath;
+	}
+
+	private def getFilePathLogGlobal() {
+		val filePath :FilePath;
+		assert(valueLogGlobalFile.length() > 0);
+		switch (optLogGlobalFs) {
+			case OPT_LOG_GLOBAL_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueLogGlobalFile);
+				break;
+			case OPT_LOG_GLOBAL_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueLogGlobalFile);
+				break;
+			default:
+				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueLogGlobalFile);
 		}
 		return filePath;
 	}
@@ -558,8 +622,9 @@ public class ApiDriver {
     	graph.del();
     	Config.get().stopWatch().lap("Graph construction: ");
     	val pg = new org.scalegraph.api.PageRank();
-    	pg.niter = 30n;
-    	pg.eps = 0.0;
+    	pg.niter = valuePagerankNiter;
+    	pg.eps = valuePagerankEps;
+		pg.damping = valuePagerankDamping;
     	val result = pg.execute(matrix);
 		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}

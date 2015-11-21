@@ -22,5 +22,12 @@ public struct FilePath {
 	public def this(_fsType: Int, _pathString: String) {
 		fsType = _fsType;
 		pathString = _pathString;
+		switch (fsType) {
+			case FILEPATH_FS_OS:
+			case FILEPATH_FS_HDFS:
+				break;
+			default:
+				assert(false);
+		}
 	}
 }

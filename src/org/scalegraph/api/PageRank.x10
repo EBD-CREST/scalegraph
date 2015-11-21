@@ -137,6 +137,7 @@ public final class PageRank {
 		
 		sw.lap("Retrieve output");
 		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Retrieve Output:"); }
+		sw.flush();
 		
 		return result;
 	}

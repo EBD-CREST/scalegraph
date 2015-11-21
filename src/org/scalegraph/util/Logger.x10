@@ -75,23 +75,29 @@ public class Logger {
 						flagGlobalLogFile :Boolean,
 						flagGlobalLogPrinter :Boolean,
 						localFilePath :FilePath,
-						globalFilePath :FilePath,
-						globalPrinter :Printer) {
+						globalFilePath :FilePath) {
 			initialized = true;
 			enablePlaceLocalLogFile = flagPlaceLocalLogFile;
 			enableGlobalLogFile = flagGlobalLogFile;
 			enableGlobalLogPrinter = flagGlobalLogPrinter;
 			placeLocalLogFilePath = localFilePath;
 			globalLogFilePath = globalFilePath;
-			globalLogPrinter = globalPrinter;
-			
-			placeLocalLogFile =
-				new GenericFile(FilePath(placeLocalLogFilePath.fsType,
-										 String.format(placeLocalLogFilePath.pathString,
-													   [here.id as Any])),
-								FileMode.Append, FileAccess.Write);
-			globalLogFile =
-				new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
+			globalLogPrinter = Console.ERR;
+			if (enablePlaceLocalLogFile) {
+				placeLocalLogFile =
+					new GenericFile(FilePath(placeLocalLogFilePath.fsType,
+											 String.format(placeLocalLogFilePath.pathString,
+														   [here.id as Any])),
+									FileMode.Append, FileAccess.Write);
+			} else {
+				placeLocalLogFile = null;
+			}
+			if (enableGlobalLogFile) {
+				globalLogFile =
+					new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
+			} else {
+				globalLogFile = null;
+			}
 		}
 	}
 
@@ -112,8 +118,7 @@ public class Logger {
 						   flagGlobalLogFile :Boolean,
 						   flagGlobalLogPrinter :Boolean,
 						   localFilePath :FilePath,
-						   globalFilePath :FilePath,
-						   globalPrinter :Printer) {
+						   globalFilePath :FilePath) {
 		Team.WORLD.placeGroup().broadcastFlat(
 			() => {
 				config() = Config(
@@ -121,8 +126,7 @@ public class Logger {
 					flagGlobalLogFile,
 					flagGlobalLogPrinter,
 					localFilePath,
-					globalFilePath,
-					globalPrinter);
+					globalFilePath);
 			}
 		);
 	}
