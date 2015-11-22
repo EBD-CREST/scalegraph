@@ -49,7 +49,8 @@ public:
 	void write(org::scalegraph::util::MemoryChunk<x10_byte> b);
 	void seek(x10_long offset, int origin);
 	x10_long getpos();
-
+    void flush();
+    
 	// Serialization
 	static void _serialize(NativeOSFile this_, x10aux::serialization_buffer& buf) {
 		assert (false);

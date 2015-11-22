@@ -173,6 +173,8 @@ public class ApiDriver {
 				exception.printStackTrace();
 			}
 			System.setExitCode(ReturnCode.ERROR_INTERNAL);
+		} finally {
+			Logger.closeAll();
 		}
 	}
 

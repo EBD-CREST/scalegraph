@@ -111,4 +111,17 @@ public class GenericFile {
 		}
 		return 0n;
 	}
+
+	public def flush(): void {
+		switch (fileSystem) {
+			case OS:
+				osFile.flush();
+				break;
+			case HDFS:
+				hdfsFile.flush();
+				break;
+			default:
+				assert(false);
+		}
+	}
  }

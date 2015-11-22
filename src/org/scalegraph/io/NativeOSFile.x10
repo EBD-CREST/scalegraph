@@ -38,4 +38,5 @@ import org.scalegraph.util.SString;
 	public native def write(buffer: MemoryChunk[Byte]): void;
 	public native def seek(offset: Long, origin: Int): void;
 	public native def getpos(): Long;
+	public native def flush(): void;
 }

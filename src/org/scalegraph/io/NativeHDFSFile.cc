@@ -26,6 +26,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#define HDFS_SUPPORT_APPEND
+
 namespace org { namespace scalegraph { namespace io {
 
 using namespace ::x10::lang;
@@ -62,13 +64,33 @@ void NativeHDFSFile::_constructor (org::scalegraph::util::SString name, int  fil
 	}
 	switch(fileMode) {
 	case 0: // Append
-		FMGL(flags) |= O_APPEND | O_CREAT;
+        // HDFS doesn't support O_APPEND to a file which is not exist.
+        // It can append to a existed file. HDFS configuration dfs.support.append may be required.
+        //		FMGL(flags) |= O_APPEND | O_CREAT;
+        // Some HDFS implementations (such as S3) do not support O_APPEND
+#ifdef HDFS_SUPPORT_APPEND
+        hdfsFileInfo* fileInfo;
+        fileInfo = hdfsGetPathInfo(FMGL(fs), (char*)name->c_str());
+        if (fileInfo == NULL) {
+            FMGL(flags) |= O_CREAT;
+        } else {
+            if (fileInfo->mKind == kObjectKindFile) {
+                FMGL(flags) |= O_APPEND;
+            } else {
+                x10aux::throwException(IllegalArgumentException::_make(String::Lit("Try to open a directory")));
+            }
+            hdfsFreeFileInfo(fileInfo, 1);
+        }
+#else
+		x10aux::throwException(IllegalArgumentException::_make(String::Lit("Append is not supported")));
+#endif
 		break;
 	case 1: // Create
 		FMGL(flags) |= O_CREAT | O_TRUNC;
 		break;
 	case 2: // CreateNew
-		FMGL(flags) |= O_CREAT | O_EXCL;
+        //		FMGL(flags) |= O_CREAT | O_EXCL;
+		FMGL(flags) |= O_CREAT;
 		break;
 	case 3: // Open
 		FMGL(flags) |= 0;
@@ -198,6 +220,12 @@ x10_long NativeHDFSFile::getpos() {
 	if(pos == -1)
 		x10aux::throwException(IOException::_make(String::Lit("seek error")));
     */
+}
+
+void NativeHDFSFile::flush() {
+    int ret;
+    ret = hdfsFlush(FMGL(fs), FMGL(file));
+    assert(ret == 0);
 }
 
 RTT_CC_DECLS0(NativeHDFSFile, "org.scalegraph.io.NativeHDFSFile", x10aux::RuntimeType::class_kind)

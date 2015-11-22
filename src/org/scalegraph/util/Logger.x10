@@ -92,11 +92,19 @@ public class Logger {
 			} else {
 				placeLocalLogFile = null;
 			}
-			if (enableGlobalLogFile) {
+			if (enableGlobalLogFile && here == Place.FIRST_PLACE) {
 				globalLogFile =
 					new GenericFile(globalLogFilePath, FileMode.Append, FileAccess.Write);
 			} else {
 				globalLogFile = null;
+			}
+		}
+		public def release() {
+			if (placeLocalLogFile != null) {
+				placeLocalLogFile.close();
+			}
+			if (globalLogFile != null) {
+				globalLogFile.close();
 			}
 		}
 	}
@@ -133,6 +141,20 @@ public class Logger {
 
 	public static def initialized() :Boolean {
 		return config().initialized;
+	}
+
+	public static def closeAll() :void {
+		if (here != Place.FIRST_PLACE) {
+			return;
+		}
+		Team.WORLD.placeGroup().broadcastFlat(
+			() => {
+				if (config().initialized) {
+					config().release();
+					config() = new Config();
+				}
+			}
+		);
 	}
 
     public static def printStackTrace(e :CheckedThrowable) {
@@ -204,6 +226,7 @@ public class Logger {
 					config().placeLocalLogFile.write(sstrLinebreak.bytes());
 				}
 			}
+			config().placeLocalLogFile.flush();
 		}
 	}
 
@@ -229,6 +252,9 @@ public class Logger {
 					config().globalLogPrinter.print(linebreak);
 				}
 			}
+		}
+		if (config().enableGlobalLogFile) {
+			config().globalLogFile.flush();
 		}
 	}
 

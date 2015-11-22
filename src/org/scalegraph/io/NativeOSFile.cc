@@ -117,6 +117,9 @@ x10_long NativeOSFile::getpos() {
 	return pos;
 }
 
+void NativeOSFile::flush() {
+}
+
 RTT_CC_DECLS0(NativeOSFile, "org.scalegraph.io.NativeOSFile", x10aux::RuntimeType::class_kind)
 
 }}} // namespace org { namespace scalegraph { namespace io {
