@@ -154,13 +154,41 @@ public class ApiDriver {
 	public var valuePagerankEps :Double = 0.001;
 	public var valuePagerankNiter :Int = 30n;
 
+	public var apiResult :Result;
+
+	private class Result {
+		public val status :Int;
+
+		public def this(_status :Int) {
+			status = _status;
+		}
+
+		public def toString() {
+			return String.format("\"Status\":%ld", [status as Any]);
+		}
+
+		public def write() {
+			Console.OUT.println("{" + toString() + "}");
+		}
+	}
+
+	public def setResult(_status :Int) {
+		apiResult = new Result(_status);
+	}
+
+	public def writeResult() {
+		apiResult.write();
+	}
+
 	public static def main(args: Rail[String]) {
+		val apiDriver = new ApiDriver();
+		apiDriver.setResult(ReturnCode.SUCCESS);
 		if (args.size < 1) {
 			Console.ERR.println("Usage: <api_name> [common_options] [api_options]");
 			return;
 		}
 		try {
-			new ApiDriver().execute(args);
+			apiDriver.execute(args);
 			System.setExitCode(0n);
 		} catch (exception :ApiException) {
 			if (Logger.initialized()) {
@@ -170,7 +198,8 @@ public class ApiDriver {
 			} else {
 				exception.printError();
 			}
-			System.setExitCode(exception.code);
+			apiDriver.setResult(exception.code);
+			System.setExitCode(1n);
 		} catch (exception :CheckedThrowable) {
 			if (Logger.initialized()) {
 				Logger.recordLog(String.format("ERROR: %d", [ReturnCode.ERROR_INTERNAL as Any]));
@@ -178,9 +207,11 @@ public class ApiDriver {
 			} else {
 				exception.printStackTrace();
 			}
-			System.setExitCode(ReturnCode.ERROR_INTERNAL);
+			apiDriver.setResult(ReturnCode.ERROR_INTERNAL);
+			System.setExitCode(1n);
 		} finally {
 			Logger.closeAll();
+			apiDriver.writeResult();
 		}
 	}
 
@@ -612,21 +643,6 @@ public class ApiDriver {
 		
 		return edgeMemory;
 	}
-
-    protected static def reportResult(b: boolean): void = {
-        if (b) success(); else failure();
-    }
-
-    public static def success(): void = {
-	   at (Place.FIRST_PLACE) 
-	     System.setExitCode(0n);
-    }
-
-    public static def failure(): void = {
-        at (Place.FIRST_PLACE)
-           System.setExitCode(1n);
-    }
-
 
 	public def callPassThrough(graph :Graph) {
 		CSV.write(getFilePathOutput(),
