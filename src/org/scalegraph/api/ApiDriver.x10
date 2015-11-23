@@ -24,6 +24,7 @@ import org.scalegraph.io.CSV;
 import org.scalegraph.io.FilePath;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.DistMemoryChunk;
+import org.scalegraph.util.Dist2D;
 import org.scalegraph.util.random.Random;
 import org.scalegraph.util.Parallel;
 import org.scalegraph.util.Logger;
@@ -35,10 +36,14 @@ import x10.util.NoSuchElementException;
 public class ApiDriver {
 
 	public static val API_PASSTHROUGH	:Int = 0n;
-	public static val API_PAGERANK	:Int = 10000n;
+	public static val API_PAGERANK		:Int = 10000n;
+	public static val API_MST			:Int = 20000n;
+	public static val API_DEGREEDISTRIBUTION	:Int = 30000n;
 	
-	public static val NAME_PASSTHROUGH		:String = "passthrough";
-	public static val NAME_PAGERANK			:String = "pagerank";
+	public static val NAME_PASSTHROUGH		:String = "gen";
+	public static val NAME_PAGERANK			:String = "pr";
+	public static val NAME_MST				:String = "mst";
+	public static val NAME_DEGREEDISTRIBUTION	:String = "dd";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -156,6 +161,7 @@ public class ApiDriver {
 		}
 		try {
 			new ApiDriver().execute(args);
+			System.setExitCode(0n);
 		} catch (exception :ApiException) {
 			if (Logger.initialized()) {
 				Logger.recordLog(String.format("ERROR: %d", [exception.code as Any]));
@@ -181,6 +187,8 @@ public class ApiDriver {
 	public def this() {
 		dirArgKeywords.put(NAME_PASSTHROUGH,		API_PASSTHROUGH);
 		dirArgKeywords.put(NAME_PAGERANK,			API_PAGERANK);
+		dirArgKeywords.put(NAME_MST,				API_MST);
+		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,	API_DEGREEDISTRIBUTION);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -228,6 +236,8 @@ public class ApiDriver {
 		switch (apiType) {
 			case API_PASSTHROUGH:
 			case API_PAGERANK:
+			case API_MST:
+			case API_DEGREEDISTRIBUTION:
 				break;
 			default:
 				throw new ApiException.InvalidApiNameException(args(0));
@@ -393,6 +403,12 @@ public class ApiDriver {
 			case API_PAGERANK:
 				callPagerank(makeGraph());
 				break;
+			case API_MST:
+				callMST(makeGraph());
+				break;
+			case API_DEGREEDISTRIBUTION:
+				callDegreeDistribution(makeGraph());
+				break;
 			default:
 				assert(false);
 				break;
@@ -432,6 +448,12 @@ public class ApiDriver {
 				assert(valueOutputDataFile.length() > 0n);
 				break;
 			case API_PAGERANK:
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				assert(valueOutputDataFile.length() > 0n);
+				break;
+		    case API_MST:
 				if (valueOutputDataFile.length() == 0n) {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
 				}
@@ -629,6 +651,32 @@ public class ApiDriver {
 		pg.damping = valuePagerankDamping;
     	val result = pg.execute(matrix);
 		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
+	}
+
+	public def callMST(graph :Graph) {
+    	val matrix = graph.createDistSparseMatrix[Double](
+    		Config.get().distXPregel(), "weight", false, false);
+    	// delete the graph object in order to reduce the memory consumption
+    	graph.del();
+    	Config.get().stopWatch().lap("Graph construction: ");
+    	val result = MinimumSpanningTree.run(matrix);
+		CSV.write(getFilePathOutput(), new NamedDistData(["source" as String, "target"], [result.source() as Any, result.target()]), false);
+	}
+
+	public def callDegreeDistribution(graph :Graph) {
+		var inOutDegResult :DistMemoryChunk[Long];
+	    val sw = Config.get().stopWatch();
+	    val team = graph.team();
+	    val transpose = false;
+	    val directed = false;
+	    //val distColumn = Dist2D.make1D(team, !transpose ? Dist2D.DISTRIBUTE_COLUMNS : Dist2D.DISTRIBUTE_ROWS);
+	    val distRow = Dist2D.make1D(team, Dist2D.DISTRIBUTE_ROWS);
+	    val rowDistGraph = graph.createDistEdgeIndexMatrix(distRow, directed, transpose);
+	    sw.lap("Graph construction");
+	    graph.del();
+	    inOutDegResult = DegreeDistribution.run[Long](rowDistGraph);
+	    sw.lap("Degree distribution calculation");
+	    CSV.write(getFilePathOutput(), new NamedDistData(["inoutdeg" as String], [inOutDegResult as Any]), true);
 	}
 
 }

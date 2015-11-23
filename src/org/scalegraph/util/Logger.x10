@@ -150,6 +150,7 @@ public class Logger {
 		Team.WORLD.placeGroup().broadcastFlat(
 			() => {
 				if (config().initialized) {
+					Logger.flush();
 					config().release();
 					config() = new Config();
 				}
