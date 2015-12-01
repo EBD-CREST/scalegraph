@@ -231,6 +231,7 @@ class GraphAlgorithm:
 class PageRank(GraphAlgorithm):
 
     def __init__(self):
+
         super(PageRank, self).__init__()
         self.algorithmName = 'pr'
 
@@ -240,6 +241,7 @@ class PageRank(GraphAlgorithm):
             input_rmat_scale=8,
             output_path=None, output_fs=OS,
             extra_options=[]):
+
         args = []
         args += self.checkInputArgument(input,
                                         input_path, input_fs,
@@ -250,6 +252,7 @@ class PageRank(GraphAlgorithm):
         self.callApiDriver(args, output_path, output_fs)
     
     def doTest(self):
+
         for pattern in PageRank.testPatterns:
             args = pattern["args"]
             self.cleanOutput()
@@ -274,6 +277,7 @@ class PageRank(GraphAlgorithm):
 class DegreeDistribution(GraphAlgorithm):
 
     def __init__(self):
+
         super(DegreeDistribution, self).__init__()
         self.algorithmName = 'dd'
 
@@ -283,5 +287,13 @@ class DegreeDistribution(GraphAlgorithm):
             input_rmat_scale=8,
             output_path=None, output_fs=OS,
             extra_options=[]):
-        pass
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.callApiDriver(args, output_path, output_fs)
 
