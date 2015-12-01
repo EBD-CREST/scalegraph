@@ -70,6 +70,12 @@ class TestPageRank(unittest.TestCase):
             status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                         output_path="output_pr",
                                         extra_options=99999)
+
+    def test_ErrorApiDriver(self):
+        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                        output_path="output_pr",
+                                        extra_options=["--invalid-option"])
     
     def test_OutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
@@ -77,6 +83,13 @@ class TestPageRank(unittest.TestCase):
         self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
+    def test_OutputHDFS(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_pr",
+                                    output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(status, 0)
+        self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
+        
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_pr", input_rmat_scale=12)

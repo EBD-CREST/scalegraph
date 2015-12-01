@@ -101,7 +101,7 @@ class PageRank(GraphAlgorithm):
             else:
                 raise ArgumentError("invalid output_fs")
         else:
-            raise ArgumentError("ouput_path must be a string")
+            raise ArgumentError("output_path must be a string")
         
         if type(extra_options) == list:
             args.extend(extra_options)
@@ -141,6 +141,8 @@ class PageRank(GraphAlgorithm):
                 (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
                     self.checkOutputHDFS(output_path)
             self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+        else:
+            raise ScaleGraphError("apidriver status " + str(result['Status']))
         
         return rval
 
@@ -155,6 +157,7 @@ class PageRank(GraphAlgorithm):
     def cleanOutputHDFS(self, path):
         try:
             proc = subprocess.run(['hdfs', 'dfs', '-rm', '-f', '-r', path],
+                                  stdout=subprocess.DEVNULL,
                                   stderr=subprocess.DEVNULL)
         except:
             raise ConfigError("config problem for hdfs command")
@@ -162,6 +165,7 @@ class PageRank(GraphAlgorithm):
     def checkAvailHDFS(self):
         try:
             proc = subprocess.run(['hdfs', 'dfs', '-ls', '.'],
+                                  stdout=subprocess.DEVNULL,
                                   stderr=subprocess.DEVNULL)
         except:
             raise ConfigError("failed to run hdfs command")
@@ -185,6 +189,33 @@ class PageRank(GraphAlgorithm):
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("head -1 " + path + "/part-00000",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            header = proc.stdout.splitlines()[0]
+        except:
+            raise ConfigError("output not found or check fail")
+        return (numFiles, numLines, header)
+
+    def checkOutputHDFS(self, path):
+        try:
+            proc = subprocess.run("hdfs dfs -ls " + path + "/* | wc",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numFiles = int(proc.stdout.split()[0])
+            proc = subprocess.run("hdfs dfs -cat " + path + "/* | wc",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numLines = int(proc.stdout.split()[0])
+            proc = subprocess.run("hdfs dfs -cat " + path + "/part-00000 | head -1",
                                   cwd=workDir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
