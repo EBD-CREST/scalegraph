@@ -12,3 +12,4 @@ src/Hello.x10
 x10_platform.conf
 *.gz
 *.tar
+*.pyc

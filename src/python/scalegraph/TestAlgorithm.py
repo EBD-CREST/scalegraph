@@ -14,42 +14,78 @@ from . import GraphAlgorithm
 
 class TestPageRank(unittest.TestCase):
 
+    def setUp(self):
+        self.algorithm = GraphAlgorithm.PageRank()
+
     def test_ErrorNoInput(self):
-        algorithm = GraphAlgorithm.PageRank()
         with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = algorithm.run(output_path="output_pr")
+            status = self.algorithm.run(output_path="output_pr")
 
     def test_ErrorNoInputFilePath(self):
-        algorithm = GraphAlgorithm.PageRank()
         with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = algorithm.run(input=GraphAlgorithm.FILE,
-                                   output_path="output_pr")
+            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+                                        output_path="output_pr")
             
-    def test_ErrorNotStrInputFilePath(self):
-        algorithm = GraphAlgorithm.PageRank()
+    def test_ErrorInvlidInputFs(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = algorithm.run(input=GraphAlgorithm.FILE,
-                                   input_path=123,
-                                   output_path="output_pr")
+            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+                                        input_path=123,
+                                        input_fs=99999,
+                                        output_path="output_pr")
 
+    def test_ErrorNotStrInputFilePath(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+                                        input_path=123,
+                                        output_path="output_pr")
+
+    def test_ErrorInvalidRmatScale(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                        input_rmat_scale="abc",
+                                        output_path="output_pr")
+
+    def test_ErrorInvalidInput(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=99999,
+                                        output_path="output_pr")
+            
+    def test_ErrorNoOutput(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT)
+
+    def test_ErrorInvalidOutputFs(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                        output_path="output_pr",
+                                        output_fs=99999)
+        
+    def test_ErrorNotStrOutputFilePath(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                        output_path=123)
+
+    def test_ErrorTypeExtraOptions(self):
+        with self.assertRaises(GraphAlgorithm.ArgumentError):
+            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                        output_path="output_pr",
+                                        extra_options=99999)
+    
     def test_OutputOS(self):
-        algorithm = GraphAlgorithm.PageRank()
-        status = algorithm.run(input=GraphAlgorithm.RMAT,
-                               output_path="output_pr")
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_pr")
         self.assertEqual(status, 0)
-        self.assertEqual(algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
+        self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_RmatScale(self):
-        algorithm = GraphAlgorithm.PageRank()
-        status = algorithm.run(input=GraphAlgorithm.RMAT,
-                               output_path="output_pr", input_rmat_scale=12)
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_pr", input_rmat_scale=12)
         self.assertEqual(status, 0)
-        self.assertEqual(algorithm.outputSummary, (4, 4097, 'ID<Long>,pagerank<Double>'))
+        self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,pagerank<Double>'))
 
     def test_ExtraOptions(self):
-        algorithm = GraphAlgorithm.PageRank()
-        status = algorithm.run(input=GraphAlgorithm.RMAT,
-                               output_path="output_pr",
-                               extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_pr",
+                                    extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
         self.assertEqual(status, 0)
-        self.assertEqual(algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
+        self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
