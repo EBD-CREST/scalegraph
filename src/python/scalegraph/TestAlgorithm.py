@@ -102,3 +102,8 @@ class TestPageRank(unittest.TestCase):
                                     extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
         self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
+
+
+class TestAll(TestPageRank):
+    pass
+

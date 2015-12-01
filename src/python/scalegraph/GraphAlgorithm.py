@@ -43,29 +43,15 @@ class ScaleGraphError(Exception):
 
 
 class GraphAlgorithm:
+
     def __init__(self):
         pass
 
-class PageRank(GraphAlgorithm):
-
-    def __init__(self):
-        super(PageRank, self).__init__()
-        self.algorithmName = 'pr'
+    def checkInputArgument(self, input,
+                           input_path, input_fs,
+                           input_rmat_scale):
         pass
-
-    def run(self,
-            input=None,
-            input_path=None, input_fs=OS,
-            input_rmat_scale=8,
-            output_path=None, output_fs=OS,
-            extra_options=[]):
-        
         args = []
-        self.outputNumFiles = 0
-        self.outputNumLines = 0
-        self.outputHeader = ''
-        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
-        
         if input is None:
             raise ArgumentError("input must be specified")
         elif input == FILE:
@@ -89,7 +75,11 @@ class PageRank(GraphAlgorithm):
                 raise ArgumentError("invalid input_rmat_scale")
         else:
             raise ArgumentError("invalid input")
-        
+        return args
+
+    def checkOutputArgument(self,
+                            output_path, output_fs):
+        args = []
         if output_path is None:
             raise ArgumentError("output_path must be specified")
         elif type(output_path) == str:
@@ -102,6 +92,34 @@ class PageRank(GraphAlgorithm):
                 raise ArgumentError("invalid output_fs")
         else:
             raise ArgumentError("output_path must be a string")
+        return args
+    
+
+class PageRank(GraphAlgorithm):
+
+    def __init__(self):
+        super(PageRank, self).__init__()
+        self.algorithmName = 'pr'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+        
+        args = []
+        self.outputNumFiles = 0
+        self.outputNumLines = 0
+        self.outputHeader = ''
+        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+        
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+
+        args += self.checkOutputArgument(output_path, output_fs)
+
         
         if type(extra_options) == list:
             args.extend(extra_options)
@@ -246,3 +264,19 @@ class PageRank(GraphAlgorithm):
          ["--damping=0.95", "--eps=0.002", "--niter=50"]
          }
         ]
+
+
+class DegreeDistribution(GraphAlgorithm):
+
+    def __init__(self):
+        super(DegreeDistribution, self).__init__()
+        self.algorithmName = 'dd'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+        pass
+
