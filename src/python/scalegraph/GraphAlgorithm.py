@@ -58,7 +58,7 @@ class GraphAlgorithm:
             if input_path is None:
                 raise ArgumentError("input_path must be specified")
             elif type(input_path) == str:
-                args.append("--input-data-file=" + str)
+                args.append("--input-data-file=" + input_path)
                 if input_fs == OS:
                     args.append("--input-fs-os")
                 elif input_fs == HDFS:

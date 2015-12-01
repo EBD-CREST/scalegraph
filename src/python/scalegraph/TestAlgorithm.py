@@ -119,12 +119,12 @@ class TestPageRank(TestGraphAlgorithm):
     def setUp(self):
         self.algorithm = GraphAlgorithm.PageRank()
     
-    def test_OutputOS(self):
+    def test_InputRmatOutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
-    def test_OutputHDFS(self):
+    def test_InputRmatOutputHDFS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_test",
                                     output_fs=GraphAlgorithm.HDFS)
@@ -141,19 +141,37 @@ class TestPageRank(TestGraphAlgorithm):
                                     extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
+    def test_InputOSOutputOS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test")
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           output_path="output_test")
+        self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
+    def test_InputHDFSOutputHDFS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           input_fs=GraphAlgorithm.HDFS,
+                           output_path="output_test",
+                           output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
+
+        
 class TestDegreeDistribution(TestGraphAlgorithm):
 
     def setUp(self):
         self.algorithm = GraphAlgorithm.DegreeDistribution()
 
-    def test_OutputOS(self):
+    def test_InputRmatOutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
-    def test_OutputHDFS(self):
+    def test_InputRmatOutputHDFS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_test",
                                     output_fs=GraphAlgorithm.HDFS)
@@ -166,6 +184,28 @@ class TestDegreeDistribution(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
+    def test_InputOSOutputOS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test")
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           output_path="output_test")
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
+
+
+    def test_InputHDFSOutputHDFS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           input_fs=GraphAlgorithm.HDFS,
+                           output_path="output_test",
+                           output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
+
+        
 
 if __name__ == '__main__':
     
