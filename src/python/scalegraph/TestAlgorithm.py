@@ -80,27 +80,23 @@ class TestPageRank(unittest.TestCase):
     def test_OutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_pr")
-        self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_OutputHDFS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_pr",
                                     output_fs=GraphAlgorithm.HDFS)
-        self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_pr", input_rmat_scale=12)
-        self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,pagerank<Double>'))
 
     def test_ExtraOptions(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_pr",
                                     extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
-        self.assertEqual(status, 0)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
 

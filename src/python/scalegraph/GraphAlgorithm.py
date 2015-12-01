@@ -93,76 +93,15 @@ class GraphAlgorithm:
         else:
             raise ArgumentError("output_path must be a string")
         return args
-    
 
-class PageRank(GraphAlgorithm):
-
-    def __init__(self):
-        super(PageRank, self).__init__()
-        self.algorithmName = 'pr'
-
-    def run(self,
-            input=None,
-            input_path=None, input_fs=OS,
-            input_rmat_scale=8,
-            output_path=None, output_fs=OS,
-            extra_options=[]):
-        
+    def checkExtraArgument(self,
+                           extra_options):
         args = []
-        self.outputNumFiles = 0
-        self.outputNumLines = 0
-        self.outputHeader = ''
-        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
-        
-        args += self.checkInputArgument(input,
-                                        input_path, input_fs,
-                                        input_rmat_scale)
-
-        args += self.checkOutputArgument(output_path, output_fs)
-
-        
         if type(extra_options) == list:
             args.extend(extra_options)
         else:
             raise ArgumentError("extra_options must be a list")
-        
-        if output_fs == OS:
-            self.cleanOutputOS(output_path)
-        elif output_fs == HDFS:
-            self.checkAvailHDFS()
-            self.cleanOutputHDFS(output_path)
-
-        commandline = [mpirunPath] + mpirunOpts + \
-                      [apiDriverPath, self.algorithmName] + args
-
-#        print(commandline)
-        try:
-            proc = subprocess.run(commandline,
-                                  cwd = workDir,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.DEVNULL,
-                                  universal_newlines=True)
-        except:
-            raise ConfigError("failed to mpirun apidriver")
-        
-        try:
-            result = json.loads(proc.stdout.splitlines()[0])
-            rval = int(result['Status'])
-        except:
-            raise ConfigError("unexpected stop of apidriver")
-
-        if rval == 0:
-            if output_fs == OS:
-                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputOS(output_path)
-            elif output_fs == HDFS:
-                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputHDFS(output_path)
-            self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
-        else:
-            raise ScaleGraphError("apidriver status " + str(result['Status']))
-        
-        return rval
+        return args
 
     def cleanOutputOS(self, path):
         try:
@@ -243,6 +182,72 @@ class PageRank(GraphAlgorithm):
         except:
             raise ConfigError("output not found or check fail")
         return (numFiles, numLines, header)
+
+    def cleanOutput(self, output_path, output_fs):
+        if output_fs == OS:
+            self.cleanOutputOS(output_path)
+        elif output_fs == HDFS:
+            self.checkAvailHDFS()
+            self.cleanOutputHDFS(output_path)
+
+    def callApiDriver(self, args, output_path, output_fs):
+        self.cleanOutput(output_path, output_fs)
+        self.outputNumFiles = 0
+        self.outputNumLines = 0
+        self.outputHeader = ''
+        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+
+        commandline = [mpirunPath] + mpirunOpts + \
+                      [apiDriverPath, self.algorithmName] + args
+#        print(commandline)
+
+        try:
+            proc = subprocess.run(commandline,
+                                  cwd = workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True)
+        except:
+            raise ConfigError("failed to mpirun apidriver")
+        
+        try:
+            result = json.loads(proc.stdout.splitlines()[0])
+            rval = int(result['Status'])
+        except:
+            raise ConfigError("unexpected stop of apidriver")
+
+        if rval == 0:
+            if output_fs == OS:
+                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputOS(output_path)
+            elif output_fs == HDFS:
+                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputHDFS(output_path)
+            self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+        else:
+            raise ScaleGraphError("apidriver status " + str(result['Status']))
+        
+    
+class PageRank(GraphAlgorithm):
+
+    def __init__(self):
+        super(PageRank, self).__init__()
+        self.algorithmName = 'pr'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.callApiDriver(args, output_path, output_fs)
     
     def doTest(self):
         for pattern in PageRank.testPatterns:
