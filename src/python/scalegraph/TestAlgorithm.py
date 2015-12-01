@@ -138,7 +138,7 @@ class TestPageRank(TestGraphAlgorithm):
     def test_ExtraOptions(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output_path="output_test",
-                                    extra_options=["--damping=0.95", "--eps=0.002", "--niter=50"])
+                                    extra_options=["--pr-damping=0.95", "--pr-eps=0.002", "--pr-niter=50"])
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_InputOSOutputOS(self):

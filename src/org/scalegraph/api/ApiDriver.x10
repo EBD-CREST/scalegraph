@@ -39,11 +39,13 @@ public class ApiDriver {
 	public static val API_PAGERANK		:Int = 10000n;
 	public static val API_MST			:Int = 20000n;
 	public static val API_DEGREEDISTRIBUTION	:Int = 30000n;
+	public static val API_BETWEENNESSCENTRALITY	:Int = 40000n;
 	
 	public static val NAME_PASSTHROUGH		:String = "gen";
 	public static val NAME_PAGERANK			:String = "pr";
 	public static val NAME_MST				:String = "mst";
 	public static val NAME_DEGREEDISTRIBUTION	:String = "dd";
+	public static val NAME_BETWEENNESSCENTRALITY	:String = "bc";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -114,9 +116,25 @@ public class ApiDriver {
 	public static val OPT_PAGERANK_EPS				:Int = 10002n;
 	public static val OPT_PAGERANK_NITER			:Int = 10003n;
 	
-	public static val NAME_PAGERANK_DAMPING			:String = "--damping";
-	public static val NAME_PAGERANK_EPS				:String = "--eps";
-	public static val NAME_PAGERANK_NITER			:String = "--niter";
+	public static val NAME_PAGERANK_DAMPING			:String = "--pr-damping";
+	public static val NAME_PAGERANK_EPS				:String = "--pr-eps";
+	public static val NAME_PAGERANK_NITER			:String = "--pr-niter";
+
+	public static val OPT_BC_WEIGHTED				:Int = 40001n;
+	public static val OPT_BC_DIRECTED				:Int = 40002n;
+	public static val OPT_BC_SOURCE					:Int = 40003n;
+	public static val OPT_BC_DELTA					:Int = 40004n;
+	public static val OPT_BC_NORMALIZE				:Int = 40005n;
+	public static val OPT_BC_LINEARSCALE			:Int = 40006n;
+	public static val OPT_BC_EXACTBC				:Int = 40007n;
+
+	public static val NAME_BC_WEIGHTED				:String = "--bc-weighted";
+	public static val NAME_BC_DIRECTED				:String = "--bc-directed";
+	public static val NAME_BC_SOURCE				:String = "--bc-source";
+	public static val NAME_BC_DELTA					:String = "--bc-delta";
+	public static val NAME_BC_NORMALIZE				:String = "--bc-normalize";
+	public static val NAME_BC_LINEARSCALE			:String = "--bc-linearScale";
+	public static val NAME_BC_EXACTBC				:String = "--bc-exactBC";
 
 
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
@@ -153,6 +171,14 @@ public class ApiDriver {
 	public var valuePagerankDamping :Double = 0.05;
 	public var valuePagerankEps :Double = 0.001;
 	public var valuePagerankNiter :Int = 30n;
+
+	public var valueBCWeighted :Boolean = false;
+	public var valueBCDirected :Boolean = true;
+	public var valueBCSource :Long = 0;
+	public var valueBCDelta :Int = 1n;
+	public var valueBCNormalize :Boolean = false;
+	public var valueBCLinearScale :Boolean = false;
+	public var valueBCExactBC :Boolean = false;
 
 	public var apiResult :Result;
 
@@ -220,6 +246,7 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_PAGERANK,			API_PAGERANK);
 		dirArgKeywords.put(NAME_MST,				API_MST);
 		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,	API_DEGREEDISTRIBUTION);
+		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY, API_BETWEENNESSCENTRALITY);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -254,6 +281,14 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_PAGERANK_DAMPING,	OPT_PAGERANK_DAMPING);
 		dirArgKeywords.put(NAME_PAGERANK_EPS,		OPT_PAGERANK_EPS);
 		dirArgKeywords.put(NAME_PAGERANK_NITER,		OPT_PAGERANK_NITER);
+
+		dirArgKeywords.put(NAME_BC_WEIGHTED,		OPT_BC_WEIGHTED);
+		dirArgKeywords.put(NAME_BC_DIRECTED,		OPT_BC_DIRECTED);
+		dirArgKeywords.put(NAME_BC_SOURCE,			OPT_BC_SOURCE);
+		dirArgKeywords.put(NAME_BC_DELTA,			OPT_BC_DELTA);
+		dirArgKeywords.put(NAME_BC_NORMALIZE,		OPT_BC_NORMALIZE);
+		dirArgKeywords.put(NAME_BC_LINEARSCALE,		OPT_BC_LINEARSCALE);
+		dirArgKeywords.put(NAME_BC_EXACTBC,			OPT_BC_EXACTBC);
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
@@ -269,6 +304,7 @@ public class ApiDriver {
 			case API_PAGERANK:
 			case API_MST:
 			case API_DEGREEDISTRIBUTION:
+			case API_BETWEENNESSCENTRALITY:
 				break;
 			default:
 				throw new ApiException.InvalidApiNameException(args(0));
@@ -378,6 +414,7 @@ public class ApiDriver {
 					case OPT_LOG_GLOBAL_FILE:
 						valueLogGlobalFile = splits(1);
 						break;
+
 					case OPT_PAGERANK_DAMPING:
 						valuePagerankDamping = Double.parse(splits(1));
 						break;
@@ -387,7 +424,30 @@ public class ApiDriver {
 					case OPT_PAGERANK_NITER:
 						valuePagerankNiter = Int.parse(splits(1));
 						break;
-						default:
+
+					case OPT_BC_WEIGHTED:
+						valueBCWeighted = Boolean.parse(splits(1));
+						break;
+					case OPT_BC_DIRECTED:
+						valueBCDirected = Boolean.parse(splits(1));
+						break;
+					case OPT_BC_SOURCE:
+						valueBCSource = Long.parse(splits(1));
+						break;
+					case OPT_BC_DELTA:
+						valueBCDelta = Int.parse(splits(1));
+						break;
+					case OPT_BC_NORMALIZE:
+						valueBCNoralize = Boolean.parse(splits(1));
+						break;
+					case OPT_BC_LINEARSCALE:
+						valueBCLinearScale = Boolean.parse(splits(1));
+						break;
+					case OPT_BC_EXACTBC:
+						valueBCExactBC = Boolean.parse(splits(1));
+						break;
+
+					default:
 						throw new ApiException.InvalidOptionException(splits(0));
 				}
 			} catch (e :ArrayIndexOutOfBoundsException) {
@@ -440,6 +500,9 @@ public class ApiDriver {
 			case API_DEGREEDISTRIBUTION:
 				callDegreeDistribution(makeGraph());
 				break;
+			case API_BETWEENNESSCENTRALITY:
+				callBetweennessCentrality(makeGraph());
+				break;
 			default:
 				assert(false);
 				break;
@@ -485,6 +548,12 @@ public class ApiDriver {
 				assert(valueOutputDataFile.length() > 0n);
 				break;
 		    case API_MST:
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				assert(valueOutputDataFile.length() > 0n);
+				break;
+			case API_BETWEENNESSCENTRALITY:
 				if (valueOutputDataFile.length() == 0n) {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
 				}
@@ -693,6 +762,39 @@ public class ApiDriver {
 	    inOutDegResult = DegreeDistribution.run[Long](rowDistGraph);
 	    sw.lap("Degree distribution calculation");
 	    CSV.write(getFilePathOutput(), new NamedDistData(["inoutdeg" as String], [inOutDegResult as Any]), true);
+	}
+
+	public def callBetweennessCentrality(graph :Graph) {
+		val bc = new BetweennessCentrality();
+		bc.weighted = valueBCWeighted;
+		bc.directed = valueBCDirected;
+		bc.source = [valueBCSource];
+		bc.delta = valueBCDelta;
+		bc.normalize = valueBCNormalize;
+		bc.linearSource = valueBCLinearSource;
+		bc.exactBc = valueBCExactBC;
+		if (valueBCWeighted) {
+	        val matrix = graph.createDistSparseMatrix[Double](
+	            Config.get().distXPregel(),
+	            bc.weightAttrName, bc.directed, true); 
+			val N = graph.numberOfVertices();
+			graph.del();
+		} else {
+	        val matrix = graph.createDistEdgeIndexMatrix(
+	            Config.get().distXPregel(),
+	            directed,
+	            false); 
+			val N = graph.numberOfVertices();
+			graph.del();
+		}
+		val sw = Config.get().stopWatch();
+		sw.start();
+		result = bc.execute(matrix. N);
+		sw.lap("BC elapsed time");
+
+		//CSV Write CODE 
+
+
 	}
 
 }
