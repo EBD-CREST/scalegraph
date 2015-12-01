@@ -10,11 +10,11 @@
 #
 
 import unittest
-from . import GraphAlgorithm
+import GraphAlgorithm
 
 
 class TestGraphAlgorithm(unittest.TestCase):
-    
+
     def test_ErrorNoInput(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
             status = self.algorithm.run(output_path="output_test")
@@ -24,7 +24,7 @@ class TestGraphAlgorithm(unittest.TestCase):
             status = self.algorithm.run(input=GraphAlgorithm.FILE,
                                         output_path="output_test")
             
-    def test_ErrorInvlidInputFs(self):
+    def test_ErrorInvalidInputFs(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
             status = self.algorithm.run(input=GraphAlgorithm.FILE,
                                         input_path=123,
@@ -75,12 +75,49 @@ class TestGraphAlgorithm(unittest.TestCase):
                                         output_path="output_test",
                                         extra_options=["--invalid-option"])
 
+            
+class TestGenerateGraph(TestGraphAlgorithm):
+
+    def setUp(self):
+        self.algorithm = GraphAlgorithm.GenerateGraph()
+
+    def test_ErrorNoInput(self):
+        pass
+
+    def test_ErrorNoInputFilePath(self):
+        pass
+
+    def test_ErrorInvalidInputFs(self):
+        pass
+
+    def test_ErrorNotStrInputFilePath(self):
+        pass
+
+    def test_ErrorInvalidInput(self):
+        pass
+
+    def test_OutputOS(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test")
+        self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
+
+    def test_OutputHDFS(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test",
+                                    output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
+        
+    def test_RmatScale(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test", input_rmat_scale=12)
+        self.assertEqual(self.algorithm.outputSummary, (4, 65537, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
+
+
 
 class TestPageRank(TestGraphAlgorithm):
 
     def setUp(self):
         self.algorithm = GraphAlgorithm.PageRank()
-
     
     def test_OutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
@@ -128,3 +165,16 @@ class TestDegreeDistribution(TestGraphAlgorithm):
                                     output_path="output_test", input_rmat_scale=12)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
+
+
+if __name__ == '__main__':
+    
+    suiteGenerateGraph = unittest.TestLoader().loadTestsFromTestCase(TestGenerateGraph)
+    suitePageRank = unittest.TestLoader().loadTestsFromTestCase(TestPageRank)
+    suiteDegreeDistribution = unittest.TestLoader().loadTestsFromTestCase(TestDegreeDistribution)
+    suiteAll = unittest.TestSuite([suiteGenerateGraph,
+                                   suitePageRank,
+                                   suiteDegreeDistribution])
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(suiteAll)
+    

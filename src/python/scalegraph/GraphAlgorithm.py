@@ -227,7 +227,31 @@ class GraphAlgorithm:
         else:
             raise ScaleGraphError("apidriver status " + str(result['Status']))
         
-    
+
+class GenerateGraph(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(GenerateGraph, self).__init__()
+        self.algorithmName = 'gen'
+
+    def run(self,
+            input=RMAT,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+
+        args = []
+        if type(input_rmat_scale) == int:
+            args.append("--input-data-rmat-scale=" + str(input_rmat_scale))
+        else:
+            raise ArgumentError("invalid input_rmat_scale")
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.callApiDriver(args, output_path, output_fs)
+
+        
 class PageRank(GraphAlgorithm):
 
     def __init__(self):
