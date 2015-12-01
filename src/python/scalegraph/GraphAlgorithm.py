@@ -17,10 +17,6 @@ mpirunPath = 'mpirun'
 mpirunOpts = ['-np', '4']
 workDir = '/Users/tosiyuki/EBD/scalegraph-dev'
 apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/apidriver'
-osRmCmd = ['rm', '-rf']
-hdfsBaseCmd = ['hdfs', 'dfs']
-hdfsRmCmd = hdfsBaseCmd + ['-rm', '-f', '-r']
-hdfsLsCmd = hdfsBaseCmd + ['-ls']
 
 
 OS = 231
@@ -52,10 +48,9 @@ class GraphAlgorithm:
 
 class PageRank(GraphAlgorithm):
 
-    algorithmName = 'pr'
-    
     def __init__(self):
         super(PageRank, self).__init__()
+        self.algorithmName = 'pr'
         pass
 
     def run(self,
@@ -69,6 +64,7 @@ class PageRank(GraphAlgorithm):
         self.outputNumFiles = 0
         self.outputNumLines = 0
         self.outputHeader = ''
+        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
         
         if input is None:
             raise ArgumentError("input must be specified")
@@ -97,9 +93,9 @@ class PageRank(GraphAlgorithm):
         if output_path is None:
             raise ArgumentError("output_path must be specified")
         elif type(output_path) == str:
-            args.append("--output-data-file" + output_path)
-            if ouput_fs == OS:
-                args.append("--ouput-fs-os")
+            args.append("--output-data-file=" + output_path)
+            if output_fs == OS:
+                args.append("--output-fs-os")
             elif output_fs == HDFS:
                 args.append("--output-fs-hdfs")
             else:
@@ -119,7 +115,9 @@ class PageRank(GraphAlgorithm):
             self.cleanOutputHDFS(output_path)
 
         commandline = [mpirunPath] + mpirunOpts + \
-                      [apiDriverPath, algorithmName] + args
+                      [apiDriverPath, self.algorithmName] + args
+
+#        print(commandline)
         try:
             proc = subprocess.run(commandline,
                                   cwd = workDir,
@@ -135,33 +133,35 @@ class PageRank(GraphAlgorithm):
         except:
             raise ConfigError("unexpected stop of apidriver")
 
-        if output_fs == OS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                self.checkOutputOS(output_path)
-        elif output_fs == HDFS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                self.checkOutputHDFS(output_path)
+        if rval == 0:
+            if output_fs == OS:
+                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputOS(output_path)
+            elif output_fs == HDFS:
+                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputHDFS(output_path)
+            self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
         
         return rval
 
     def cleanOutputOS(self, path):
         try:
-            subprocess.run(osRmCmd.append(path),
+            subprocess.run(['rm', '-rf', path],
                            stderr=subprocess.DEVNULL,
-                           cwd=self.workDir)
+                           cwd=workDir)
         except:
             raise ConfigError("config problem for os command")
 
     def cleanOutputHDFS(self, path):
         try:
-            proc = subprocess.run(hdfsRmCmd.append(path),
+            proc = subprocess.run(['hdfs', 'dfs', '-rm', '-f', '-r', path],
                                   stderr=subprocess.DEVNULL)
         except:
             raise ConfigError("config problem for hdfs command")
 
     def checkAvailHDFS(self):
         try:
-            proc = subprocess.run(hdfsLsCmd.append('.'),
+            proc = subprocess.run(['hdfs', 'dfs', '-ls', '.'],
                                   stderr=subprocess.DEVNULL)
         except:
             raise ConfigError("failed to run hdfs command")
@@ -171,21 +171,21 @@ class PageRank(GraphAlgorithm):
     def checkOutputOS(self, path):
         try:
             proc = subprocess.run("ls -l " + path + "/* | wc",
-                                  cwd=self.workDir,
+                                  cwd=workDir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numFiles = int(proc.stdout.split()[0])
             proc = subprocess.run("wc " + path + "/* | tail -1",
-                                  cwd=self.workDir,
+                                  cwd=workDir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("head -1 " + path + "/part-00000",
-                                  cwd=self.workDir,
+                                  cwd=workDir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
