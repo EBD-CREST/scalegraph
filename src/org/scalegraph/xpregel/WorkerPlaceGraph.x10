@@ -28,6 +28,7 @@ import org.scalegraph.util.Team2;
 import org.scalegraph.util.Parallel;
 import org.scalegraph.util.Utils;
 import org.scalegraph.util.ProfilingDB;
+import org.scalegraph.util.LogPrinter;
 
 import org.scalegraph.blas.DistSparseMatrix;
 import org.scalegraph.blas.SparseMatrix;
@@ -69,7 +70,7 @@ final class WorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	val mOutput :MemoryChunk[GrowableMemory[Int]];
 	
 	var mLogLevel :Int;
-	var mLogPrinter :Printer;
+	var mLogPrinter :LogPrinter;
 	var mEnableStatistics :Boolean = true;
 	//not using
 	var mNeedsAllUpdateInEdge :Boolean = true;

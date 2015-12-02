@@ -25,6 +25,7 @@ import org.scalegraph.util.DistMemoryChunk;
 import org.scalegraph.util.tuple.Tuple2;
 import org.scalegraph.util.Team2;
 import org.scalegraph.util.Parallel;
+import org.scalegraph.util.LogPrinter;
 import org.scalegraph.test.STest;
 
 import org.scalegraph.blas.DistSparseMatrix;
@@ -123,7 +124,7 @@ public final class XPregelGraph[V,E] /*{V haszero,E haszero}*/ implements Iterab
 	
 	public def setLogPrinter(printer :Printer, level :Int) {
 		ensurePlaceRoot();
-		mWorkers().mLogPrinter = printer;
+		mWorkers().mLogPrinter = new LogPrinter(printer);
 		mWorkers().mLogLevel = level;
 	}
 	

@@ -22,12 +22,16 @@ import org.scalegraph.graph.EdgeList;
 import org.scalegraph.io.NamedDistData;
 import org.scalegraph.io.CSV;
 import org.scalegraph.io.FilePath;
+import org.scalegraph.io.FileWriter;
+import org.scalegraph.io.FileMode;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.DistMemoryChunk;
 import org.scalegraph.util.Dist2D;
 import org.scalegraph.util.random.Random;
 import org.scalegraph.util.Parallel;
 import org.scalegraph.util.Logger;
+import org.scalegraph.util.SString;
+import org.scalegraph.util.SStringBuilder;
 import org.scalegraph.id.Type;
 
 import org.scalegraph.exception.ApiException;
@@ -35,17 +39,19 @@ import x10.util.NoSuchElementException;
 
 public class ApiDriver {
 
-	public static val API_PASSTHROUGH	:Int = 0n;
-	public static val API_PAGERANK		:Int = 10000n;
-	public static val API_MST			:Int = 20000n;
+	public static val API_PASSTHROUGH			:Int = 0n;
+	public static val API_PAGERANK				:Int = 10000n;
+	public static val API_MST					:Int = 20000n;
 	public static val API_DEGREEDISTRIBUTION	:Int = 30000n;
 	public static val API_BETWEENNESSCENTRALITY	:Int = 40000n;
+	public static val API_HYPERANF				:Int = 50000n;
 	
-	public static val NAME_PASSTHROUGH		:String = "gen";
-	public static val NAME_PAGERANK			:String = "pr";
-	public static val NAME_MST				:String = "mst";
-	public static val NAME_DEGREEDISTRIBUTION	:String = "dd";
+	public static val NAME_PASSTHROUGH				:String = "gen";
+	public static val NAME_PAGERANK					:String = "pr";
+	public static val NAME_MST						:String = "mst";
+	public static val NAME_DEGREEDISTRIBUTION		:String = "dd";
 	public static val NAME_BETWEENNESSCENTRALITY	:String = "bc";
+	public static val NAME_HYPERANF					:String = "hanf";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -136,6 +142,12 @@ public class ApiDriver {
 	public static val NAME_BC_LINEARSCALE			:String = "--bc-linearScale";
 	public static val NAME_BC_EXACTBC				:String = "--bc-exactBC";
 
+	public static val OPT_HANF_NITER				:Int = 50001n;
+	public static val OPT_HANF_B					:Int = 50002n;
+
+	public static val NAME_HANF_NITER				:String = "--hanf-niter";
+	public static val NAME_HANF_B					:String = "--hanf-b";
+
 
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
@@ -179,6 +191,10 @@ public class ApiDriver {
 	public var valueBCNormalize :Boolean = false;
 	public var valueBCLinearScale :Boolean = false;
 	public var valueBCExactBC :Boolean = false;
+
+	public var valueHANFNiter	:Int = 1000n;
+	public var valueHANFB		:Int = 7n;
+
 
 	public var apiResult :Result;
 
@@ -242,11 +258,12 @@ public class ApiDriver {
 	}
 
 	public def this() {
-		dirArgKeywords.put(NAME_PASSTHROUGH,		API_PASSTHROUGH);
-		dirArgKeywords.put(NAME_PAGERANK,			API_PAGERANK);
-		dirArgKeywords.put(NAME_MST,				API_MST);
-		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,	API_DEGREEDISTRIBUTION);
-		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY, API_BETWEENNESSCENTRALITY);
+		dirArgKeywords.put(NAME_PASSTHROUGH,			API_PASSTHROUGH);
+		dirArgKeywords.put(NAME_PAGERANK,				API_PAGERANK);
+		dirArgKeywords.put(NAME_MST,					API_MST);
+		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,		API_DEGREEDISTRIBUTION);
+		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY,	API_BETWEENNESSCENTRALITY);
+		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -289,6 +306,9 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_BC_NORMALIZE,		OPT_BC_NORMALIZE);
 		dirArgKeywords.put(NAME_BC_LINEARSCALE,		OPT_BC_LINEARSCALE);
 		dirArgKeywords.put(NAME_BC_EXACTBC,			OPT_BC_EXACTBC);
+
+		dirArgKeywords.put(NAME_HANF_NITER,			OPT_HANF_NITER);
+		dirArgKeywords.put(NAME_HANF_B,				OPT_HANF_B);
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
@@ -305,6 +325,7 @@ public class ApiDriver {
 			case API_MST:
 			case API_DEGREEDISTRIBUTION:
 			case API_BETWEENNESSCENTRALITY:
+			case API_HYPERANF:
 				break;
 			default:
 				throw new ApiException.InvalidApiNameException(args(0));
@@ -447,6 +468,13 @@ public class ApiDriver {
 						valueBCExactBC = Boolean.parse(splits(1));
 						break;
 
+					case OPT_HANF_NITER:
+						valueHANFNiter = Int.parse(splits(1));
+						break;
+					case OPT_HANF_B:
+						valueHANFB = Int.parse(splits(1));
+						break;
+
 					default:
 						throw new ApiException.InvalidOptionException(splits(0));
 				}
@@ -456,27 +484,6 @@ public class ApiDriver {
 				throw new ApiException.InvalidOptionValueException(args(i));
 			}
 		}
-
-/*
-		Console.ERR.printf("apiDriver: %d\n", apiType);
-		Console.ERR.printf("Options:\n");
-		Console.ERR.printf("    optInputFs = %d\n", optInputFs);
-		Console.ERR.printf("    optInputData = %d\n", optInputData);
-		Console.ERR.printf("    valueInputDataFile = %s\n", valueInputDataFile);
-		Console.ERR.printf("    optInputDataFileRenumbering = %s\n", optInputDataFileRenumbering ? "true" : "false");
-		Console.ERR.printf("    optInputDataFileWeight = %d\n", optInputDataFileWeight);
-		Console.ERR.printf("    valueInputDataFileWeightConstant = %f\n", valueInputDataFileWeightConstant);
-		Console.ERR.printf("    valueInputDataRmatScale = %d\n", valueInputDataRmatScale);
-		Console.ERR.printf("    valueInputDataRmatEdgefactor = %d\n", valueInputDataRmatEdgefactor);
-		Console.ERR.printf("    valueInputDataRmatA = %f\n", valueInputDataRmatA);
-		Console.ERR.printf("    valueInputDataRmatB = %f\n", valueInputDataRmatB);
-		Console.ERR.printf("    valueInputDataRmatC = %f\n", valueInputDataRmatC);
-		Console.ERR.printf("    optOutputFs = %d\n", optOutputFs);
-		Console.ERR.printf("    valueOutputDataFile = %s\n", valueOutputDataFile);
-		Console.ERR.printf("    valuePagerankDamping = %f\n", valuePagerankDamping);
-		Console.ERR.printf("    valuePagerankEps = %f\n", valuePagerankEps);
-		Console.ERR.printf("    valuePagerankNiter = %d\n", valuePagerankNiter);
-*/
 
 		checkOptionValidity();
 		Logger.init(optEnableLogLocal,
@@ -502,6 +509,9 @@ public class ApiDriver {
 				break;
 			case API_BETWEENNESSCENTRALITY:
 				callBetweennessCentrality(makeGraph());
+				break;
+			case API_HYPERANF:
+				callHyperANF(makeGraph());
 				break;
 			default:
 				assert(false);
@@ -554,6 +564,12 @@ public class ApiDriver {
 				assert(valueOutputDataFile.length() > 0n);
 				break;
 			case API_BETWEENNESSCENTRALITY:
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				assert(valueOutputDataFile.length() > 0n);
+				break;
+			case API_HYPERANF:
 				if (valueOutputDataFile.length() == 0n) {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
 				}
@@ -797,6 +813,28 @@ public class ApiDriver {
 			sw.lap("BC elapsed time");
 		}
 	    CSV.write(getFilePathOutput(), new NamedDistData(["bc" as String], [result as Any]), true);
+	}
+
+	public def callHyperANF(graph :Graph) {
+		val hyperANF = new HyperANF();
+		val result :MemoryChunk[Double];
+
+		hyperANF.niter = valueHANFNiter;
+		hyperANF.B = valueHANFB;
+
+		val matrix = graph.createDistSparseMatrix[Double](
+			Config.get().distXPregel(), "weight", true, false);
+		// delete the graph object in order to reduce the memory consumption
+		graph.del();
+		result = hyperANF.execute(matrix);
+		
+		val sb = new SStringBuilder();
+		for(i in result.range()) {
+			sb.add(result(i)).add("\n");
+		}
+		val fw = new FileWriter(getFilePathOutput(), FileMode.Create);
+		fw.write(sb.result().bytes());
+		fw.close();
 	}
 
 }

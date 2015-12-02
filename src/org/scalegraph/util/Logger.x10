@@ -199,7 +199,7 @@ public class Logger {
     	recordLog(obj.toString());
     	flush();
     }
-    
+
     public static def bufferedPrint(obj :Any) {
     	recordLog(obj.toString());
     }
