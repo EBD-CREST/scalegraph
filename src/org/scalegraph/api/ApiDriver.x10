@@ -45,6 +45,7 @@ public class ApiDriver {
 	public static val API_DEGREEDISTRIBUTION	:Int = 30000n;
 	public static val API_BETWEENNESSCENTRALITY	:Int = 40000n;
 	public static val API_HYPERANF				:Int = 50000n;
+	public static val API_STRONGLYCONNECTEDCOMPONENT	:Int = 60000n;
 	
 	public static val NAME_PASSTHROUGH				:String = "gen";
 	public static val NAME_PAGERANK					:String = "pr";
@@ -52,6 +53,7 @@ public class ApiDriver {
 	public static val NAME_DEGREEDISTRIBUTION		:String = "dd";
 	public static val NAME_BETWEENNESSCENTRALITY	:String = "bc";
 	public static val NAME_HYPERANF					:String = "hanf";
+	public static val NAME_STRONGLYCONNECTEDCOMPONENT	:String = "scc";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -88,11 +90,27 @@ public class ApiDriver {
 	
 	public static val OPT_OUTPUT_FS_OS		:Int = 2000n;
 	public static val OPT_OUTPUT_FS_HDFS	:Int = 2001n;
-	public static val OPT_OUTPUT_DATA_FILE	:Int = 2010n;
-	
+	public static val OPT_OUTPUT_DATA_FILE	:Int = 2002n;
+
+	public static val OPT_OUTPUT1_FS_OS		:Int = 2010n;
+	public static val OPT_OUTPUT1_FS_HDFS	:Int = 2011n;
+	public static val OPT_OUTPUT1_DATA_FILE	:Int = 2012n;
+
+	public static val OPT_OUTPUT2_FS_OS		:Int = 2020n;
+	public static val OPT_OUTPUT2_FS_HDFS	:Int = 2021n;
+	public static val OPT_OUTPUT2_DATA_FILE	:Int = 2022n;
+
 	public static val NAME_OUTPUT_FS_OS			:String = "--output-fs-os";
 	public static val NAME_OUTPUT_FS_HDFS		:String = "--output-fs-hdfs";
 	public static val NAME_OUTPUT_DATA_FILE		:String = "--output-data-file";
+
+	public static val NAME_OUTPUT1_FS_OS		:String = "--output1-fs-os";
+	public static val NAME_OUTPUT1_FS_HDFS		:String = "--output1-fs-hdfs";
+	public static val NAME_OUTPUT1_DATA_FILE	:String = "--output1-data-file";
+
+	public static val NAME_OUTPUT2_FS_OS		:String = "--output2-fs-os";
+	public static val NAME_OUTPUT2_FS_HDFS		:String = "--output2-fs-hdfs";
+	public static val NAME_OUTPUT2_DATA_FILE	:String = "--output2-data-file";
 	
 	public static val OPT_LOG_LOCAL			:Int = 3000n;
 	public static val OPT_LOG_GLOBAL		:Int = 3100n;
@@ -148,6 +166,12 @@ public class ApiDriver {
 	public static val NAME_HANF_NITER				:String = "--hanf-niter";
 	public static val NAME_HANF_B					:String = "--hanf-b";
 
+	public static val OPT_SCC_DIRECTED				:Int = 60001n;
+	public static val OPT_SCC_NITER					:Int = 60002n;
+
+	public static val NAME_SCC_DIRECTED				:String = "--scc-directed";
+	public static val NAME_SCC_NITER				:String = "--scc-niter";
+
 
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
@@ -169,6 +193,12 @@ public class ApiDriver {
 
 	public var optOutputFs :Int = OPT_OUTPUT_FS_OS;
 	public var valueOutputDataFile :String = "";
+
+	public var optOutput1Fs :Int = OPT_OUTPUT1_FS_OS;
+	public var valueOutput1DataFile :String = "";
+
+	public var optOutput2Fs :Int = OPT_OUTPUT2_FS_OS;
+	public var valueOutput2DataFile :String = "";
 
 	public var optEnableLogLocal :Boolean = false;
 	public var optEnableLogGlobal :Boolean = false;
@@ -194,6 +224,10 @@ public class ApiDriver {
 
 	public var valueHANFNiter	:Int = 1000n;
 	public var valueHANFB		:Int = 7n;
+
+	public var valueSCCDirected			:Boolean = true;
+	public var valueSCCNiter			:Int = 1000n;
+
 
 
 	public var apiResult :Result;
@@ -264,6 +298,7 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,		API_DEGREEDISTRIBUTION);
 		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY,	API_BETWEENNESSCENTRALITY);
 		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
+		dirArgKeywords.put(NAME_STRONGLYCONNECTEDCOMPONENT,	API_STRONGLYCONNECTEDCOMPONENT);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -284,6 +319,14 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_OUTPUT_FS_OS,		OPT_OUTPUT_FS_OS);
 		dirArgKeywords.put(NAME_OUTPUT_FS_HDFS,		OPT_OUTPUT_FS_HDFS);
 		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE,	OPT_OUTPUT_DATA_FILE);
+
+		dirArgKeywords.put(NAME_OUTPUT1_FS_OS,		OPT_OUTPUT1_FS_OS);
+		dirArgKeywords.put(NAME_OUTPUT1_FS_HDFS,	OPT_OUTPUT1_FS_HDFS);
+		dirArgKeywords.put(NAME_OUTPUT1_DATA_FILE,	OPT_OUTPUT1_DATA_FILE);
+
+		dirArgKeywords.put(NAME_OUTPUT2_FS_OS,		OPT_OUTPUT2_FS_OS);
+		dirArgKeywords.put(NAME_OUTPUT2_FS_HDFS,	OPT_OUTPUT2_FS_HDFS);
+		dirArgKeywords.put(NAME_OUTPUT2_DATA_FILE,	OPT_OUTPUT2_DATA_FILE);
 
 		dirArgKeywords.put(NAME_LOG_LOCAL,			OPT_LOG_LOCAL);
 		dirArgKeywords.put(NAME_LOG_GLOBAL,			OPT_LOG_GLOBAL);
@@ -309,6 +352,10 @@ public class ApiDriver {
 
 		dirArgKeywords.put(NAME_HANF_NITER,			OPT_HANF_NITER);
 		dirArgKeywords.put(NAME_HANF_B,				OPT_HANF_B);
+
+		dirArgKeywords.put(NAME_SCC_DIRECTED,		OPT_SCC_DIRECTED);
+		dirArgKeywords.put(NAME_SCC_NITER,			OPT_SCC_NITER);
+
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
@@ -326,6 +373,7 @@ public class ApiDriver {
 			case API_DEGREEDISTRIBUTION:
 			case API_BETWEENNESSCENTRALITY:
 			case API_HYPERANF:
+			case API_STRONGLYCONNECTEDCOMPONENT:
 				break;
 			default:
 				throw new ApiException.InvalidApiNameException(args(0));
@@ -389,6 +437,7 @@ public class ApiDriver {
 					case OPT_INPUT_DATA_RMAT_C:
 						valueInputDataRmatC = Double.parse(splits(1));
 						break;
+
 					case OPT_OUTPUT_FS_OS:
 						optOutputFs = OPT_OUTPUT_FS_OS;
 						break;
@@ -398,6 +447,27 @@ public class ApiDriver {
 					case OPT_OUTPUT_DATA_FILE:
 						valueOutputDataFile = splits(1);
 						break;
+
+					case OPT_OUTPUT1_FS_OS:
+						optOutput1Fs = OPT_OUTPUT1_FS_OS;
+						break;
+					case OPT_OUTPUT1_FS_HDFS:
+						optOutput1Fs = OPT_OUTPUT1_FS_HDFS;
+						break;
+					case OPT_OUTPUT1_DATA_FILE:
+						valueOutput1DataFile = splits(1);
+						break;
+
+					case OPT_OUTPUT2_FS_OS:
+						optOutput2Fs = OPT_OUTPUT2_FS_OS;
+						break;
+					case OPT_OUTPUT2_FS_HDFS:
+						optOutput2Fs = OPT_OUTPUT2_FS_HDFS;
+						break;
+					case OPT_OUTPUT2_DATA_FILE:
+						valueOutput2DataFile = splits(1);
+						break;
+
 					case OPT_LOG_LOCAL:
 						optEnableLogLocal = true;
 						break;
@@ -475,6 +545,13 @@ public class ApiDriver {
 						valueHANFB = Int.parse(splits(1));
 						break;
 
+					case OPT_SCC_DIRECTED:
+						valueSCCDirected = Boolean.parse(splits(1));
+						break;
+					case OPT_SCC_NITER:
+						valueSCCNiter = Int.parse(splits(1));
+						break;
+
 					default:
 						throw new ApiException.InvalidOptionException(splits(0));
 				}
@@ -512,6 +589,9 @@ public class ApiDriver {
 				break;
 			case API_HYPERANF:
 				callHyperANF(makeGraph());
+				break;
+			case API_STRONGLYCONNECTEDCOMPONENT:
+				callStronglyConnectedComponent(makeGraph());
 				break;
 			default:
 				assert(false);
@@ -574,6 +654,16 @@ public class ApiDriver {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
 				}
 				assert(valueOutputDataFile.length() > 0n);
+				break;
+			case API_STRONGLYCONNECTEDCOMPONENT:
+				if (valueOutput1DataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT1_DATA_FILE);
+				}
+				assert(valueOutput1DataFile.length() > 0n);
+				if (valueOutput2DataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT2_DATA_FILE);
+				}
+				assert(valueOutput2DataFile.length() > 0n);
 				break;
 			default:
 				break;
@@ -640,6 +730,40 @@ public class ApiDriver {
 			default:
 				assert(false);
 				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutputDataFile);
+		}
+		return filePath;
+	}
+
+	private def getFilePathOutput1() {
+		val filePath :FilePath;
+		assert(valueOutput1DataFile.length() > 0);
+		switch (optOutput1Fs) {
+			case OPT_OUTPUT1_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutput1DataFile);
+				break;
+			case OPT_OUTPUT1_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueOutput1DataFile);
+				break;
+			default:
+				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutput1DataFile);
+		}
+		return filePath;
+	}
+
+	private def getFilePathOutput2() {
+		val filePath :FilePath;
+		assert(valueOutput2DataFile.length() > 0);
+		switch (optOutput2Fs) {
+			case OPT_OUTPUT2_FS_OS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutput2DataFile);
+				break;
+			case OPT_OUTPUT2_FS_HDFS:
+				filePath = new FilePath(FilePath.FILEPATH_FS_HDFS, valueOutput2DataFile);
+				break;
+			default:
+				assert(false);
+				filePath = new FilePath(FilePath.FILEPATH_FS_OS, valueOutput2DataFile);
 		}
 		return filePath;
 	}
@@ -835,6 +959,9 @@ public class ApiDriver {
 		val fw = new FileWriter(getFilePathOutput(), FileMode.Create);
 		fw.write(sb.result().bytes());
 		fw.close();
+	}
+
+	public def callStronglyConnectedComponent(graph :Graph) {
 	}
 
 }
