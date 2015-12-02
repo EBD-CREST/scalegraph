@@ -129,7 +129,7 @@ class GraphAlgorithm:
         if proc.returncode != 0:
             raise ConfigError("no hdfs default dir")
 
-    def checkOutputOS(self, path):
+    def checkOutputDirOS(self, path):
         try:
             proc = subprocess.run("ls -l " + path + "/* | wc",
                                   cwd=workDir,
@@ -156,7 +156,34 @@ class GraphAlgorithm:
             raise ConfigError("output not found or check fail")
         return (numFiles, numLines, header)
 
-    def checkOutputHDFS(self, path):
+    def checkOutputFileOS(self, path):
+        try:
+            proc = subprocess.run("ls -l " + path + " | wc",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numFiles = int(proc.stdout.split()[0])
+            proc = subprocess.run("wc " + path,
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numLines = int(proc.stdout.split()[0])
+            proc = subprocess.run("head -1 " + path,
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            header = proc.stdout.splitlines()[0]
+        except:
+            raise ConfigError("output not found or check fail")
+        return (numFiles, numLines, header)
+    
+    def checkOutputDirHDFS(self, path):
         try:
             proc = subprocess.run("hdfs dfs -ls " + path + "/* | wc",
                                   cwd=workDir,
@@ -183,6 +210,57 @@ class GraphAlgorithm:
             raise ConfigError("output not found or check fail")
         return (numFiles, numLines, header)
 
+    def checkOutputFileHDFS(self, path):
+        try:
+            proc = subprocess.run("hdfs dfs -ls " + path + " | wc",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numFiles = int(proc.stdout.split()[0])
+            proc = subprocess.run("hdfs dfs -cat " + path + " | wc",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            numLines = int(proc.stdout.split()[0])
+            proc = subprocess.run("hdfs dfs -cat " + path + " | head -1",
+                                  cwd=workDir,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.DEVNULL,
+                                  universal_newlines=True,
+                                  shell=True)
+            header = proc.stdout.splitlines()[0]
+        except:
+            raise ConfigError("output not found or check fail")
+        return (numFiles, numLines, header)
+
+    def checkOutputDir(self, output_path, output_fs):
+        self.outputNumFiles = 0
+        self.outputNumLines = 0
+        self.outputHeader = ''
+        if output_fs == OS:
+            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputDirOS(output_path)
+        elif output_fs == HDFS:
+            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputDirHDFS(output_path)
+        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+
+    def checkOutputFile(self, output_path, output_fs):
+        self.outputNumFiles = 0
+        self.outputNumLines = 0
+        self.outputHeader = ''
+        if output_fs == OS:
+            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputFileOS(output_path)
+        elif output_fs == HDFS:
+            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
+                    self.checkOutputFileHDFS(output_path)
+        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+            
     def cleanOutput(self, output_path, output_fs):
         if output_fs == OS:
             self.cleanOutputOS(output_path)
@@ -192,10 +270,6 @@ class GraphAlgorithm:
 
     def callApiDriver(self, args, output_path, output_fs):
         self.cleanOutput(output_path, output_fs)
-        self.outputNumFiles = 0
-        self.outputNumLines = 0
-        self.outputHeader = ''
-        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
 
         commandline = [mpirunPath] + mpirunOpts + \
                       [apiDriverPath, self.algorithmName] + args
@@ -216,15 +290,7 @@ class GraphAlgorithm:
         except:
             raise ConfigError("unexpected stop of apidriver")
 
-        if rval == 0:
-            if output_fs == OS:
-                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputOS(output_path)
-            elif output_fs == HDFS:
-                (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputHDFS(output_path)
-            self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
-        else:
+        if rval != 0:
             raise ScaleGraphError("apidriver status " + str(result['Status']))
         
 
@@ -250,7 +316,8 @@ class GenerateGraph(GraphAlgorithm):
         args += self.checkExtraArgument(extra_options)
 
         self.callApiDriver(args, output_path, output_fs)
-
+        self.checkOutputDir(output_path, output_fs)
+        
         
 class PageRank(GraphAlgorithm):
 
@@ -274,6 +341,7 @@ class PageRank(GraphAlgorithm):
         args += self.checkExtraArgument(extra_options)
 
         self.callApiDriver(args, output_path, output_fs)
+        self.checkOutputDir(output_path, output_fs)
     
     def doTest(self):
 
@@ -320,6 +388,7 @@ class DegreeDistribution(GraphAlgorithm):
         args += self.checkExtraArgument(extra_options)
 
         self.callApiDriver(args, output_path, output_fs)
+        self.checkOutputDir(output_path, output_fs)
 
         
 class BetweennessCentrality(GraphAlgorithm):
@@ -344,6 +413,7 @@ class BetweennessCentrality(GraphAlgorithm):
         args += self.checkExtraArgument(extra_options)
 
         self.callApiDriver(args, output_path, output_fs)
+        self.checkOutputDir(output_path, output_fs)
     
 
 class HyperANF(GraphAlgorithm):
@@ -368,5 +438,6 @@ class HyperANF(GraphAlgorithm):
         args += self.checkExtraArgument(extra_options)
 
         self.callApiDriver(args, output_path, output_fs)
+        self.checkOutputFile(output_path, output_fs)
     
         
