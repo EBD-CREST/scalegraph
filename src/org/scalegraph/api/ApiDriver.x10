@@ -438,7 +438,7 @@ public class ApiDriver {
 						valueBCDelta = Int.parse(splits(1));
 						break;
 					case OPT_BC_NORMALIZE:
-						valueBCNoralize = Boolean.parse(splits(1));
+						valueBCNormalize = Boolean.parse(splits(1));
 						break;
 					case OPT_BC_LINEARSCALE:
 						valueBCLinearScale = Boolean.parse(splits(1));
@@ -771,30 +771,32 @@ public class ApiDriver {
 		bc.source = [valueBCSource];
 		bc.delta = valueBCDelta;
 		bc.normalize = valueBCNormalize;
-		bc.linearSource = valueBCLinearSource;
+		bc.linearScale = valueBCLinearScale;
 		bc.exactBc = valueBCExactBC;
+		var result: DistMemoryChunk[Double];
 		if (valueBCWeighted) {
 	        val matrix = graph.createDistSparseMatrix[Double](
 	            Config.get().distXPregel(),
 	            bc.weightAttrName, bc.directed, true); 
 			val N = graph.numberOfVertices();
 			graph.del();
+			val sw = Config.get().stopWatch();
+			sw.start();
+			result = bc.execute(matrix, N);
+			sw.lap("BC elapsed time");
 		} else {
 	        val matrix = graph.createDistEdgeIndexMatrix(
 	            Config.get().distXPregel(),
-	            directed,
+	            bc.directed,
 	            false); 
 			val N = graph.numberOfVertices();
 			graph.del();
+			val sw = Config.get().stopWatch();
+			sw.start();
+			result = bc.execute(matrix, N);
+			sw.lap("BC elapsed time");
 		}
-		val sw = Config.get().stopWatch();
-		sw.start();
-		result = bc.execute(matrix. N);
-		sw.lap("BC elapsed time");
-
-		//CSV Write CODE 
-
-
+	    CSV.write(getFilePathOutput(), new NamedDistData(["bc" as String], [result as Any]), true);
 	}
 
 }
