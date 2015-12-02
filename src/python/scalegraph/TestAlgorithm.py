@@ -193,7 +193,6 @@ class TestDegreeDistribution(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
-
     def test_InputHDFSOutputHDFS(self):
         gen = GraphAlgorithm.GenerateGraph()
         gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
@@ -205,6 +204,58 @@ class TestDegreeDistribution(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
+
+
+class TestBetweennessCentrality(TestGraphAlgorithm):
+
+    def setUp(self):
+        self.algorithm = GraphAlgorithm.BetweennessCentrality()
+
+    def test_InputRmatOutputOS(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test")
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
+
+    def test_InputRmatOutputHDFS(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test",
+                                    output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
+        
+    def test_RmatScale(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test", input_rmat_scale=12)
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
+
+    def test_InputOSOutputOS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test")
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           output_path="output_test")
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
+
+    def test_InputHDFSOutputHDFS(self):
+        gen = GraphAlgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
+        self.algorithm.run(input=GraphAlgorithm.FILE,
+                           input_path="input_test",
+                           input_fs=GraphAlgorithm.HDFS,
+                           output_path="output_test",
+                           output_fs=GraphAlgorithm.HDFS)
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
+
+    def test_ExtraOptions(self):
+        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+                                    output_path="output_test",
+                                    extra_options=["--bc-weighted=true"])
+        self.assertEqual(self.algorithm.outputNumFiles, 4)
+        self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
         
 
 if __name__ == '__main__':
@@ -212,9 +263,12 @@ if __name__ == '__main__':
     suiteGenerateGraph = unittest.TestLoader().loadTestsFromTestCase(TestGenerateGraph)
     suitePageRank = unittest.TestLoader().loadTestsFromTestCase(TestPageRank)
     suiteDegreeDistribution = unittest.TestLoader().loadTestsFromTestCase(TestDegreeDistribution)
+    suiteBetweennessCentrality = unittest.TestLoader().loadTestsFromTestCase(TestBetweennessCentrality)
     suiteAll = unittest.TestSuite([suiteGenerateGraph,
                                    suitePageRank,
-                                   suiteDegreeDistribution])
+                                   suiteDegreeDistribution,
+                                   suiteBetweennessCentrality])
+    suiteAll = unittest.TestSuite([suiteBetweennessCentrality])
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suiteAll)
     

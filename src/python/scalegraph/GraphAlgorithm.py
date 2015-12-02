@@ -321,3 +321,52 @@ class DegreeDistribution(GraphAlgorithm):
 
         self.callApiDriver(args, output_path, output_fs)
 
+        
+class BetweennessCentrality(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(BetweennessCentrality, self).__init__()
+        self.algorithmName = 'bc'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.callApiDriver(args, output_path, output_fs)
+    
+
+class HyperANF(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(HyperANF, self).__init__()
+        self.algorithmName = 'hanf'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.callApiDriver(args, output_path, output_fs)
+    
+        
