@@ -962,6 +962,25 @@ public class ApiDriver {
 	}
 
 	public def callStronglyConnectedComponent(graph :Graph) {
+		val scc = new StronglyConnectedComponent2();
+		scc.directed = valueSCCDirected;
+		scc.niter = valueSCCNiter;
+
+		// val result = org.scalegraph.api.StronglyConnectedComponent.run(g);
+		val result :StronglyConnectedComponent2.Result;
+		val matrix = graph.createDistSparseMatrix[Double](Config.get().distXPregel(), "weight", true, false);
+		// val matrix = g.createDistEdgeIndexMatrix(Config.get().dist1d(), true, false);
+
+		// delete the graph object in order to reduce the memory consumption
+		graph.del();
+		result = scc.execute(matrix);
+		val dmc1 = result.dmc1;
+		val dmc2 = result.dmc2;
+
+		CSV.write(getFilePathOutput1(),
+				  new NamedDistData(["sccA" as String], [dmc1 as Any]), true);
+		CSV.write(getFilePathOutput2(),
+				  new NamedDistData(["sccB" as String], [dmc2 as Any]), true);
 	}
 
 }

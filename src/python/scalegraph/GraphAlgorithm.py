@@ -94,6 +94,41 @@ class GraphAlgorithm:
             raise ArgumentError("output_path must be a string")
         return args
 
+    def checkOutput1Argument(self,
+                             output1_path, output1_fs):
+        args = []
+        if output1_path is None:
+            raise ArgumentError("output1_path must be specified")
+        elif type(output1_path) == str:
+            args.append("--output1-data-file=" + output1_path)
+            if output1_fs == OS:
+                args.append("--output1-fs-os")
+            elif output1_fs == HDFS:
+                args.append("--output1-fs-hdfs")
+            else:
+                raise ArgumentError("invalid output1_fs")
+        else:
+            raise ArgumentError("output1_path must be a string")
+        return args
+
+    def checkOutput2Argument(self,
+                             output2_path, output2_fs):
+        args = []
+        if output2_path is None:
+            raise ArgumentError("output2_path must be specified")
+        elif type(output2_path) == str:
+            args.append("--output2-data-file=" + output2_path)
+            if output2_fs == OS:
+                args.append("--output2-fs-os")
+            elif output2_fs == HDFS:
+                args.append("--output2-fs-hdfs")
+            else:
+                raise ArgumentError("invalid output2_fs")
+        else:
+            raise ArgumentError("output2_path must be a string")
+        return args
+    
+    
     def checkExtraArgument(self,
                            extra_options):
         args = []
@@ -238,29 +273,17 @@ class GraphAlgorithm:
         return (numFiles, numLines, header)
 
     def checkOutputDir(self, output_path, output_fs):
-        self.outputNumFiles = 0
-        self.outputNumLines = 0
-        self.outputHeader = ''
         if output_fs == OS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputDirOS(output_path)
+            return self.checkOutputDirOS(output_path)
         elif output_fs == HDFS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputDirHDFS(output_path)
-        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
+            return self.checkOutputDirHDFS(output_path)
 
     def checkOutputFile(self, output_path, output_fs):
-        self.outputNumFiles = 0
-        self.outputNumLines = 0
-        self.outputHeader = ''
         if output_fs == OS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputFileOS(output_path)
+            return self.checkOutputFileOS(output_path)
         elif output_fs == HDFS:
-            (self.outputNumFiles, self.outputNumLines, self.outputHeader) = \
-                    self.checkOutputFileHDFS(output_path)
-        self.outputSummary = (self.outputNumFiles, self.outputNumLines, self.outputHeader)
-            
+            return self.checkOutputFileHDFS(output_path)
+
     def cleanOutput(self, output_path, output_fs):
         if output_fs == OS:
             self.cleanOutputOS(output_path)
@@ -268,9 +291,8 @@ class GraphAlgorithm:
             self.checkAvailHDFS()
             self.cleanOutputHDFS(output_path)
 
-    def callApiDriver(self, args, output_path, output_fs):
-        self.cleanOutput(output_path, output_fs)
-
+    def callApiDriver(self, args):
+       
         commandline = [mpirunPath] + mpirunOpts + \
                       [apiDriverPath, self.algorithmName] + args
 #        print(commandline)
@@ -315,9 +337,9 @@ class GenerateGraph(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
-        self.callApiDriver(args, output_path, output_fs)
-        self.checkOutputDir(output_path, output_fs)
-        
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputDir(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary           
         
 class PageRank(GraphAlgorithm):
 
@@ -340,31 +362,10 @@ class PageRank(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
-        self.callApiDriver(args, output_path, output_fs)
-        self.checkOutputDir(output_path, output_fs)
-    
-    def doTest(self):
-
-        for pattern in PageRank.testPatterns:
-            args = pattern["args"]
-            self.cleanOutput()
-            status = self.run(args)
-            print(status)
-            output = self.checkOutput()
-            print(output)
-
-    testPatterns = [
-        {"args":
-         []
-         },
-        {"args":
-         ["--input-data-rmat-scale=12"]
-         },
-        {"args":
-         ["--damping=0.95", "--eps=0.002", "--niter=50"]
-         }
-        ]
-
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputDir(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary       
 
 class DegreeDistribution(GraphAlgorithm):
 
@@ -387,8 +388,10 @@ class DegreeDistribution(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
-        self.callApiDriver(args, output_path, output_fs)
-        self.checkOutputDir(output_path, output_fs)
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputDir(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary   
 
         
 class BetweennessCentrality(GraphAlgorithm):
@@ -412,10 +415,13 @@ class BetweennessCentrality(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
-        self.callApiDriver(args, output_path, output_fs)
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
         self.checkOutputDir(output_path, output_fs)
-    
+        self.outputSummary = self.checkOutputDir(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary   
 
+        
 class HyperANF(GraphAlgorithm):
 
     def __init__(self):
@@ -437,7 +443,39 @@ class HyperANF(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
-        self.callApiDriver(args, output_path, output_fs)
-        self.checkOutputFile(output_path, output_fs)
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputFile(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary   
+
+
+class StronglyConnectedComponent(GraphAlgorithm):
     
-        
+    def __init__(self):
+
+        super(StronglyConnectedComponent, self).__init__()
+        self.algorithmName = 'scc'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output1_path=None, output1_fs=OS,
+            output2_path=None, output2_fs=OS,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutput1Argument(output1_path, output1_fs)
+        args += self.checkOutput2Argument(output2_path, output2_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.cleanOutput(output1_path, output1_fs)
+        self.cleanOutput(output2_path, output2_fs)
+        self.callApiDriver(args)
+        self.output1Summary = self.checkOutputDir(output1_path, output1_fs)
+        (self.output1NumFiles, self.output1NumLines, self.output1Header) = self.output1Summary   
+        self.output2Summary = self.checkOutputDir(output2_path, output2_fs)
+        (self.output2NumFiles, self.output2NumLines, self.output2Header) = self.output2Summary   
