@@ -38,7 +38,7 @@ public struct GlobalMemoryChunk[T](
 	public static def make[T](mc :MemoryChunk[T]) = new GlobalMemoryChunk[T](mc);
 	
 	public def subpart(offset :Long, size :Long): GlobalMemoryChunk[T] {
-		return new GlobalMemoryChunk[T](mc()().subpart(offset, size));
+		return new GlobalMemoryChunk[T](mc.getLocalOrCopy()().subpart(offset, size));
 	}
 
 	/**

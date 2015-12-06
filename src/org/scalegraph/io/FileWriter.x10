@@ -6,40 +6,35 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
 package org.scalegraph.io;
 
-import x10.io.File;
-import x10.io.IOException;
-
-// import org.scalegraph.util.SString;
 import org.scalegraph.util.MemoryChunk;
-import org.scalegraph.util.SString;
 
 public class FileWriter {
-	private transient val nf: NativeFile;
+	private transient val gf: GenericFile;
 	private var fileOffset: Long;
 	
-	public def this(path: SString, fileMode :Int) {
-		nf = new NativeFile(path, fileMode, FileAccess.Write);
+	public def this(filePath :FilePath, fileMode :Int) {
+		gf = new GenericFile(filePath, fileMode, FileAccess.Write);
 		fileOffset = 0L;
 	}
 	
 	public def reset():void {
 		fileOffset = 0L;
-		nf.seek(0L, NativeFile.BEGIN);
+		gf.seek(0L, GenericFile.BEGIN);
 	}
 
 	public def skip(n: Long):void {
 		fileOffset += n;
-		nf.seek(n, NativeFile.CURRENT);
+		gf.seek(n, GenericFile.CURRENT);
 	}
 
 	public def close():void {
 		fileOffset = 0L;
-		nf.close();
+		gf.close();
 	}
 	
 	public def currentOffset(): Long {
@@ -47,8 +42,9 @@ public class FileWriter {
 	}
 	
 	public def write(b: MemoryChunk[Byte]) {
-		nf.write(b);
+		gf.write(b);
 	}
+
 	/*
 	public def write(str: SString) {
 		write(str.bytes());

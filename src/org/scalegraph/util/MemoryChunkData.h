@@ -93,7 +93,7 @@ namespace org { namespace scalegraph { namespace util {
 					}
 					ExpMemState.envThreshold+=tmpSize;
 				}
-				if(__ORG_SCALEGRAPH_UTIL_MEMORYCHUNKDATA_PRINT||1){
+				if(__ORG_SCALEGRAPH_UTIL_MEMORYCHUNKDATA_PRINT){
 					printf("threashold:%ld%s\n",ExpMemState.envThreshold ,ExpMemState.envThreshold ? "" : "default");
 				}
 			}

@@ -6,19 +6,20 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  *
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 package org.scalegraph.io.impl;
 
 import x10.util.Team;
 import x10.util.concurrent.Monitor; 
-import x10.io.File;
 import x10.io.IOException;
 
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.GrowableMemory;
 import org.scalegraph.util.SString;
+import org.scalegraph.io.GenericFileSystem;
 import org.scalegraph.io.FileReader;
+import org.scalegraph.io.FilePath;
 import org.scalegraph.test.STest;
 import org.scalegraph.Config;
 import x10.compiler.Ifdef;
@@ -49,11 +50,11 @@ public abstract class InputSplitter {
 	// End of InputSplitter definition //
 	
 	public static struct InputSplit {
-		public val path : SString;
+		public val path : FilePath;
 		public val start : Long;
 		public val end : Long;
 		
-		public def this(path : SString, start : Long, end : Long) {
+		public def this(path : FilePath, start : Long, end : Long) {
 			this.path = path;
 			this.start = start;
 			this.end = end;
@@ -191,13 +192,13 @@ public abstract class InputSplitter {
 		for(path in fman) {
 			val fileSize :Long;
 			if(numFiles == 0L) {
-				fileSize = new File(path.toString()).size() - offset;
+				fileSize = new GenericFileSystem(path).size() - offset;
 				if(fileSize < 0) {
 					throw new IOException("The first file must include whole header.");
 				}
 			}
 			else {
-				fileSize = new File(path.toString()).size();
+				fileSize = new GenericFileSystem(path).size();
 			}
 			allSize += fileSize;
 			++numFiles;
@@ -206,7 +207,7 @@ public abstract class InputSplitter {
 		var headerFile :Boolean = true;
 
 		for(path in fman) {
-			val file = new File(path.toString());
+			val file = new GenericFileSystem(path);
 			val fileOffset :Long;
 			if(headerFile) {
 				fileOffset = offset;

@@ -6,29 +6,33 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  *
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 package org.scalegraph.io.impl;
 
-import x10.io.File;
-
-import org.scalegraph.util.SString;
 import org.scalegraph.io.FileReader;
 import org.scalegraph.io.FileWriter;
 import org.scalegraph.io.FileMode;
+import org.scalegraph.io.GenericFileSystem;
+import org.scalegraph.io.FilePath;
 
-public abstract class FileNameProvider implements Iterable[SString] {
-	protected val path : SString;
-	public def this(path : SString) {
-		this.path = path;
+public abstract class FileNameProvider implements Iterable[FilePath] {
+	protected val filePath :FilePath;
+	public def this(_filePath :FilePath) {
+		this.filePath = _filePath;
 	}
 	public abstract def isScattered() : Boolean;
-	public abstract def fileName(index :Int) :SString;
+	public abstract def getIndexedFileName(index :Int) :String;
+	public def getIndexedFilePath(index :Int) =
+		new FilePath(filePath.fsType, getIndexedFileName(index));
+	public def getFilePath(path :String) =
+		new FilePath(filePath.fsType, path);
 	public def mkdir() {
 		// default method assumes the path pointing to the normal file
-		val last_sep = path.lastIndexOf(File.SEPARATOR);
+		val path = filePath.pathString;
+		val last_sep = path.lastIndexOf(GenericFileSystem.SEPARATOR);
 		if(last_sep > 0) {
-			(new File(path.substring(0n, last_sep).toString())).mkdirs();
+			(new GenericFileSystem(getFilePath(path.substring(0n, last_sep)))).mkdirs();
 		}
 	}
 	public abstract def deleteFile() :void;
@@ -37,25 +41,28 @@ public abstract class FileNameProvider implements Iterable[SString] {
 	
 	// End of FileNameProvider definition //
 	
-	private static class PathIterator implements Iterator[SString] {
+	private static class PathIterator implements Iterator[FilePath] {
 		private val th :FileNameProvider;
 		private var index :Int;
 		public def this(th :FileNameProvider) { index = 0n; this.th = th; }
-		public def hasNext() = new File(th.fileName(index).toString()).exists();
-		public def next() = th.fileName(index++);
+		public def hasNext() = 
+			(new GenericFileSystem(th.getIndexedFilePath(index))).exists();
+		public def next() = th.getIndexedFilePath(index++);
 	}
 
 	private static class SingleFileNameProvider extends FileNameProvider {
-		public def this(path : SString) {
-			super(path);
+		public def this(_filePath : FilePath) {
+			super(_filePath);
 		}
 		public def isScattered() = false;
-		public def fileName(index :Int) = path;
+		public def getIndexedFileName(index :Int) = filePath.pathString;
 		public def deleteFile() {
-			(new File(path.toString())).delete();
+			(new GenericFileSystem(filePath)).delete();
 		}
-		public def openRead(index :Int) = new FileReader(path);
-		public def openWrite(index :Int) = new FileWriter(path, FileMode.Create);
+		public def openRead(index :Int) = 
+			new FileReader(filePath);
+		public def openWrite(index :Int) = 
+			new FileWriter(filePath, FileMode.Create);
 		
 		private static class SinglePathIterator extends PathIterator {
 			public def this(th :FileNameProvider) { super(th); }
@@ -65,42 +72,50 @@ public abstract class FileNameProvider implements Iterable[SString] {
 	}
 
 	private static class NumberScatteredFileNameProvider extends FileNameProvider {
-		public def this(path : SString) {
-			super(path);
+		public def this(_filePath : FilePath) {
+			super(_filePath);
 		}
 		public def isScattered() = true;
-		public def fileName(index :Int) = SString.format(path, index);
+		public def getIndexedFileName(index :Int) :String {
+			return String.format(filePath.pathString, [index as Any]);
+		}
 		public def deleteFile() {
 			var index :Int = 0n;
 			do {
-				val file = new File(fileName(index).toString());
+				val file = new GenericFileSystem(getIndexedFilePath(index));
 				if (!file.exists()) break;
 				file.delete();
 			} while(true);
 		}
-		public def openRead(index :Int) = new FileReader(fileName(index));
-		public def openWrite(index :Int) = new FileWriter(fileName(index), FileMode.Create);
+		public def openRead(index :Int) = 
+			new FileReader(getIndexedFilePath(index));
+		public def openWrite(index :Int) = 
+			new FileWriter(getIndexedFilePath(index), FileMode.Create);
 		public def iterator() = new PathIterator(this);
 		
 	}
 
 	private static class DirectoryScatteredFileNameProvider extends FileNameProvider {
-		public def this(path : SString) {
-			super(path);
+		public def this(_filePath : FilePath) {
+			super(_filePath);
 		}
 		public def isScattered() = true;
-		public def fileName(index :Int) = SString.format("%s/part-%05d" as SString, path.c_str(), index);
+		public def getIndexedFileName(index :Int) :String { 
+			return String.format("%s/part-%05d" as String, [filePath.pathString, index]);
+		}
 		public def mkdir() {
-			(new File(path.toString())).mkdirs();
+			(new GenericFileSystem(filePath)).mkdirs();
 		}
 		public def deleteFile() {
-			val dir = new File(path.toString());
+			val dir = new GenericFileSystem(filePath);
 			for(i in 0..(dir.list().size-1)) {
-				new File(fileName(i as Int).toString()).delete();
+				new GenericFileSystem(getIndexedFilePath(i as Int)).delete();
 			}
 		}
-		public def openRead(index :Int) = new FileReader(fileName(index));
-		public def openWrite(index :Int) = new FileWriter(fileName(index), FileMode.Create);
+		public def openRead(index :Int) = 
+			new FileReader(getIndexedFilePath(index));
+		public def openWrite(index :Int) = 
+			new FileWriter(getIndexedFilePath(index), FileMode.Create);
 		public def iterator() = new PathIterator(this);
 		
 	}
@@ -110,30 +125,31 @@ public abstract class FileNameProvider implements Iterable[SString] {
 	 * @param path filename passed by user
 	 * @param scattered hint to choose file manager
 	 */
-	private static def create(path :SString, isRead :Boolean, scattered :Boolean) {
+	private static def create(filePath :FilePath, isRead :Boolean, scattered :Boolean) {
+		val path = filePath.pathString;
 		val num_pos = path.indexOf("%d");
 		if(num_pos != -1n) {
-			val last_sep = path.lastIndexOf(File.SEPARATOR);
+			val last_sep = path.lastIndexOf(GenericFileSystem.SEPARATOR);
 			if(last_sep > num_pos) {
 				throw new IllegalArgumentException("Number position may not be on a directory name.");
 			}
-			return new NumberScatteredFileNameProvider(path);
+			return new NumberScatteredFileNameProvider(filePath);
 		}
 		if(isRead) {
-			val file = new File(path.toString());
+			val file = new GenericFileSystem(filePath);
 			if(file.isFile()) {
-				return new SingleFileNameProvider(path);
+				return new SingleFileNameProvider(filePath);
 			}
 			if(file.isDirectory()) {
-				return new DirectoryScatteredFileNameProvider(path);
+				return new DirectoryScatteredFileNameProvider(filePath);
 			}
 			throw new IllegalArgumentException("Provided path does not name a file nor a directory.");
 		}
 		else {
 			if(scattered) {
-				return new DirectoryScatteredFileNameProvider(path);
+				return new DirectoryScatteredFileNameProvider(filePath);
 			}
-			return new SingleFileNameProvider(path);
+			return new SingleFileNameProvider(filePath);
 		}
 	}
 	
@@ -142,14 +158,14 @@ public abstract class FileNameProvider implements Iterable[SString] {
 	 * @param path filename passed by user
 	 * @param scattered hint to choose file manager
 	 */
-	public static def createForRead(path :SString)
-			= create(path, true, false);
+	public static def createForRead(filePath :FilePath)
+			= create(filePath, true, false);
 	
 	/**
 	 * Creates appropriate file manager instance.
 	 * @param path filename passed by user
 	 * @param scattered hint to choose file manager
 	 */
-	public static def createForWrite(path :SString, scattered :Boolean)
-			= create(path, false, scattered);
+	public static def createForWrite(filePath :FilePath, scattered :Boolean)
+			= create(filePath, false, scattered);
 }

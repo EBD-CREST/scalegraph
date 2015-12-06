@@ -291,7 +291,7 @@ public final class StronglyConnectedComponent2 {
 			sum += cl()();
 			
 			if(recursion>1 && sum==0L) {
-				Console.OUT.println("endofRecursion" + recursion );
+				Logger.print("endofRecursion" + recursion );
 				break;
 			}
 			numOfCluster += sum;

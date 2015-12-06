@@ -22,14 +22,27 @@ public final class CSV {
 	public static def read(path :SString, columnDef :Rail[Int], includeHeader :Boolean) {
 		return CSVReader.read(Config.get().worldTeam(), path, columnDef, null, includeHeader);
 	}
+
+	public static def read(path :FilePath, columnDef :Rail[Int], includeHeader :Boolean) {
+		return CSVReader.read(Config.get().worldTeam(), path, columnDef, null, includeHeader);
+	}
 	
 	/** Read a CSV File */
 	public static def read(path :SString, columnDef :Rail[Int], columnNames :Rail[String]) {
 		return CSVReader.read(Config.get().worldTeam(), path, columnDef, columnNames, false);
 	}
 	
+	public static def read(path :FilePath, columnDef :Rail[Int], columnNames :Rail[String]) {
+		return CSVReader.read(Config.get().worldTeam(), path, columnDef, columnNames, false);
+	}
+	
+
 	/** Write data as a CSV File */
 	public static def write(path :SString, data :NamedDistData, setNumFlag :Boolean) {
+		CSVWriter.write(Config.get().worldTeam(), path, data,setNumFlag);
+	}
+
+	public static def write(path :FilePath, data :NamedDistData, setNumFlag :Boolean) {
 		CSVWriter.write(Config.get().worldTeam(), path, data,setNumFlag);
 	}
 	

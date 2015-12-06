@@ -6,7 +6,7 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 #include <x10aux/config.h>
 
@@ -18,7 +18,7 @@
 #include <org/scalegraph/util/SString.h>
 #include <org/scalegraph/util/MemoryChunk.h>
 
-#include <org/scalegraph/io/NativeFile.h>
+#include <org/scalegraph/io/NativeOSFile.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -33,13 +33,13 @@ using ::x10::io::FileNotFoundException;
 using ::x10::io::IOException;
 using ::x10::lang::IllegalArgumentException;
 
-NativeFile NativeFile::_make(org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
-	NativeFile ret;
+NativeOSFile NativeOSFile::_make(org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
+	NativeOSFile ret;
 	ret._constructor(name, fileMode, fileAccess);
 	return ret;
 }
 
-void NativeFile::_constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
+void NativeOSFile::_constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
 	int flags = 0;
 	switch(fileAccess) {
 	case 0: // Read
@@ -82,27 +82,27 @@ void NativeFile::_constructor (org::scalegraph::util::SString name, int  fileMod
 				String::__plus(name->toString(), x10aux::makeStringLit(" -> ERRNO: ")), (x10_int)errno)));
 }
 
-void NativeFile::close() {
+void NativeOSFile::close() {
 	if(FMGL(fd) != -1) {
 		::close(FMGL(fd));
 		FMGL(fd) = -1;
 	}
 }
 
-x10_long NativeFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
+x10_long NativeOSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
 	int readBytes = ::read(FMGL(fd), b.pointer(), b.size());
 	if(readBytes == -1)
 		x10aux::throwException(IOException::_make(String::Lit("read error")));
 	return readBytes;
 }
 
-void NativeFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
+void NativeOSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
 	int writeBytes = ::write(FMGL(fd), b.pointer(), b.size());
 	if(writeBytes != b.size())
 		x10aux::throwException(IOException::_make(String::Lit("write error")));
 }
 
-void NativeFile::seek(x10_long offset, int origin) {
+void NativeOSFile::seek(x10_long offset, int origin) {
 	if(origin < 0 || origin > 2)
 		x10aux::throwException(FileNotFoundException::_make());
 	int map[] = {SEEK_SET, SEEK_CUR, SEEK_END};
@@ -110,13 +110,16 @@ void NativeFile::seek(x10_long offset, int origin) {
 		x10aux::throwException(IOException::_make(String::Lit("seek error")));
 }
 
-x10_long NativeFile::getpos() {
+x10_long NativeOSFile::getpos() {
 	x10_long pos = ::lseek(FMGL(fd), 0, SEEK_CUR);
 	if(pos == -1)
 		x10aux::throwException(IOException::_make(String::Lit("seek error")));
 	return pos;
 }
 
-RTT_CC_DECLS0(NativeFile, "org.scalegraph.io.NativeFile", x10aux::RuntimeType::class_kind)
+void NativeOSFile::flush() {
+}
+
+RTT_CC_DECLS0(NativeOSFile, "org.scalegraph.io.NativeOSFile", x10aux::RuntimeType::class_kind)
 
 }}} // namespace org { namespace scalegraph { namespace io {

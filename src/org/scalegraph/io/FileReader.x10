@@ -6,12 +6,11 @@
  *  You may obtain a copy of the License at
  *      http://www.opensource.org/licenses/eclipse-1.0.php
  * 
- *  (C) Copyright ScaleGraph Team 2011-2012.
+ *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
 package org.scalegraph.io;
 
-import x10.io.File;
 import x10.io.EOFException;
 
 import org.scalegraph.util.GrowableMemory;
@@ -20,14 +19,14 @@ import org.scalegraph.util.SString;
 
 public final class FileReader {
 	private static val BUFFER_SIZE = 128*1024L;
-	private transient val nf: NativeFile;
+	private transient val nf: GenericFile;
 	private val buffer: GrowableMemory[Byte];
 	private var offset: Long;
 	private var length: Long;
 	private var fileOffset: Long;
 	
-	public def this(path: SString) {
-		nf = new NativeFile(path, FileMode.Open, FileAccess.Read);
+	public def this(filePath :FilePath) {
+		nf = new GenericFile(filePath, FileMode.Open, FileAccess.Read);
 		buffer = new GrowableMemory[Byte]();
 		buffer.setSize(BUFFER_SIZE);
 		offset = length = 0L;
@@ -37,7 +36,7 @@ public final class FileReader {
 	public def reset():void {
 		offset = length = 0L;
 		fileOffset = 0L;
-		nf.seek(0L, NativeFile.BEGIN);
+		nf.seek(0L, GenericFile.BEGIN);
 	}
 
 	public def skip(n: Long):void {
@@ -48,7 +47,7 @@ public final class FileReader {
 		}
 		else {
 			offset = length = 0L;
-			nf.seek(n - buffered, NativeFile.CURRENT);
+			nf.seek(n - buffered, GenericFile.CURRENT);
 		}
 	}
 

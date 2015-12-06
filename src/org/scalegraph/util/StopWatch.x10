@@ -10,8 +10,6 @@
  */
 package org.scalegraph.util;
 
-import org.scalegraph.test.STest;
-
 public final class StopWatch {
 	var startTime :Long;
 	var prevTime :Long;
@@ -30,7 +28,12 @@ public final class StopWatch {
 		val elapsedTime = (curTime - startTime) as Double / 1000000.0;
 		prevTime = curTime;
 //		STest.println(message + ": " + lapTime + " ms: " + elapsedTime + " ms elapsed: Memory: " + (MemoryChunk.getMemSize() / 1000000.0) + " MB");
-		STest.println(message + ": " + lapTime + " ms: " + elapsedTime + " ms elapsed: Memory:G " + (MemoryChunk.getGCMemSize() / 1000000.0) + " MB " + (MemoryChunk.getExpMemSize() / 1000000.0) + " MB ");
+//		STest.println(message + ": " + lapTime + " ms: " + elapsedTime + " ms elapsed: Memory:G " + (MemoryChunk.getGCMemSize() / 1000000.0) + " MB " + (MemoryChunk.getExpMemSize() / 1000000.0) + " MB ");
+		Logger.recordLog(message + ": " + lapTime + " ms: " + elapsedTime + " ms elapsed: Memory:G " + (MemoryChunk.getGCMemSize() / 1000000.0) + " MB " + (MemoryChunk.getExpMemSize() / 1000000.0) + " MB ");
 		//getGCMemSize() + getExpMemSize();
+	}
+
+	public def flush() {
+		Logger.flush();
 	}
 }
