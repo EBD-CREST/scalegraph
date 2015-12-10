@@ -15,8 +15,8 @@ import json
 
 mpirunPath = 'mpirun'
 mpirunOpts = ['-np', '4']
-workDir = '/Users/tosiyuki/EBD/scalegraph-dev'
-apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/apidriver'
+workDir = '/Users/tosiyuki/EBD/scalegraph-dev/build'
+apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/build/apidriver'
 
 
 OS = 231
@@ -337,6 +337,7 @@ class GenerateGraph(GraphAlgorithm):
         args += self.checkOutputArgument(output_path, output_fs)
         args += self.checkExtraArgument(extra_options)
 
+        self.cleanOutput(output_path, output_fs)
         self.callApiDriver(args)
         self.outputSummary = self.checkOutputDir(output_path, output_fs)
         (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary           
