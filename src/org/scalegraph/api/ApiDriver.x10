@@ -12,6 +12,7 @@
 package org.scalegraph.api;
 
 import x10.util.HashMap;
+import x10.util.StringBuilder;
 import x10.io.Printer;
 import x10.io.Console;
 
@@ -46,7 +47,8 @@ public class ApiDriver {
 	public static val API_BETWEENNESSCENTRALITY	:Int = 40000n;
 	public static val API_HYPERANF				:Int = 50000n;
 	public static val API_STRONGLYCONNECTEDCOMPONENT	:Int = 60000n;
-	
+	public static val API_MAXFLOW				:Int = 70000n;
+
 	public static val NAME_PASSTHROUGH				:String = "gen";
 	public static val NAME_PAGERANK					:String = "pr";
 	public static val NAME_MST						:String = "mst";
@@ -54,6 +56,7 @@ public class ApiDriver {
 	public static val NAME_BETWEENNESSCENTRALITY	:String = "bc";
 	public static val NAME_HYPERANF					:String = "hanf";
 	public static val NAME_STRONGLYCONNECTEDCOMPONENT	:String = "scc";
+	public static val NAME_MAXFLOW					:String = "mf";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -172,6 +175,15 @@ public class ApiDriver {
 	public static val NAME_SCC_DIRECTED				:String = "--scc-directed";
 	public static val NAME_SCC_NITER				:String = "--scc-niter";
 
+	public static val OPT_MF_SOURCE_ID				:Int = 70001n;
+	public static val OPT_MF_SINK_ID				:Int = 70002n;
+	public static val OPT_MF_EPS					:Int = 70003n;
+	public static val OPT_MF_RECURSIONLIMIT			:Int = 70004n;
+
+	public static val NAME_MF_SOURCE_ID				:String = "--mf-source-id";
+	public static val NAME_MF_SINK_ID				:String = "--mf-sink-id";
+	public static val NAME_MF_EPS					:String = "--mf-eps";
+	public static val NAME_MF_RECURSIONLIMIT		:String = "--mf-recursionLimit";
 
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
@@ -182,7 +194,7 @@ public class ApiDriver {
 
 	public var valueInputDataFile :String = "";
 	public var optInputDataFileRenumbering :Boolean = false;
-	public var optInputDataFileWeight :Int = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
+	public var optInputDataFileWeight :Int = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM; // This default value is changed depending on the alogithm selected.
 	public var valueInputDataFileWeightConstant :Double = 0.0;
 
 	public var valueInputDataRmatScale		:Int = 8n;
@@ -228,28 +240,47 @@ public class ApiDriver {
 	public var valueSCCDirected			:Boolean = true;
 	public var valueSCCNiter			:Int = 1000n;
 
-
+	public var valueMFSourceId			:Long = -1n;
+	public var valueMFSinkId			:Long = -1n;
+	public var valueMFEPS				:Double = 1e-6;
+	public var valueMFRecursionLimit	:Long = 1000000;
 
 	public var apiResult :Result;
 
-	private class Result {
-		public val status :Int;
+	public static class Result {
+		val buffer = new StringBuilder();
+		var status :Int = 0n;
 
-		public def this(_status :Int) {
+		public def this() {
+		}
+
+		public def setStatus(_status :Int) {
 			status = _status;
 		}
+
+		public def add(key :String, value :String) {
+			buffer.add(key + ":" + value + ", ");
+		}
+
 
 		public def toString() {
 			return String.format("\"Status\":%ld", [status as Any]);
 		}
 
 		public def write() {
-			Console.OUT.println("{" + toString() + "}");
+			Console.OUT.println("{" + 
+								buffer.toString() +
+								String.format("\"Status\":%ld", [status as Any]) +
+								"}");
 		}
 	}
 
-	public def setResult(_status :Int) {
-		apiResult = new Result(_status);
+	public def addResult(key :String, value :String) {
+		apiResult.add(key, value);
+	}
+
+	public def setStatus(_status :Int) {
+		apiResult.setStatus(_status);
 	}
 
 	public def writeResult() {
@@ -258,7 +289,8 @@ public class ApiDriver {
 
 	public static def main(args: Rail[String]) {
 		val apiDriver = new ApiDriver();
-		apiDriver.setResult(ReturnCode.SUCCESS);
+		apiDriver.apiResult = new Result();
+		apiDriver.setStatus(ReturnCode.SUCCESS);
 		if (args.size < 1) {
 			Console.ERR.println("Usage: <api_name> [common_options] [api_options]");
 			return;
@@ -274,7 +306,7 @@ public class ApiDriver {
 			} else {
 				exception.printError();
 			}
-			apiDriver.setResult(exception.code);
+			apiDriver.setStatus(exception.code);
 			System.setExitCode(1n);
 		} catch (exception :CheckedThrowable) {
 			if (Logger.initialized()) {
@@ -283,7 +315,7 @@ public class ApiDriver {
 			} else {
 				exception.printStackTrace();
 			}
-			apiDriver.setResult(ReturnCode.ERROR_INTERNAL);
+			apiDriver.setStatus(ReturnCode.ERROR_INTERNAL);
 			System.setExitCode(1n);
 		} finally {
 			Logger.closeAll();
@@ -292,6 +324,7 @@ public class ApiDriver {
 	}
 
 	public def this() {
+
 		dirArgKeywords.put(NAME_PASSTHROUGH,			API_PASSTHROUGH);
 		dirArgKeywords.put(NAME_PAGERANK,				API_PAGERANK);
 		dirArgKeywords.put(NAME_MST,					API_MST);
@@ -299,6 +332,7 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY,	API_BETWEENNESSCENTRALITY);
 		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
 		dirArgKeywords.put(NAME_STRONGLYCONNECTEDCOMPONENT,	API_STRONGLYCONNECTEDCOMPONENT);
+		dirArgKeywords.put(NAME_MAXFLOW,				API_MAXFLOW);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -356,6 +390,11 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_SCC_DIRECTED,		OPT_SCC_DIRECTED);
 		dirArgKeywords.put(NAME_SCC_NITER,			OPT_SCC_NITER);
 
+		dirArgKeywords.put(NAME_MF_SOURCE_ID,		OPT_MF_SOURCE_ID);
+		dirArgKeywords.put(NAME_MF_SINK_ID,			OPT_MF_SINK_ID);
+		dirArgKeywords.put(NAME_MF_EPS,				OPT_MF_EPS);
+		dirArgKeywords.put(NAME_MF_RECURSIONLIMIT,	OPT_MF_RECURSIONLIMIT);
+
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
@@ -368,12 +407,53 @@ public class ApiDriver {
 
 		switch (apiType) {
 			case API_PASSTHROUGH:
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM;
+				break;
 			case API_PAGERANK:
+				// "weight" is not needed.
+				// However, the weight is used in the function createSparseMatrix
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+				valueInputDataFileWeightConstant = 0.0;
+				break;
 			case API_MST:
+				// This algorithm requires edge weights for the calculation
+				// In case the input CSV doesn't have weight column,
+				// The algorithm should be throw an Exception.
+				// User may change optInputDataFileWeight
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+				break;
 			case API_DEGREEDISTRIBUTION:
+				// "weight" is not needed.
+				// However, the weight is used in the function createSparseMatrix
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+				valueInputDataFileWeightConstant = 0.0;
+				break;
 			case API_BETWEENNESSCENTRALITY:
+				// "weight" is needed when "--bc-weighted=true"
+				// "weight" is not needed when "--bc-weighted=false" (this is default)
+				// The following assignment assumes "--bc-weighted=false"
+				// The default will be overridden on getting "--bc-weighted=true"
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+				valueInputDataFileWeightConstant = 0.0;
+				break;
 			case API_HYPERANF:
+				// "weight" is not needed.
+				// However, the weight is used in the function createSparseMatrix
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+				valueInputDataFileWeightConstant = 0.0;
+				break;
 			case API_STRONGLYCONNECTEDCOMPONENT:
+				// "weight" is not needed.
+				// However, the weight is used in the function createSparseMatrix
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
+				valueInputDataFileWeightConstant = 0.0;
+				break;
+			case API_MAXFLOW:
+				// This algorithm requires edge weights for the calculation
+				// In case the input CSV doesn't have weight column,
+				// The algorithm should be throw an Exception
+				// User may change optInputDataFileWeight
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
 				break;
 			default:
 				throw new ApiException.InvalidApiNameException(args(0));
@@ -518,6 +598,15 @@ public class ApiDriver {
 
 					case OPT_BC_WEIGHTED:
 						valueBCWeighted = Boolean.parse(splits(1));
+						if (valueBCWeighted) {
+							// "weight" default is constant 0.0 when --bc-weighted=false
+							// "weight" default is CSV when --bc-weighted=true
+							// optInputDataFileWeight is overriden here
+							if (optInputDataFileWeight == OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT &&
+								valueInputDataFileWeightConstant == 0.0) {
+								optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+							}
+						}
 						break;
 					case OPT_BC_DIRECTED:
 						valueBCDirected = Boolean.parse(splits(1));
@@ -550,6 +639,19 @@ public class ApiDriver {
 						break;
 					case OPT_SCC_NITER:
 						valueSCCNiter = Int.parse(splits(1));
+						break;
+
+					case OPT_MF_SOURCE_ID:
+						valueMFSourceId = Long.parse(splits(1));
+						break;
+					case OPT_MF_SINK_ID:
+						valueMFSinkId = Long.parse(splits(1));
+						break;
+				    case OPT_MF_EPS:
+						valueMFEPS = Double.parse(splits(1));
+						break;
+					case OPT_MF_RECURSIONLIMIT:
+						valueMFRecursionLimit = Long.parse(splits(1));
 						break;
 
 					default:
@@ -592,6 +694,9 @@ public class ApiDriver {
 				break;
 			case API_STRONGLYCONNECTEDCOMPONENT:
 				callStronglyConnectedComponent(makeGraph());
+				break;
+			case API_MAXFLOW:
+				callMaxFlow(makeGraph());
 				break;
 			default:
 				assert(false);
@@ -664,6 +769,14 @@ public class ApiDriver {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT2_DATA_FILE);
 				}
 				assert(valueOutput2DataFile.length() > 0n);
+				break;
+			case API_MAXFLOW:
+				if (valueMFSourceId < 0) {
+					throw new ApiException.OptionRequiredException(NAME_MF_SOURCE_ID);
+				}
+				if (valueMFSinkId < 0) {
+					throw new ApiException.OptionRequiredException(NAME_MF_SINK_ID);
+				}
 				break;
 			default:
 				break;
@@ -983,4 +1096,18 @@ public class ApiDriver {
 				  new NamedDistData(["sccB" as String], [dmc2 as Any]), true);
 	}
 
+	public def callMaxFlow(graph :Graph) {
+		val mf = new MaxFlow();
+		val result :MaxFlow.Result;
+
+		mf.eps = valueMFEPS;
+		mf.recursionLimit = valueMFRecursionLimit;
+
+		val matrix = graph.createDistEdgeIndexMatrix(Config.get().dist1d(), true, true);
+		val edgeValue = graph.createDistAttribute[Double](matrix, false, "weight");
+		graph.del();
+		result = mf.execute(matrix, edgeValue, valueMFSourceId, valueMFSinkId);
+
+		addResult("MaxFlow", result.maxFlow.toString());
+	}
 }
