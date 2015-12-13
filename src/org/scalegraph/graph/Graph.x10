@@ -150,10 +150,16 @@ import org.scalegraph.id.Type;
 	
 	public static def make(edgeData :NamedDistData, renumbering :Boolean) 
 		= make(edgeData, null, renumbering);
-	
-	public static def make(edgeData :NamedDistData, vertexData :NamedDistData, renumbering :Boolean) {
-		val srcIdx = edgeData.nameToIndex(ID.NAME_SOURCE);
-		val dstIdx = edgeData.nameToIndex(ID.NAME_TARGET);
+
+	public static def make(edgeData :NamedDistData, renumbering :Boolean, nameSource :String, nameTarget :String) 
+		= make(edgeData, null, renumbering, nameSource, nameTarget);
+
+	public static def make(edgeData :NamedDistData, vertexData :NamedDistData, renumbering :Boolean)
+		= make(edgeData, vertexData, renumbering, ID.NAME_SOURCE, ID.NAME_TARGET);
+
+	public static def make(edgeData :NamedDistData, vertexData :NamedDistData, renumbering :Boolean, nameSource :String, nameTarget :String) {
+		val srcIdx = edgeData.nameToIndex(nameSource);
+		val dstIdx = edgeData.nameToIndex(nameTarget);
 		val vertexType = edgeData.typeId()(srcIdx);
 		assert(vertexType == edgeData.typeId()(dstIdx));
 		val g = new Graph(Config.get().worldTeam(), vertexType, renumbering);

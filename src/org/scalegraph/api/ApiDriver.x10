@@ -969,13 +969,14 @@ public class ApiDriver {
 			colTypes = [Type.Long as Int, Type.Long, Type.Long];
 		}
 		val edgeCSV = CSV.read(getFilePathInput(), colTypes, true);
-		val g = Graph.make(edgeCSV, optInputDataFileRenumbering);
+		val g = Graph.make(edgeCSV, optInputDataFileRenumbering, 
+						   valueInputDataFileHeaderSource, valueInputDataFileHeaderTarget);
 		val srcList = g.source();
 		val getSize = ()=>srcList().size();
 		val edgeWeight :DistMemoryChunk[Double];
 		switch (optInputDataFileWeight) {
 			case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
-				val weightIdx = edgeCSV.nameToIndex("weight");
+				val weightIdx = edgeCSV.nameToIndex(valueInputDataFileHeaderWeight);
 				edgeWeight = edgeCSV.data()(weightIdx) as DistMemoryChunk[Double];
 				break;
 			case OPT_INPUT_DATA_FILE_WEIGHT_RANDOM:
@@ -1014,9 +1015,9 @@ public class ApiDriver {
 
 	public def callPassThrough(graph :Graph) {
 		CSV.write(getFilePathOutput(),
-				  new NamedDistData(["source" as String,
-									 "target",
-									 "weight"],
+				  new NamedDistData([valueOutputDataFileHeaderSource as String,
+									 valueOutputDataFileHeaderTarget,
+									 valueOutputDataFileHeaderWeight],
 									[graph.source(),
 									 graph.target(),
 									 graph.getEdgeAttribute[Double]("weight")]),
