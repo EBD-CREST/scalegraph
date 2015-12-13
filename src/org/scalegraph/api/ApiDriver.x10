@@ -66,6 +66,9 @@ public class ApiDriver {
 	public static val OPT_INPUT_DATA_FILE_WEIGHT_CSV	:Int = 1012n;
 	public static val OPT_INPUT_DATA_FILE_WEIGHT_RANDOM	:Int = 1013n;
 	public static val OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT :Int = 1014n;
+	public static val OPT_INPUT_DATA_FILE_HEADER_SOURCE	:Int = 1015n;
+	public static val OPT_INPUT_DATA_FILE_HEADER_TARGET	:Int = 1016n;
+	public static val OPT_INPUT_DATA_FILE_HEADER_WEIGHT	:Int = 1017n;
 
 	public static val OPT_INPUT_DATA_RMAT				:Int = 1020n;
 	public static val OPT_INPUT_DATA_RMAT_SCALE			:Int = 1021n;
@@ -83,6 +86,10 @@ public class ApiDriver {
 	public static val NAME_INPUT_DATA_FILE_WEIGHT_RANDOM	:String = "--input-data-file-weight-random";
 	public static val NAME_INPUT_DATA_FILE_WEIGHT_CONSTANT	:String = "--input-data-file-weight-constant";
 
+	public static val NAME_INPUT_DATA_FILE_HEADER_SOURCE	:String = "--input-data-file-header-source";
+	public static val NAME_INPUT_DATA_FILE_HEADER_TARGET	:String = "--input-data-file-header-target";
+	public static val NAME_INPUT_DATA_FILE_HEADER_WEIGHT	:String = "--input-data-file-header-weight";
+
 	public static val NAME_INPUT_DATA_RMAT				:String = "--input-data-rmat";
 	public static val NAME_INPUT_DATA_RMAT_SCALE		:String = "--input-data-rmat-scale";
 	public static val NAME_INPUT_DATA_RMAT_EDGEFACTOR	:String = "--input-data-rmat-edgefactor";
@@ -94,7 +101,10 @@ public class ApiDriver {
 	public static val OPT_OUTPUT_FS_OS		:Int = 2000n;
 	public static val OPT_OUTPUT_FS_HDFS	:Int = 2001n;
 	public static val OPT_OUTPUT_DATA_FILE	:Int = 2002n;
-
+	public static val OPT_OUTPUT_DATA_FILE_HEADER_SOURCE	:Int = 2003n;
+	public static val OPT_OUTPUT_DATA_FILE_HEADER_TARGET	:Int = 2004n;
+	public static val OPT_OUTPUT_DATA_FILE_HEADER_WEIGHT	:Int = 2005n;
+	
 	public static val OPT_OUTPUT1_FS_OS		:Int = 2010n;
 	public static val OPT_OUTPUT1_FS_HDFS	:Int = 2011n;
 	public static val OPT_OUTPUT1_DATA_FILE	:Int = 2012n;
@@ -106,6 +116,9 @@ public class ApiDriver {
 	public static val NAME_OUTPUT_FS_OS			:String = "--output-fs-os";
 	public static val NAME_OUTPUT_FS_HDFS		:String = "--output-fs-hdfs";
 	public static val NAME_OUTPUT_DATA_FILE		:String = "--output-data-file";
+	public static val NAME_OUTPUT_DATA_FILE_HEADER_SOURCE	:String = "--output-data-file-header-source";
+	public static val NAME_OUTPUT_DATA_FILE_HEADER_TARGET	:String = "--output-data-file-header-target";
+	public static val NAME_OUTPUT_DATA_FILE_HEADER_WEIGHT	:String = "--output-data-file-header-weight";
 
 	public static val NAME_OUTPUT1_FS_OS		:String = "--output1-fs-os";
 	public static val NAME_OUTPUT1_FS_HDFS		:String = "--output1-fs-hdfs";
@@ -196,6 +209,9 @@ public class ApiDriver {
 	public var optInputDataFileRenumbering :Boolean = false;
 	public var optInputDataFileWeight :Int = OPT_INPUT_DATA_FILE_WEIGHT_RANDOM; // This default value is changed depending on the alogithm selected.
 	public var valueInputDataFileWeightConstant :Double = 0.0;
+	public var valueInputDataFileHeaderSource	:String = "source";
+	public var valueInputDataFileHeaderTarget	:String = "target";
+	public var valueInputDataFileHeaderWeight	:String = "weight";
 
 	public var valueInputDataRmatScale		:Int = 8n;
 	public var valueInputDataRmatEdgefactor :Int = 16n;
@@ -205,6 +221,9 @@ public class ApiDriver {
 
 	public var optOutputFs :Int = OPT_OUTPUT_FS_OS;
 	public var valueOutputDataFile :String = "";
+	public var valueOutputDataFileHeaderSource	:String = "source";
+	public var valueOutputDataFileHeaderTarget	:String = "target";
+	public var valueOutputDataFileHeaderWeight	:String = "weight";
 
 	public var optOutput1Fs :Int = OPT_OUTPUT1_FS_OS;
 	public var valueOutput1DataFile :String = "";
@@ -343,6 +362,10 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_INPUT_DATA_FILE_WEIGHT_RANDOM,	OPT_INPUT_DATA_FILE_WEIGHT_RANDOM);
 		dirArgKeywords.put(NAME_INPUT_DATA_FILE_WEIGHT_CONSTANT,OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT);
 
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_HEADER_SOURCE, OPT_INPUT_DATA_FILE_HEADER_SOURCE);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_HEADER_TARGET, OPT_INPUT_DATA_FILE_HEADER_TARGET);
+		dirArgKeywords.put(NAME_INPUT_DATA_FILE_HEADER_WEIGHT, OPT_INPUT_DATA_FILE_HEADER_WEIGHT);
+
 		dirArgKeywords.put(NAME_INPUT_DATA_RMAT,			OPT_INPUT_DATA_RMAT);
 		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_SCALE,		OPT_INPUT_DATA_RMAT_SCALE);
 		dirArgKeywords.put(NAME_INPUT_DATA_RMAT_EDGEFACTOR,	OPT_INPUT_DATA_RMAT_EDGEFACTOR);
@@ -353,6 +376,10 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_OUTPUT_FS_OS,		OPT_OUTPUT_FS_OS);
 		dirArgKeywords.put(NAME_OUTPUT_FS_HDFS,		OPT_OUTPUT_FS_HDFS);
 		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE,	OPT_OUTPUT_DATA_FILE);
+
+		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE_HEADER_SOURCE,	OPT_OUTPUT_DATA_FILE_HEADER_SOURCE);
+		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE_HEADER_TARGET,	OPT_OUTPUT_DATA_FILE_HEADER_TARGET);
+		dirArgKeywords.put(NAME_OUTPUT_DATA_FILE_HEADER_WEIGHT,	OPT_OUTPUT_DATA_FILE_HEADER_WEIGHT);
 
 		dirArgKeywords.put(NAME_OUTPUT1_FS_OS,		OPT_OUTPUT1_FS_OS);
 		dirArgKeywords.put(NAME_OUTPUT1_FS_HDFS,	OPT_OUTPUT1_FS_HDFS);
@@ -499,6 +526,16 @@ public class ApiDriver {
 						optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
 						valueInputDataFileWeightConstant = Double.parse(splits(1));
 						break;
+					case OPT_INPUT_DATA_FILE_HEADER_SOURCE:
+						valueInputDataFileHeaderSource = splits(1);
+						break;
+					case OPT_INPUT_DATA_FILE_HEADER_TARGET:
+						valueInputDataFileHeaderTarget = splits(1);
+						break;
+					case OPT_INPUT_DATA_FILE_HEADER_WEIGHT:
+						valueInputDataFileHeaderWeight = splits(1);
+						break;
+
 					case OPT_INPUT_DATA_RMAT:
 						optInputData = OPT_INPUT_DATA_RMAT;
 						break;
@@ -526,6 +563,15 @@ public class ApiDriver {
 						break;
 					case OPT_OUTPUT_DATA_FILE:
 						valueOutputDataFile = splits(1);
+						break;
+					case OPT_OUTPUT_DATA_FILE_HEADER_SOURCE:
+						valueOutputDataFileHeaderSource = splits(1);
+						break;
+					case OPT_OUTPUT_DATA_FILE_HEADER_TARGET:
+						valueOutputDataFileHeaderTarget = splits(1);
+						break;
+					case OPT_OUTPUT_DATA_FILE_HEADER_WEIGHT:
+						valueOutputDataFileHeaderWeight = splits(1);
 						break;
 
 					case OPT_OUTPUT1_FS_OS:
