@@ -50,7 +50,6 @@ class GraphAlgorithm:
     def checkInputArgument(self, input,
                            input_path, input_fs,
                            input_rmat_scale):
-        pass
         args = []
         if input is None:
             raise ArgumentError("input must be specified")
@@ -295,7 +294,7 @@ class GraphAlgorithm:
        
         commandline = [mpirunPath] + mpirunOpts + \
                       [apiDriverPath, self.algorithmName] + args
-#        print(commandline)
+        print(commandline)
 
         try:
             proc = subprocess.run(commandline,
@@ -314,7 +313,8 @@ class GraphAlgorithm:
 
         if rval != 0:
             raise ScaleGraphError("apidriver status " + str(result['Status']))
-        
+
+        return result
 
 class GenerateGraph(GraphAlgorithm):
 
@@ -480,3 +480,78 @@ class StronglyConnectedComponent(GraphAlgorithm):
         (self.output1NumFiles, self.output1NumLines, self.output1Header) = self.output1Summary   
         self.output2Summary = self.checkOutputDir(output2_path, output2_fs)
         (self.output2NumFiles, self.output2NumLines, self.output2Header) = self.output2Summary   
+
+class MinimumSpanningTree(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(MinimumSpanningTree, self).__init__()
+        self.algorithmName = 'mst'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputFile(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary   
+
+class MaxFlow(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(MaxFlow, self).__init__()
+        self.algorithmName = 'mf'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            source_id=None, sink_id=None,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkSourceSinkArgument(source_id, sink_id)
+        args += self.checkExtraArgument(extra_options)
+
+        result = self.callApiDriver(args)
+        try:
+            maxFlow = float(result['MaxFlow']
+        except:
+            raise ScaleGraphError("apidriver didn't return result")
+
+        return maxFlow
+        
+    def checkSourceSinkArgument(self, source_id, sink_id):
+        args = []
+        if source_id is None:
+            raise ArgumentError("source_id must be specified")
+        if sink_id is None:
+            raise ArgumentError("sink_id must be specified")
+        if type(source_id) == int:
+            source_id = long(source_id)
+        elif type(source_id) != long:
+            raise ArgumentError("invalid source_id")
+        if type(sink_id) == int:
+            sink_id = long(sink_id)
+        elif type(sink_id) != long:
+            raise ArgumentError("invalid sink_id")
+        if source_id == sink_id:
+            raise ArgumentError("source_id must not equal to sink_id")
+        args.append("--mf-source-id=" + str(source_id))
+        args.append("--mf-sink-id=" + str(sink_id))
+        return args

@@ -42,7 +42,7 @@ public class ApiDriver {
 
 	public static val API_PASSTHROUGH			:Int = 0n;
 	public static val API_PAGERANK				:Int = 10000n;
-	public static val API_MST					:Int = 20000n;
+	public static val API_MINIMUMSPANNINGTREE	:Int = 20000n;
 	public static val API_DEGREEDISTRIBUTION	:Int = 30000n;
 	public static val API_BETWEENNESSCENTRALITY	:Int = 40000n;
 	public static val API_HYPERANF				:Int = 50000n;
@@ -51,7 +51,7 @@ public class ApiDriver {
 
 	public static val NAME_PASSTHROUGH				:String = "gen";
 	public static val NAME_PAGERANK					:String = "pr";
-	public static val NAME_MST						:String = "mst";
+	public static val NAME_MINIMUMSPANNINGTREE		:String = "mst";
 	public static val NAME_DEGREEDISTRIBUTION		:String = "dd";
 	public static val NAME_BETWEENNESSCENTRALITY	:String = "bc";
 	public static val NAME_HYPERANF					:String = "hanf";
@@ -346,7 +346,7 @@ public class ApiDriver {
 
 		dirArgKeywords.put(NAME_PASSTHROUGH,			API_PASSTHROUGH);
 		dirArgKeywords.put(NAME_PAGERANK,				API_PAGERANK);
-		dirArgKeywords.put(NAME_MST,					API_MST);
+		dirArgKeywords.put(NAME_MINIMUMSPANNINGTREE,	API_MINIMUMSPANNINGTREE);
 		dirArgKeywords.put(NAME_DEGREEDISTRIBUTION,		API_DEGREEDISTRIBUTION);
 		dirArgKeywords.put(NAME_BETWEENNESSCENTRALITY,	API_BETWEENNESSCENTRALITY);
 		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
@@ -442,7 +442,7 @@ public class ApiDriver {
 				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CONSTANT;
 				valueInputDataFileWeightConstant = 0.0;
 				break;
-			case API_MST:
+			case API_MINIMUMSPANNINGTREE:
 				// This algorithm requires edge weights for the calculation
 				// In case the input CSV doesn't have weight column,
 				// The algorithm should be throw an Exception.
@@ -726,8 +726,8 @@ public class ApiDriver {
 			case API_PAGERANK:
 				callPagerank(makeGraph());
 				break;
-			case API_MST:
-				callMST(makeGraph());
+			case API_MINIMUMSPANNINGTREE:
+				callMinimumSpanningTree(makeGraph());
 				break;
 			case API_DEGREEDISTRIBUTION:
 				callDegreeDistribution(makeGraph());
@@ -788,7 +788,7 @@ public class ApiDriver {
 				}
 				assert(valueOutputDataFile.length() > 0n);
 				break;
-		    case API_MST:
+		    case API_MINIMUMSPANNINGTREE:
 				if (valueOutputDataFile.length() == 0n) {
 					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
 				}
@@ -823,6 +823,9 @@ public class ApiDriver {
 				if (valueMFSinkId < 0) {
 					throw new ApiException.OptionRequiredException(NAME_MF_SINK_ID);
 				}
+				if (valueMFSourceId == valueMFSinkId) {
+					throw new ApiException.InvalidOptionValueException(NAME_MF_SOURCE_ID + " and " + NAME_MF_SINK_ID);
+				}
 				break;
 			default:
 				break;
@@ -832,18 +835,18 @@ public class ApiDriver {
 	private def makeGraph() :Graph {
 		switch (optInputData) {
 			case OPT_INPUT_DATA_RMAT:
-				return makeGraphByRmat();
+				return makeGraphFromRmat();
 			case OPT_INPUT_DATA_FILE:
 			case OPT_INPUT_DATA_FILE_RENUMBERING:
-				return makeGraphByFile();
+				return makeGraphFromFile();
 			default:
 				assert(false);
 				break;
 		}
-		return makeGraphByRmat();
+		return makeGraphFromRmat();
 	}
 
-	private def makeGraphByRmat() {
+	private def makeGraphFromRmat() {
 		val rnd = new Random(2, 3);
 		val edgeList = GraphGenerator.genRMAT(valueInputDataRmatScale,
 											  valueInputDataRmatEdgefactor,
@@ -961,7 +964,7 @@ public class ApiDriver {
 		return filePath;
 	}
 
-	private def makeGraphByFile() {
+	private def makeGraphFromFile() {
 		val colTypes :Rail[Int];
 		if (optInputDataFileWeight == OPT_INPUT_DATA_FILE_WEIGHT_CSV) {
 			colTypes = [Type.Long as Int, Type.Long, Type.Long, Type.Double];
@@ -976,6 +979,7 @@ public class ApiDriver {
 		val edgeWeight :DistMemoryChunk[Double];
 		switch (optInputDataFileWeight) {
 			case OPT_INPUT_DATA_FILE_WEIGHT_CSV:
+				Logger.recordLog("header: " + valueInputDataFileHeaderWeight);
 				val weightIdx = edgeCSV.nameToIndex(valueInputDataFileHeaderWeight);
 				edgeWeight = edgeCSV.data()(weightIdx) as DistMemoryChunk[Double];
 				break;
@@ -1038,7 +1042,7 @@ public class ApiDriver {
 		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
 
-	public def callMST(graph :Graph) {
+	public def callMinimumSpanningTree(graph :Graph) {
     	val matrix = graph.createDistSparseMatrix[Double](
     		Config.get().distXPregel(), "weight", false, false);
     	// delete the graph object in order to reduce the memory consumption
