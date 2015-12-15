@@ -145,8 +145,8 @@ class TestGenerateGraph(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
-        self.assertEqual(self.algorithm.outputSummary, (4, 65537, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
+                                    output_path="output_test", input_rmat_scale=10)
+        self.assertEqual(self.algorithm.outputSummary, (4, 16385, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
 
     def test_HeaderOutputOS(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
@@ -175,8 +175,8 @@ class TestPageRank(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
-        self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,pagerank<Double>'))
+                                    output_path="output_test", input_rmat_scale=10)
+        self.assertEqual(self.algorithm.outputSummary, (4, 1025, 'ID<Long>,pagerank<Double>'))
 
     def test_ExtraOptions(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
@@ -244,7 +244,7 @@ class TestDegreeDistribution(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
+                                    output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
@@ -299,7 +299,7 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
+                                    output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
@@ -443,7 +443,7 @@ class TestHyperANF(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
+                                    output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
@@ -604,9 +604,9 @@ class TestStronglyConnectedComponent(unittest.TestCase):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     output1_path="output1_test",
                                     output2_path="output2_test",
-                                    input_rmat_scale=12)
-        self.assertEqual(self.algorithm.output1Summary, (4, 4097, 'ID<Long>,sccA<Long>'))
-        self.assertEqual(self.algorithm.output2Summary, (4, 4097, 'ID<Long>,sccB<Long>'))
+                                    input_rmat_scale=10)
+        self.assertEqual(self.algorithm.output1Summary, (4, 1025, 'ID<Long>,sccA<Long>'))
+        self.assertEqual(self.algorithm.output2Summary, (4, 1025, 'ID<Long>,sccB<Long>'))
 
     def test_InputOSOutputOS(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -674,7 +674,7 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         
     def test_RmatScale(self):
         status = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    output_path="output_test", input_rmat_scale=12)
+                                    output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
@@ -836,12 +836,12 @@ class TestMaxFlow(unittest.TestCase):
     def test_ErrorInvalidSourceId(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
             result = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                        source_id=abc, sink_id=1)
+                                        source_id="abc", sink_id=1)
 
     def test_ErrorInvalidSinkId(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
             result = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                        source_id=0, sink_id=abc)
+                                        source_id=0, sink_id="abc")
 
     def test_ErrorTypeExtraOptions(self):
         with self.assertRaises(GraphAlgorithm.ArgumentError):
@@ -876,13 +876,13 @@ class TestMaxFlow(unittest.TestCase):
     def test_InputRmat(self):
         result = self.algorithm.run(input=GraphAlgorithm.RMAT,
                                     source_id=0, sink_id=1)
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_RmatScale(self):
         result = self.algorithm.run(input=GraphAlgorithm.RMAT,
-                                    input_rmat_scale=12,
+                                    input_rmat_scale=6,
                                     source_id=0, sink_id=1)
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_InputOS(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -890,7 +890,7 @@ class TestMaxFlow(unittest.TestCase):
         result = self.algorithm.run(input=GraphAlgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1)
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_InputHDFS(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -899,7 +899,7 @@ class TestMaxFlow(unittest.TestCase):
                                     input_path="input_test",
                                     input_fs=GraphAlgorithm.HDFS,
                                     source_id=0, sink_id=1)
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_ReadWeight(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -908,7 +908,7 @@ class TestMaxFlow(unittest.TestCase):
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-csv"])
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_RandomWeight(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -918,11 +918,11 @@ class TestMaxFlow(unittest.TestCase):
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-random"])
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_ErrorNoConstWeight(self):
         gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test"
+        gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
         with self.assertRaises(GraphAlgorithm.ScaleGraphError):
             result = self.algorithm.run(input=GraphAlgorithm.FILE,
@@ -938,7 +938,7 @@ class TestMaxFlow(unittest.TestCase):
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-constant=0.5"])
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
     def test_ChangeWeightHeader(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -948,16 +948,16 @@ class TestMaxFlow(unittest.TestCase):
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-header-weight=changed-weight"])
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
         
     def test_ErrorReadWeight(self):
         gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test"
+        gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=cause-error"])
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
-                                    input_path="input_test",
-                                    source_id=0, sink_id=1)
-        self.assertEqual(result, -1)
+        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+                                        input_path="input_test",
+                                        source_id=0, sink_id=1)
 
     def test_ChangeEdgeHeader(self):
         gen = GraphAlgorithm.GenerateGraph()
@@ -969,7 +969,7 @@ class TestMaxFlow(unittest.TestCase):
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-header-source=newheader",
                                                    "--input-data-file-header-target=newtarget"])
-        self.assertEqual(result, -1)
+        self.assertEqual(result, 0.0)
 
         
 if __name__ == '__main__':
@@ -989,9 +989,8 @@ if __name__ == '__main__':
                                    suiteBetweennessCentrality,
                                    suiteHyperANF,
                                    suiteStronglyConnectedComponent,
-                                   suiteMinimumSpanningTree,
                                    suiteMaxFlow])
-    suiteAll = unittest.TestSuite([suiteMinimumSpanningTree])
+#    suiteAll = unittest.TestSuite([suiteMinimumSpanningTree])
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suiteAll)
     

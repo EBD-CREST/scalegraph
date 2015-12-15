@@ -294,7 +294,7 @@ class GraphAlgorithm:
        
         commandline = [mpirunPath] + mpirunOpts + \
                       [apiDriverPath, self.algorithmName] + args
-        print(commandline)
+#        print(commandline)
 
         try:
             proc = subprocess.run(commandline,
@@ -306,6 +306,7 @@ class GraphAlgorithm:
             raise ConfigError("failed to mpirun apidriver")
         
         try:
+#            print(proc.stdout)
             result = json.loads(proc.stdout.splitlines()[0])
             rval = int(result['Status'])
         except:
@@ -530,7 +531,7 @@ class MaxFlow(GraphAlgorithm):
 
         result = self.callApiDriver(args)
         try:
-            maxFlow = float(result['MaxFlow']
+            maxFlow = float(result['MaxFlow'])
         except:
             raise ScaleGraphError("apidriver didn't return result")
 
@@ -542,13 +543,13 @@ class MaxFlow(GraphAlgorithm):
             raise ArgumentError("source_id must be specified")
         if sink_id is None:
             raise ArgumentError("sink_id must be specified")
-        if type(source_id) == int:
-            source_id = long(source_id)
-        elif type(source_id) != long:
+        try:
+            source_id = int(source_id)
+        except:
             raise ArgumentError("invalid source_id")
-        if type(sink_id) == int:
-            sink_id = long(sink_id)
-        elif type(sink_id) != long:
+        try:
+            sink_id = int(sink_id)
+        except:
             raise ArgumentError("invalid sink_id")
         if source_id == sink_id:
             raise ArgumentError("source_id must not equal to sink_id")

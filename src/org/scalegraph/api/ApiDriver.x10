@@ -1159,6 +1159,6 @@ public class ApiDriver {
 		graph.del();
 		result = mf.execute(matrix, edgeValue, valueMFSourceId, valueMFSinkId);
 
-		addResult("MaxFlow", result.maxFlow.toString());
+		addResult("\"MaxFlow\"", result.maxFlow.toString());
 	}
 }
