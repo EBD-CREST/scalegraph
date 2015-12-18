@@ -14,6 +14,14 @@
 
 #include <x10rt.h>
 
+#define X10_LANG_STRING_H_NODEPS
+#include <x10/lang/String.h>
+#undef X10_LANG_STRING_H_NODEPS
+#define ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
+#include <org/scalegraph/python/NativePyObject.h>
+#undef ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
+
+
 namespace org { namespace scalegraph { namespace python {
 
 struct NativePythonIntegrate {
@@ -27,6 +35,8 @@ struct NativePythonIntegrate {
     NativePythonIntegrate* operator->() { return this; }
 
     void test();
+    ::org::scalegraph::python::NativePyObject importModule(::x10::lang::String* name);
+    void calltest(::org::scalegraph::python::NativePyObject module);
     
 	// Serialization
 	static void _serialize(NativePythonIntegrate this_, x10aux::serialization_buffer& buf) {

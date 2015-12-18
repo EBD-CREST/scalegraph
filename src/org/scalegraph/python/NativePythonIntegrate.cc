@@ -12,8 +12,9 @@
 #include <Python.h>
 
 #include <x10aux/config.h>
-//#include <org/scalegraph/io/NativeOSFile.h>
-#include "NativePythonIntegrate.h"
+#include <x10/lang/String.h>
+#include <org/scalegraph/python/NativePythonIntegrate.h>
+#include <org/scalegraph/python/NativePyObject.h>
 
 namespace org { namespace scalegraph { namespace python {
 
@@ -34,6 +35,40 @@ void NativePythonIntegrate::test() {
                        "print('Today is', ctime(time()))\n"
                        "sys.stdout.flush()\n");
 }
+
+::org::scalegraph::python::NativePyObject NativePythonIntegrate::importModule(::x10::lang::String* name) {
+    PyObject *pName;
+    PyObject *pModule;
+
+    pName = PyUnicode_FromString(name->c_str());
+    /* Error checking of pName left out */
+
+    pModule = PyImport_Import(pName);
+    Py_XDECREF(pName);
+
+    if (pModule == NULL) {
+        PyErr_Print();
+        fprintf(stderr, "Failed to load \"%s\"\n", name->c_str());
+    }
+
+    ::org::scalegraph::python::NativePyObject  pyObject;
+    pyObject = ::org::scalegraph::python::NativePyObject::_make();
+    pyObject.FMGL(pointer) = pModule;
+    return pyObject;
+}
+
+void NativePythonIntegrate::calltest(::org::scalegraph::python::NativePyObject module) {
+    PyObject *pValue;
+    PyObject *pArgs;
+    PyObject *pFunc;
+
+    pArgs = Py_BuildValue("ii", 123L, 456L);
+    pFunc = PyObject_GetAttrString(module.FMGL(pointer), "multiply");
+    pValue = PyObject_CallObject(pFunc, pArgs);
+
+    fprintf(stderr, "result = %ld\n", PyLong_AsLong(pValue));
+}
+
 
 RTT_CC_DECLS0(NativePythonIntegrate, "org.scalegraph.python.NativePythonIntegrate", x10aux::RuntimeType::class_kind)
 
