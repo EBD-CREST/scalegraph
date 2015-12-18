@@ -9,8 +9,8 @@
  *  (C) Copyright ScaleGraph Team 2011-2016.
  */
 
-#ifndef __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHONINTEGRATE_H
-#define __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHONINTEGRATE_H
+#ifndef __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHON_H
+#define __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHON_H
 
 #include <x10rt.h>
 
@@ -24,25 +24,25 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-struct NativePythonIntegrate {
+struct NativePython {
   public:
     RTT_H_DECLS_CLASS;
 
-    NativePythonIntegrate() {}
+    NativePython() {}
 
-    static NativePythonIntegrate _make();
+    static NativePython _make();
     void _constructor();
-    NativePythonIntegrate* operator->() { return this; }
+    NativePython* operator->() { return this; }
 
     void test();
     ::org::scalegraph::python::NativePyObject importModule(::x10::lang::String* name);
     void calltest(::org::scalegraph::python::NativePyObject module);
     
 	// Serialization
-	static void _serialize(NativePythonIntegrate this_, x10aux::serialization_buffer& buf) {
+	static void _serialize(NativePython this_, x10aux::serialization_buffer& buf) {
 		assert (false);
 	}
-	static NativePythonIntegrate _deserializer(x10aux::deserialization_buffer& buf) {
+	static NativePython _deserializer(x10aux::deserialization_buffer& buf) {
 		assert (false);
 	}
     
@@ -50,4 +50,4 @@ struct NativePythonIntegrate {
             
 }}} // namespace org { namespace scalegraph { namespace python {
 
-#endif // __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHONINTEGRATE_H
+#endif // __ORG_SCALEGRAPH_PYTHON_NATIVEPYTHON_H

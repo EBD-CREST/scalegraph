@@ -17,10 +17,10 @@ import x10.compiler.NativeCPPInclude;
 import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
-@NativeCPPInclude("NativePythonIntegrate.h")
-@NativeCPPCompilationUnit("NativePythonIntegrate.cc")
-@NativeRep("c++", "org::scalegraph::python::NativePythonIntegrate", "org::scalegraph::python::NativePythonIntegrate", null)
-@Pinned public struct NativePythonIntegrate {
+@NativeCPPInclude("NativePython.h")
+@NativeCPPCompilationUnit("NativePython.cc")
+@NativeRep("c++", "org::scalegraph::python::NativePython", "org::scalegraph::python::NativePython", null)
+@Pinned public struct NativePython {
 	public native def this();
 	public native def test(): void;
 //	public native def import(name: String) throws PythonException;

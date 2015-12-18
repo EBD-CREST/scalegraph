@@ -13,30 +13,30 @@
 
 #include <x10aux/config.h>
 #include <x10/lang/String.h>
-#include <org/scalegraph/python/NativePythonIntegrate.h>
+#include <org/scalegraph/python/NativePython.h>
 #include <org/scalegraph/python/NativePyObject.h>
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePythonIntegrate NativePythonIntegrate::_make() {
-    NativePythonIntegrate ret;
+NativePython NativePython::_make() {
+    NativePython ret;
     ret._constructor();
     return ret;
 }
 
-void NativePythonIntegrate::_constructor() {
+void NativePython::_constructor() {
     Py_Initialize();
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append(\".\")");
 }
 
-void NativePythonIntegrate::test() {
+void NativePython::test() {
     PyRun_SimpleString("from time import time,ctime\n"
                        "print('Today is', ctime(time()))\n"
                        "sys.stdout.flush()\n");
 }
 
-::org::scalegraph::python::NativePyObject NativePythonIntegrate::importModule(::x10::lang::String* name) {
+::org::scalegraph::python::NativePyObject NativePython::importModule(::x10::lang::String* name) {
     PyObject *pName;
     PyObject *pModule;
 
@@ -57,7 +57,7 @@ void NativePythonIntegrate::test() {
     return pyObject;
 }
 
-void NativePythonIntegrate::calltest(::org::scalegraph::python::NativePyObject module) {
+void NativePython::calltest(::org::scalegraph::python::NativePyObject module) {
     PyObject *pValue;
     PyObject *pArgs;
     PyObject *pFunc;
@@ -70,6 +70,6 @@ void NativePythonIntegrate::calltest(::org::scalegraph::python::NativePyObject m
 }
 
 
-RTT_CC_DECLS0(NativePythonIntegrate, "org.scalegraph.python.NativePythonIntegrate", x10aux::RuntimeType::class_kind)
+RTT_CC_DECLS0(NativePython, "org.scalegraph.python.NativePython", x10aux::RuntimeType::class_kind)
 
 }}} // namespace org { namespace scalegraph { namespace python {

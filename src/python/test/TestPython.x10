@@ -1,11 +1,11 @@
 import x10.io.Console;
 
-import org.scalegraph.python.NativePythonIntegrate;
+import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 
 class TestPython {
 
-	private transient var pythonIntegrate :NativePythonIntegrate;
+	private transient var python :NativePython;
 
 	public static def main(args :Rail[String]): void {
 		Console.OUT.println("Hello, world");
@@ -14,11 +14,12 @@ class TestPython {
 	}
 
 	public def this() {
-		pythonIntegrate = new NativePythonIntegrate();
+		python = new NativePython();
 	}
 
 	public def run() {
-		val po = pythonIntegrate.importModule("multiply");
-		pythonIntegrate.calltest(po);
+		val po = python.importModule("multiply");
+		python.calltest(po);
 	}
+
 }
