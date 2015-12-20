@@ -25,9 +25,8 @@ struct NativePyObject {
 
     NativePyObject() {}
 
-    static NativePyObject _make();
+    static NativePyObject* _make();
     void _constructor();
-    NativePyObject* operator->() { return this; }
 
     void incref() {
         Py_INCREF(FMGL(pointer));

@@ -19,8 +19,8 @@ import x10.compiler.Pinned;
 
 @NativeCPPInclude("NativePython.h")
 @NativeCPPCompilationUnit("NativePython.cc")
-@NativeRep("c++", "org::scalegraph::python::NativePython", "org::scalegraph::python::NativePython", null)
-@Pinned public struct NativePython {
+@NativeRep("c++", "org::scalegraph::python::NativePython*", "org::scalegraph::python::NativePython", null)
+@Pinned public class NativePython {
 	public native def this();
 	public native def test(): void;
 //	public native def import(name: String) throws PythonException;

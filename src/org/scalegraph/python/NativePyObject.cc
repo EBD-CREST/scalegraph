@@ -16,9 +16,9 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePyObject NativePyObject::_make() {
-    NativePyObject ret;
-    ret._constructor();
+NativePyObject* NativePyObject::_make() {
+    NativePyObject* ret = new NativePyObject();
+    ret->_constructor();
     return ret;
 }
 

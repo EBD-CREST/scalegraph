@@ -24,19 +24,18 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-struct NativePython {
+class NativePython {
   public:
     RTT_H_DECLS_CLASS;
 
     NativePython() {}
 
-    static NativePython _make();
+    static NativePython* _make();
     void _constructor();
-    NativePython* operator->() { return this; }
 
     void test();
-    ::org::scalegraph::python::NativePyObject importModule(::x10::lang::String* name);
-    void calltest(::org::scalegraph::python::NativePyObject module);
+    ::org::scalegraph::python::NativePyObject* importModule(::x10::lang::String* name);
+    void calltest(::org::scalegraph::python::NativePyObject* module);
     
 	// Serialization
 	static void _serialize(NativePython this_, x10aux::serialization_buffer& buf) {

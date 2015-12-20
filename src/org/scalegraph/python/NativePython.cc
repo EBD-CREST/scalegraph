@@ -19,9 +19,9 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePython NativePython::_make() {
-    NativePython ret;
-    ret._constructor();
+NativePython* NativePython::_make() {
+    NativePython* ret = new NativePython();
+    ret->_constructor();
     return ret;
 }
 
@@ -37,7 +37,7 @@ void NativePython::test() {
                        "sys.stdout.flush()\n");
 }
 
-::org::scalegraph::python::NativePyObject NativePython::importModule(::x10::lang::String* name) {
+::org::scalegraph::python::NativePyObject* NativePython::importModule(::x10::lang::String* name) {
     PyObject *pName;
     PyObject *pModule;
 
@@ -54,19 +54,19 @@ void NativePython::test() {
         ::x10aux::throwException(::x10aux::nullCheck(::org::scalegraph::python::NativePyException::_make()));
     }
 
-    ::org::scalegraph::python::NativePyObject  pyObject;
+    ::org::scalegraph::python::NativePyObject*  pyObject;
     pyObject = ::org::scalegraph::python::NativePyObject::_make();
-    pyObject.FMGL(pointer) = pModule;
+    pyObject->FMGL(pointer) = pModule;
     return pyObject;
 }
 
-void NativePython::calltest(::org::scalegraph::python::NativePyObject module) {
+void NativePython::calltest(::org::scalegraph::python::NativePyObject* module) {
     PyObject *pValue;
     PyObject *pArgs;
     PyObject *pFunc;
 
     pArgs = Py_BuildValue("ii", 123L, 456L);
-    pFunc = PyObject_GetAttrString(module.FMGL(pointer), "multiply");
+    pFunc = PyObject_GetAttrString(module->FMGL(pointer), "multiply");
     pValue = PyObject_CallObject(pFunc, pArgs);
 
     fprintf(stderr, "result = %ld\n", PyLong_AsLong(pValue));
