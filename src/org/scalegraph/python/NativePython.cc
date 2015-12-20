@@ -15,6 +15,7 @@
 #include <x10/lang/String.h>
 #include <org/scalegraph/python/NativePython.h>
 #include <org/scalegraph/python/NativePyObject.h>
+#include <org/scalegraph/python/NativePyException.h>
 
 namespace org { namespace scalegraph { namespace python {
 
@@ -49,6 +50,8 @@ void NativePython::test() {
     if (pModule == NULL) {
         PyErr_Print();
         fprintf(stderr, "Failed to load \"%s\"\n", name->c_str());
+
+        ::x10aux::throwException(::x10aux::nullCheck(::org::scalegraph::python::NativePyException::_make()));
     }
 
     ::org::scalegraph::python::NativePyObject  pyObject;

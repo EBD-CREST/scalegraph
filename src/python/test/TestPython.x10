@@ -2,6 +2,7 @@ import x10.io.Console;
 
 import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
+import org.scalegraph.python.NativePyException;
 
 class TestPython {
 
@@ -18,8 +19,12 @@ class TestPython {
 	}
 
 	public def run() {
-		val po = python.importModule("multiply");
-		python.calltest(po);
+		try {
+			val po = python.importModule("multiply");
+			python.calltest(po);
+		} catch (exception :NativePyException) {
+			Console.OUT.println("catched exception");
+		}
 	}
 
 }

@@ -17,13 +17,13 @@ import x10.compiler.NativeCPPInclude;
 import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
-@NativeCPPInclude("NativePython.h")
-@NativeCPPCompilationUnit("NativePython.cc")
-@NativeRep("c++", "org::scalegraph::python::NativePython", "org::scalegraph::python::NativePython", null)
-@Pinned public struct NativePython {
-	public native def this();
-	public native def test(): void;
-//	public native def import(name: String) throws PythonException;
-	public native def importModule(name: String) throws NativePyException :NativePyObject;
-	public native def calltest(module :NativePyObject): void;
+@NativeCPPInclude("NativePyException.h")
+@NativeCPPCompilationUnit("NativePyException.cc")
+@NativeRep("c++", "org::scalegraph::python::NativePyException*", "org::scalegraph::python::NativePyException", null)
+@Pinned public class NativePyException extends CheckedThrowable {
+	public native def incref() :void;
+	public native def xincref() :void;
+	public native def decref() :void;
+	public native def xdecref() :void;
+	public native def clear() :void;
 }
