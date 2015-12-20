@@ -48,10 +48,11 @@ void NativePython::test() {
     Py_XDECREF(pName);
 
     if (pModule == NULL) {
-        PyErr_Print();
+        //        PyErr_Print();
         fprintf(stderr, "Failed to load \"%s\"\n", name->c_str());
 
         ::x10aux::throwException(::x10aux::nullCheck(::org::scalegraph::python::NativePyException::_make()));
+        return NULL;
     }
 
     ::org::scalegraph::python::NativePyObject*  pyObject;

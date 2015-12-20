@@ -21,9 +21,15 @@ import x10.compiler.Pinned;
 @NativeCPPCompilationUnit("NativePyException.cc")
 @NativeRep("c++", "org::scalegraph::python::NativePyException*", "org::scalegraph::python::NativePyException", null)
 @Pinned public class NativePyException extends CheckedThrowable {
-	public native def incref() :void;
-	public native def xincref() :void;
-	public native def decref() :void;
-	public native def xdecref() :void;
-	public native def clear() :void;
+	public var strType: String;
+	public var strValue: String;
+	public var strTraceback: String;
+	var pType: NativePyObject;
+	var pValue: NativePyObject;
+	var pTraceback: NativePyObject;
+	public native def extractExcInfo() :void;
+	public native def INCREF() :void;
+	public native def DECREF() :void;
+	public native def XDECREF() :void;
+	public native def CLEAR() :void;
 }

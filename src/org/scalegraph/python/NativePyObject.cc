@@ -16,13 +16,14 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePyObject* NativePyObject::_make() {
+NativePyObject* NativePyObject::_make(PyObject* po) {
     NativePyObject* ret = new NativePyObject();
-    ret->_constructor();
+    ret->_constructor(po);
     return ret;
 }
 
-void NativePyObject::_constructor() {
+void NativePyObject::_constructor(PyObject* po) {
+    FMGL(pointer) = po;
 }
 
 RTT_CC_DECLS0(NativePyObject, "org.scalegraph.python.NativePyObject", x10aux::RuntimeType::class_kind)

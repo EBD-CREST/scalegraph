@@ -21,9 +21,9 @@ import x10.compiler.Pinned;
 @NativeCPPCompilationUnit("NativePyObject.cc")
 @NativeRep("c++", "org::scalegraph::python::NativePyObject*", "org::scalegraph::python::NativePyObject", null)
 @Pinned public class NativePyObject {
-	public native def incref() :void;
-	public native def xincref() :void;
-	public native def decref() :void;
-	public native def xdecref() :void;
-	public native def clear() :void;
+	public native def INCREF() :void;
+	public native def XINCREF() :void;
+	public native def DECREF() :void;
+	public native def XDECREF() :void;
+	public native def CLEAR() :void;
 }

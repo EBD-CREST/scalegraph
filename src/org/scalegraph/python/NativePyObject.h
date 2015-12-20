@@ -23,28 +23,30 @@ struct NativePyObject {
 
     PyObject*   FMGL(pointer);
 
-    NativePyObject() {}
+    static NativePyObject* _make(PyObject* po = NULL);
+    void _constructor(PyObject* po = NULL);
 
-    static NativePyObject* _make();
-    void _constructor();
-
-    void incref() {
+    PyObject* getPyObject() {
+        return FMGL(pointer);
+    }
+    
+    void INCREF() {
         Py_INCREF(FMGL(pointer));
     }
 
-    void xincref() {
+    void XINCREF() {
         Py_XINCREF(FMGL(pointer));
     }
 
-    void decref() {
+    void DECREF() {
         Py_DECREF(FMGL(pointer));
     }
 
-    void xdecref() {
+    void XDECREF() {
         Py_XDECREF(FMGL(pointer));
     }
 
-    void clear() {
+    void CLEAR() {
         Py_CLEAR(FMGL(pointer));
     }
 

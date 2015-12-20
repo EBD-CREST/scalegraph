@@ -23,32 +23,52 @@
 namespace org { namespace scalegraph { namespace python {
 
 class NativePyException : public ::x10::lang::CheckedThrowable {
+  private:
+    
   public:
     RTT_H_DECLS_CLASS;
 
-    PyObject*   FMGL(pointer);
-
+    ::x10::lang::String* FMGL(strType);
+    ::x10::lang::String* FMGL(strValue);
+    ::x10::lang::String* FMGL(strTraceback);
+    
+    NativePyObject*   FMGL(pType);
+    NativePyObject*   FMGL(pValue);
+    NativePyObject*   FMGL(pTraceback);
+    
     static NativePyException* _make();
     void _constructor();
 
-    void incref() {
-        Py_INCREF(FMGL(pointer));
+    void extractExcInfo();
+
+    void INCREF() {
+        FMGL(pType)->INCREF();
+        FMGL(pValue)->INCREF();
+        FMGL(pTraceback)->INCREF();
     }
 
-    void xincref() {
-        Py_XINCREF(FMGL(pointer));
+    void XINCREF() {
+        FMGL(pType)->XINCREF();
+        FMGL(pValue)->XINCREF();
+        FMGL(pTraceback)->XINCREF();
     }
 
-    void decref() {
-        Py_DECREF(FMGL(pointer));
+    void DECREF() {
+        FMGL(pType)->DECREF();
+        FMGL(pValue)->DECREF();
+        FMGL(pTraceback)->DECREF();
     }
 
-    void xdecref() {
-        Py_XDECREF(FMGL(pointer));
+    void XDECREF() {
+        FMGL(pType)->XDECREF();
+        FMGL(pValue)->XDECREF();
+        FMGL(pTraceback)->XDECREF();
     }
 
-    void clear() {
-        Py_CLEAR(FMGL(pointer));
+    void CLEAR() {
+        FMGL(pType)->CLEAR();
+        FMGL(pValue)->CLEAR();
+        FMGL(pTraceback)->CLEAR();
     }
 
 	// Serialization
