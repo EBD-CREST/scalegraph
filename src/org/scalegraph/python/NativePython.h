@@ -17,6 +17,9 @@
 #define X10_LANG_STRING_H_NODEPS
 #include <x10/lang/String.h>
 #undef X10_LANG_STRING_H_NODEPS
+#define X10_LANG_RAIL_H_NODEPS
+#include <x10/lang/Rail.h>
+#undef X10_LANG_RAIL_H_NODEPS
 #define ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
 #include <org/scalegraph/python/NativePyObject.h>
 #undef ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
@@ -33,8 +36,22 @@ class NativePython {
     static NativePython* _make();
     void _constructor();
 
+    NativePyObject* importImport(::x10::lang::String* name);
+    NativePyObject* importAddModule(::x10::lang::String* name);
+    NativePyObject* moduleGetDict(NativePyObject* module);
+    NativePyObject* dictNew();
+    x10_int dicSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value);
+    NativePyObject* dicGetItemString(NativePyObject* dict, ::x10::lang::String* key);
+    NativePyObject* unicodeFromString(::x10::lang::String* str);
+    ::x10::lang::String* unicodeAsASCIIString(NativePyObject* obj);
+    NativePyObject* longFromLong(x10_long value);
+    x10_long longAsLong(NativePyObject* obj);
+    x10_int runSimpleString(::x10::lang::String* command);
+    NativePyObject* runString(::x10::lang::String* command, NativePyObject* global, NativePyObject* local);
+    NativePyObject* callObject(NativePyObject* callable, ::x10::lang::Rail<NativePyObject* > *args);
+    ::x10::lang::String* objectStr(NativePyObject* obj);
+
     void test();
-    ::org::scalegraph::python::NativePyObject* importModule(::x10::lang::String* name);
     void calltest(::org::scalegraph::python::NativePyObject* module);
     
 	// Serialization

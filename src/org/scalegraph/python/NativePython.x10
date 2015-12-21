@@ -22,8 +22,21 @@ import x10.compiler.Pinned;
 @NativeRep("c++", "org::scalegraph::python::NativePython*", "org::scalegraph::python::NativePython", null)
 @Pinned public class NativePython {
 	public native def this();
+	public native def importImport(name: String) throws NativePyException :NativePyObject;
+	public native def importAddModule(name: String) throws NativePyException :NativePyObject;
+	public native def moduleGetDict(module: NativePyObject) :NativePyObject;
+	public native def dictNew() throws NativePyException :NativePyObject;
+	public native def dicSetItemString(dict: NativePyObject, key: String, value: NativePyObject)  throws NativePyException :Int;
+	public native def dicGetItemString(dict: NativePyObject, key: String) throws NativePyException :NativePyObject;
+	public native def unicodeFromString(str: String) :NativePyObject; 
+	public native def unicodeAsASCIIString(obj: NativePyObject) throws NativePyException :String;
+	public native def longFromLong(value: Long) :NativePyObject;
+	public native def longAsLong(obj: NativePyObject) throws NativePyException :Long;
+	public native def runSimpleString(command: String) :Int;
+	public native def runString(command: String, global: NativePyObject, local: NativePyObject) :NativePyObject;
+	public native def callObject(callable :NativePyObject, args :Rail[NativePyObject]) throws NativePyException :NativePyObject;
+	public native def objectStr(obj: NativePyObject) :String;
+//
 	public native def test(): void;
-//	public native def import(name: String) throws PythonException;
-	public native def importModule(name: String) throws NativePyException :NativePyObject;
 	public native def calltest(module :NativePyObject): void;
 }
