@@ -40,8 +40,8 @@ class NativePython {
     NativePyObject* importAddModule(::x10::lang::String* name);
     NativePyObject* moduleGetDict(NativePyObject* module);
     NativePyObject* dictNew();
-    x10_int dicSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value);
-    NativePyObject* dicGetItemString(NativePyObject* dict, ::x10::lang::String* key);
+    x10_int dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value);
+    NativePyObject* dictGetItemString(NativePyObject* dict, ::x10::lang::String* key);
     NativePyObject* unicodeFromString(::x10::lang::String* str);
     ::x10::lang::String* unicodeAsASCIIString(NativePyObject* obj);
     NativePyObject* longFromLong(x10_long value);

@@ -37,7 +37,9 @@ class NativePyException : public ::x10::lang::CheckedThrowable {
     NativePyObject*   FMGL(pTraceback);
     
     static NativePyException* _make();
+    static NativePyException* _make(const char*);
     void _constructor();
+    void _constructor(const char*);
 
     void extractExcInfo();
 
