@@ -36,6 +36,8 @@ class NativePython {
     static NativePython* _make();
     void _constructor();
 
+    void finalize();
+    void osAfterFork();
     NativePyObject* importImport(::x10::lang::String* name);
     NativePyObject* importAddModule(::x10::lang::String* name);
     NativePyObject* moduleGetDict(NativePyObject* module);

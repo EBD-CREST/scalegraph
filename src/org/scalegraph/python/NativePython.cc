@@ -32,6 +32,14 @@ void NativePython::_constructor() {
     PyRun_SimpleString("sys.path.append(\".\")");
 }
 
+void NativePython::finalize() {
+    Py_Finalize();
+}
+
+void NativePython::osAfterFork() {
+    PyOS_AfterFork();
+}
+
 // Return value: New reference.
 NativePyObject* NativePython::importImport(::x10::lang::String* name) {
     PyObject *pName;
@@ -54,7 +62,7 @@ NativePyObject* NativePython::importImport(::x10::lang::String* name) {
 }
 
 // Return value: Borrowed reference.
-NativePyObject* importAddModule(::x10::lang::String* name) {
+NativePyObject* NativePython::importAddModule(::x10::lang::String* name) {
     PyObject *pModule;
 
     pModule = PyImport_AddModule(name->c_str());
@@ -67,17 +75,19 @@ NativePyObject* importAddModule(::x10::lang::String* name) {
 }
 
 // Return value: Borrowed reference.
-NativePyObject* moduleGetDict(NativePyObject* module) {
+NativePyObject* NativePython::moduleGetDict(NativePyObject* module) {
     PyObject *pObj;
     PyObject *pDict;
 
     if (module == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::moduleGetDict, bad NativePyObject")));
+        return NULL;
     }
 
     pObj = module->getPyObject();
     if (pObj == NULL || !PyModule_Check(pObj)) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::moduleGetDict, bad PyObject")));
+        return NULL;
     }
 
     pDict = PyModule_GetDict(pObj);
@@ -86,7 +96,7 @@ NativePyObject* moduleGetDict(NativePyObject* module) {
 }
 
 // Return value: New reference.
-NativePyObject* dictNew() {
+NativePyObject* NativePython::dictNew() {
     PyObject *pObj;
     pObj = PyDict_New();
     if (pObj == NULL) {
@@ -96,27 +106,31 @@ NativePyObject* dictNew() {
     return NativePyObject::_make(pObj);
 }
 
-x10_int dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value) {
+x10_int NativePython::dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value) {
     int ret;
     PyObject *pDict;
     PyObject *pValue;
 
     if (dict == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictSetItemString, bad NativePyObject for dict")));
+        return -1;
     }
 
     pDict = dict->getPyObject();
     if (pDict == NULL || !PyDict_Check(pDict)) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictSetItemString, bad PyObject for dict")));
+        return -1;
     }
 
     if (value == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictSetItemString, bad NativePyObject for value")));
+        return -1;
     }
 
     pValue = value->getPyObject();
     if (pValue == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictSetItemString, bad PyObject for value")));
+        return -1;
     }
 
     ret = PyDict_SetItemString(pDict, key->c_str(), pValue);
@@ -129,17 +143,19 @@ x10_int dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, Native
 }
 
 // Return value: Borrowed reference.
-NativePyObject* dictGetItemString(NativePyObject* dict, ::x10::lang::String* key) {
+NativePyObject* NativePython::dictGetItemString(NativePyObject* dict, ::x10::lang::String* key) {
     PyObject *pObj;
     PyObject *pDict;
 
     if (dict == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictGetItemString, bad NativePyObject")));
+        return NULL;
     }
 
     pDict = dict->getPyObject();
     if (pDict == NULL || !PyDict_Check(pDict)) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::dictGetItemString, bad PyObject")));
+        return NULL;
     }
 
     pObj = PyDict_GetItemString(pDict, key->c_str());
@@ -151,13 +167,13 @@ NativePyObject* dictGetItemString(NativePyObject* dict, ::x10::lang::String* key
     return NativePyObject::_make(pObj);
 }
 
-NativePyObject* unicodeFromString(::x10::lang::String* str) {
+NativePyObject* NativePython::unicodeFromString(::x10::lang::String* str) {
     PyObject* ret;
     ret = PyUnicode_FromString(str->c_str());
     return NativePyObject::_make(ret);
 }
 
-::x10::lang::String* unicodeAsASCIIString(NativePyObject* obj) {
+::x10::lang::String* NativePython::unicodeAsASCIIString(NativePyObject* obj) {
     ::x10::lang::String* ret;
     if (obj) {
         PyObject* pystr = obj->getPyObject();
@@ -185,7 +201,7 @@ NativePyObject* unicodeFromString(::x10::lang::String* str) {
 }
 
 // Return value: New reference.
-NativePyObject* longFromLong(x10_long value) {
+NativePyObject* NativePython::longFromLong(x10_long value) {
     PyObject* ret;
     ret = PyLong_FromLong(value);
     if (ret == NULL) {
@@ -195,7 +211,7 @@ NativePyObject* longFromLong(x10_long value) {
     return NativePyObject::_make(ret);
 }
 
-x10_long longAsLong(NativePyObject* obj) {
+x10_long NativePython::longAsLong(NativePyObject* obj) {
     x10_long ret;
     if (obj != NULL) {
         ret = PyLong_AsLong(obj->getPyObject());
@@ -208,22 +224,53 @@ x10_long longAsLong(NativePyObject* obj) {
     return 0;
 }
 
-x10_int runSimpleString(::x10::lang::String* command) {
+x10_int NativePython::runSimpleString(::x10::lang::String* command) {
     int ret;
 
     ret = PyRun_SimpleString(command->c_str());
     return ret; // return 0 on success, -1 on failure
 }
 
-NativePyObject* runString(::x10::lang::String* command, NativePyObject* global, NativePyObject* local) {
+// Return value: New reference
+NativePyObject* NativePython::runString(::x10::lang::String* command, NativePyObject* globals, NativePyObject* locals) {
+    PyObject* pObj;
+    PyObject* pGlobals;
+    PyObject* pLocals;
+
+    if (globals == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::runString, bad NativePyObject for globals")));
+        return NULL;
+    }
+    pGlobals = globals->getPyObject();
+    if (pGlobals == NULL || !PyDict_Check(pGlobals)) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::runString, bad PyObject for globals")));
+        return NULL;
+    }
+
+    if (locals == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::runString, bad NativePyObject for locals")));
+        return NULL;
+    }
+    pLocals = locals ->getPyObject();
+    if (pLocals == NULL || !PyDict_Check(pLocals)) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::runString, bad PyObject for localls")));
+        return NULL;
+    }
+    
+    pObj = PyRun_String(command->c_str(), Py_file_input, pGlobals, pLocals);
+    if (pObj == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    
+    return NativePyObject::_make(pObj);
+}
+
+NativePyObject* NativePython::callObject(NativePyObject* callable, ::x10::lang::Rail<NativePyObject* > *args) {
     return NULL;
 }
 
-NativePyObject* callObject(NativePyObject* callable, ::x10::lang::Rail<NativePyObject* > *args) {
-    return NULL;
-}
-
-::x10::lang::String* objectStr(NativePyObject* obj) {
+::x10::lang::String* NativePython::objectStr(NativePyObject* obj) {
     PyObject* pystr;
     ::x10::lang::String* ret;
     if (obj != NULL) {
