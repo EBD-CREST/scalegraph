@@ -167,6 +167,51 @@ NativePyObject* NativePython::dictGetItemString(NativePyObject* dict, ::x10::lan
     return NativePyObject::_make(pObj);
 }
 
+NativePyObject* NativePython::dictFromHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap) {
+    assert(false);
+    return NULL;
+}
+
+::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* NativePython::dictAsHashMap(NativePyObject* dict) {
+    assert(false);
+    return NULL;
+}
+
+NativePyObject* NativePython::dictImportHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap) {
+    assert(false);
+    return NULL;
+}
+        
+NativePyObject* NativePython::listNew() {
+    assert(false);
+    return NULL;
+}
+
+NativePyObject* NativePython::listFromRail(::x10::lang::Rail<NativePyObject* >* rail) {
+    assert(false);
+    return NULL;
+}
+
+::x10::lang::Rail<NativePyObject* >* NativePython::listAsRail(NativePyObject* list) {
+    assert(false);
+    return NULL;
+}
+
+NativePyObject* NativePython::tupleNew() {
+    assert(false);
+    return NULL;
+}
+
+NativePyObject* NativePython::tupleFromRail(::x10::lang::Rail<NativePyObject* >* rail) {
+    assert(false);
+    return NULL;
+}
+
+::x10::lang::Rail<NativePyObject* >* NativePython::tupleAsRail(NativePyObject* tuple) {
+    assert(false);
+    return NULL;
+}
+
 NativePyObject* NativePython::unicodeFromString(::x10::lang::String* str) {
     PyObject* ret;
     ret = PyUnicode_FromString(str->c_str());
