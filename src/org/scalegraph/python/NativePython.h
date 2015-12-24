@@ -37,9 +37,6 @@ class NativePython : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
 
-    static NativePython* _make();
-    void _constructor();
-
     void finalize();
     void osAfterFork();
     NativePyObject* importImport(::x10::lang::String* name);
@@ -79,6 +76,10 @@ class NativePython : public ::x10::lang::X10Class {
 		assert (false);
 	}
     */
+
+    virtual NativePython* NativePython____this__NativePython();
+    void _constructor();
+    static NativePython* _make();
 
     virtual void __fieldInitializers_NativePython();
     

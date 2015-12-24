@@ -20,18 +20,6 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePython* NativePython::_make() {
-    NativePython* ret = new NativePython();
-    ret->_constructor();
-    return ret;
-}
-
-void NativePython::_constructor() {
-    Py_Initialize();
-    PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append(\".\")");
-}
-
 void NativePython::finalize() {
     Py_Finalize();
 }
@@ -358,9 +346,22 @@ void NativePython::calltest(::org::scalegraph::python::NativePyObject* module) {
     fprintf(stderr, "result = %ld\n", PyLong_AsLong(pValue));
 }
 
+NativePython* NativePython::NativePython____this__NativePython() {
+    return this;
+}
 
-//RTT_CC_DECLS0(NativePython, "org.scalegraph.python.NativePython", x10aux::RuntimeType::class_kind)
+void NativePython::_constructor() {
+    this->NativePython::__fieldInitializers_NativePython();
+    Py_Initialize();
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append(\".\")");
+}
 
+NativePython* NativePython::_make() {
+    NativePython* this_ = new (::x10aux::alloc_z< NativePython>())  NativePython();
+    this_->_constructor();
+    return this_;
+}
 
 void NativePython::__fieldInitializers_NativePython() {
     //    this->FMGL(strtmp) = (::x10aux::class_cast_unchecked< ::x10::lang::String*>(reinterpret_cast< ::x10::lang::NullType*>(X10_NULL)));
