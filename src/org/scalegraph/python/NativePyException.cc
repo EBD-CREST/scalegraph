@@ -139,6 +139,37 @@ void NativePyException::extractExcInfo() {
 }
 
 
-RTT_CC_DECLS0(NativePyException, "org.scalegraph.python.NativePyException", x10aux::RuntimeType::class_kind)
+//RTT_CC_DECLS0(NativePyException, "org.scalegraph.python.NativePyException", x10aux::RuntimeType::class_kind)
+
+void NativePyException::__fieldInitializers_NativePyException() {
+    //    this->FMGL(strtmp) = (::x10aux::class_cast_unchecked< ::x10::lang::String*>(reinterpret_cast< ::x10::lang::NullType*>(X10_NULL)));
+}
+const ::x10aux::serialization_id_t NativePyException::_serialization_id = 
+    ::x10aux::DeserializationDispatcher::addDeserializer( NativePyException::_deserializer);
+
+void NativePyException::_serialize_body(::x10aux::serialization_buffer& buf) {
+    //    buf.write(this->FMGL(strtmp));
+    
+}
+
+::x10::lang::Reference*  NativePyException::_deserializer(::x10aux::deserialization_buffer& buf) {
+     NativePyException* this_ = new (::x10aux::alloc_z< NativePyException>())  NativePyException();
+    buf.record_reference(this_);
+    this_->_deserialize_body(buf);
+    return this_;
+}
+
+void NativePyException::_deserialize_body(::x10aux::deserialization_buffer& buf) {
+    //    FMGL(strtmp) = buf.read< ::x10::lang::String*>();
+}
+
+::x10aux::RuntimeType NativePyException::rtt;
+void NativePyException::_initRTT() {
+    if (rtt.initStageOne(&rtt)) return;
+    const ::x10aux::RuntimeType** parents = NULL; 
+    rtt.initStageTwo("NativePyException",::x10aux::RuntimeType::class_kind, 0, parents, 0, NULL, NULL);
+}
+
+
 
 }}} // namespace org { namespace scalegraph { namespace python {

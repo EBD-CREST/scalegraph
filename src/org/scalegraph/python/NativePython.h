@@ -33,11 +33,9 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-class NativePython {
+class NativePython : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
-
-    NativePython() {}
 
     static NativePython* _make();
     void _constructor();
@@ -72,13 +70,30 @@ class NativePython {
     void calltest(::org::scalegraph::python::NativePyObject* module);
     
 	// Serialization
-	static void _serialize(NativePython this_, x10aux::serialization_buffer& buf) {
+    /*
+
+    static void _serialize(NativePython* this_, x10aux::serialization_buffer& buf) {
 		assert (false);
 	}
-	static NativePython _deserializer(x10aux::deserialization_buffer& buf) {
+	static NativePython* _deserializer(x10aux::deserialization_buffer& buf) {
 		assert (false);
 	}
+    */
+
+    virtual void __fieldInitializers_NativePython();
     
+    // Serialization
+    public: static const ::x10aux::serialization_id_t _serialization_id;
+    
+    public: virtual ::x10aux::serialization_id_t _get_serialization_id() {
+         return _serialization_id;
+    }
+    
+    public: virtual void _serialize_body(::x10aux::serialization_buffer& buf);
+    
+    public: static ::x10::lang::Reference* _deserializer(::x10aux::deserialization_buffer& buf);
+    
+    public: void _deserialize_body(::x10aux::deserialization_buffer& buf);
 };
             
 }}} // namespace org { namespace scalegraph { namespace python {

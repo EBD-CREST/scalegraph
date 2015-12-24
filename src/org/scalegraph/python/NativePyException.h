@@ -74,12 +74,29 @@ class NativePyException : public ::x10::lang::CheckedThrowable {
     }
 
 	// Serialization
+    /*
 	static void _serialize(NativePyException this_, x10aux::serialization_buffer& buf) {
 		assert (false);
 	}
 	static NativePyException _deserializer(x10aux::deserialization_buffer& buf) {
 		assert (false);
 	}
+    */
+
+    virtual void __fieldInitializers_NativePyException();
+    
+    // Serialization
+    public: static const ::x10aux::serialization_id_t _serialization_id;
+    
+    public: virtual ::x10aux::serialization_id_t _get_serialization_id() {
+         return _serialization_id;
+    }
+    
+    public: virtual void _serialize_body(::x10aux::serialization_buffer& buf);
+    
+    public: static ::x10::lang::Reference* _deserializer(::x10aux::deserialization_buffer& buf);
+    
+    public: void _deserialize_body(::x10aux::deserialization_buffer& buf);
 };
             
 }}} // namespace org { namespace scalegraph { namespace python {

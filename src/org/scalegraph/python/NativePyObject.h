@@ -17,7 +17,7 @@
 
 namespace org { namespace scalegraph { namespace python {
 
-struct NativePyObject {
+class NativePyObject : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
 
@@ -51,12 +51,30 @@ struct NativePyObject {
     }
 
 	// Serialization
-	static void _serialize(NativePyObject this_, x10aux::serialization_buffer& buf) {
+    /*
+	static void _serialize(NativePyObject* this_, x10aux::serialization_buffer& buf) {
 		assert (false);
 	}
-	static NativePyObject _deserializer(x10aux::deserialization_buffer& buf) {
+	static NativePyObject* _deserializer(x10aux::deserialization_buffer& buf) {
 		assert (false);
 	}
+    */
+
+    virtual void __fieldInitializers_NativePyObject();
+    
+    // Serialization
+    public: static const ::x10aux::serialization_id_t _serialization_id;
+    
+    public: virtual ::x10aux::serialization_id_t _get_serialization_id() {
+         return _serialization_id;
+    }
+    
+    public: virtual void _serialize_body(::x10aux::serialization_buffer& buf);
+    
+    public: static ::x10::lang::Reference* _deserializer(::x10aux::deserialization_buffer& buf);
+    
+    public: void _deserialize_body(::x10aux::deserialization_buffer& buf);
+
 };
             
 }}} // namespace org { namespace scalegraph { namespace python {
