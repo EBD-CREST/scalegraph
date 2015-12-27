@@ -48,7 +48,7 @@ class NativePython : public ::x10::lang::X10Class {
     NativePyObject dictFromHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap);
     ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* dictAsHashMap(NativePyObject dict);
     NativePyObject dictImportHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap);
-    NativePyObject listNew();
+    NativePyObject listNew(x10_long size);
     NativePyObject listFromRail(::x10::lang::Rail<NativePyObject >* rail);
     ::x10::lang::Rail<NativePyObject >* listAsRail(NativePyObject list);
     NativePyObject tupleNew();

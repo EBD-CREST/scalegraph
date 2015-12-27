@@ -34,7 +34,7 @@ import x10.compiler.Pinned;
 	public native def dictFromHashMap(hashmap: HashMap[String, NativePyObject]) throws NativePyException :NativePyObject;
 	public native def dictAsHashMap(dict: NativePyObject) throws NativePyException :HashMap[String, NativePyObject];
 	public native def dictImportHashMap(dict: NativePyObject, hashmap: HashMap[String, NativePyObject]) throws NativePyException :NativePyObject;
-	public native def listNew() throws NativePyException :NativePyObject;
+	public native def listNew(size :Long) throws NativePyException :NativePyObject;
 	public native def listFromRail(rail :Rail[NativePyObject]) throws NativePyException :NativePyObject;
 	public native def listAsRail(list :NativePyObject) throws NativePyException :Rail[NativePyObject];
 	public native def tupleNew() throws NativePyException :NativePyObject;
