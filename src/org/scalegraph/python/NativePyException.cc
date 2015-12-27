@@ -20,7 +20,7 @@ namespace org { namespace scalegraph { namespace python {
 
 // Exception constructor that is used when PyErr_Occured() is true
 NativePyException* NativePyException::_make() {
-    NativePyException* this_ = new NativePyException();
+    NativePyException* this_ = new (::x10aux::alloc_z<NativePyException>()) NativePyException();
     this_->_constructor();
     return this_;
 }
