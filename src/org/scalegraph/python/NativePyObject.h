@@ -15,65 +15,97 @@
 #include <Python.h>
 #include <x10rt.h>
 
+#define X10_LANG_ANY_H_NODEPS
+#include <x10/lang/Any.h>
+#undef X10_LANG_ANY_H_NODEPS
+
 namespace org { namespace scalegraph { namespace python {
 
-class NativePyObject : public ::x10::lang::X10Class {
+class NativePyObject;
+
+class NativePyObject {
+  private:
+    PyObject* pyObject;
+    
   public:
-    RTT_H_DECLS_CLASS;
+    RTT_H_DECLS_STRUCT;
 
-    PyObject*   FMGL(pointer);
+    NativePyObject* operator->() { return this; }
+    bool operator==(void* pointer) { return pyObject == pointer; }
+    bool operator!=(void* pointer) { return pyObject != pointer; }
+    NativePyObject(void* pointer) { pyObject = static_cast<PyObject*>(pointer); }
+    NativePyObject() {}
+    
+    PyObject* getPyObject() { return pyObject; }
+    
+    static ::x10aux::itable_entry _itables[2];
 
-    static NativePyObject* _make(PyObject* po = NULL);
-    void _constructor(PyObject* po = NULL);
+    ::x10aux::itable_entry* _getITables() { return _itables; }
+    
+    static  ::x10::lang::Any::itable<  NativePyObject > _itable_0;
+    
+    static ::x10aux::itable_entry _iboxitables[2];
+    
+    ::x10aux::itable_entry* _getIBoxITables() { return _iboxitables; }
+    
+    static  NativePyObject _alloc(){ NativePyObject t; assert(false); return t; }
 
-    PyObject* getPyObject() {
-        return FMGL(pointer);
+    void _constructor(PyObject* pyobj = NULL) {
+        //        (*this) -> NativePyObject::__fieldInitializers_NativePyObject();
+        pyObject = pyobj;
+    }
+    static  NativePyObject _make(PyObject* pyobj = NULL) {
+        NativePyObject this_;
+        this_->_constructor(pyobj);
+        return this_;
     }
     
+     ::x10::lang::String* typeName();
+     ::x10::lang::String* toString();
+    x10_int hashCode();
+    x10_boolean equals( ::x10::lang::Any* other);
+    x10_boolean equals( NativePyObject other) {
+        return pyObject == other->getPyObject();
+    }
+    x10_boolean _struct_equals( ::x10::lang::Any* other);
+    x10_boolean _struct_equals( NativePyObject other) {
+        return pyObject == other->getPyObject();
+    }
+     NativePyObject NativePyObject____this__NativePyObject() {
+        return (*this);
+    }
+    void __fieldInitializers_NativePyObject() {
+    }
+    
+    static void _serialize( NativePyObject this_, ::x10aux::serialization_buffer& buf);
+    
+    static  NativePyObject _deserialize(::x10aux::deserialization_buffer& buf) {
+         NativePyObject this_;
+        this_->_deserialize_body(buf);
+        return this_;
+    }
+    
+    void _deserialize_body(::x10aux::deserialization_buffer& buf);
+    
     void INCREF() {
-        Py_INCREF(FMGL(pointer));
+        Py_INCREF(pyObject);
     }
 
     void XINCREF() {
-        Py_XINCREF(FMGL(pointer));
+        Py_XINCREF(pyObject);
     }
 
     void DECREF() {
-        Py_DECREF(FMGL(pointer));
+        Py_DECREF(pyObject);
     }
 
     void XDECREF() {
-        Py_XDECREF(FMGL(pointer));
+        Py_XDECREF(pyObject);
     }
 
     void CLEAR() {
-        Py_CLEAR(FMGL(pointer));
+        Py_CLEAR(pyObject);
     }
-
-	// Serialization
-    /*
-	static void _serialize(NativePyObject* this_, x10aux::serialization_buffer& buf) {
-		assert (false);
-	}
-	static NativePyObject* _deserializer(x10aux::deserialization_buffer& buf) {
-		assert (false);
-	}
-    */
-
-    virtual void __fieldInitializers_NativePyObject();
-    
-    // Serialization
-    public: static const ::x10aux::serialization_id_t _serialization_id;
-    
-    public: virtual ::x10aux::serialization_id_t _get_serialization_id() {
-         return _serialization_id;
-    }
-    
-    public: virtual void _serialize_body(::x10aux::serialization_buffer& buf);
-    
-    public: static ::x10::lang::Reference* _deserializer(::x10aux::deserialization_buffer& buf);
-    
-    public: void _deserialize_body(::x10aux::deserialization_buffer& buf);
 
 };
             

@@ -12,49 +12,79 @@
 #include <Python.h>
 
 #include <x10aux/config.h>
+#include <x10/lang/String.h>
 #include <org/scalegraph/python/NativePyObject.h>
 
 namespace org { namespace scalegraph { namespace python {
 
-NativePyObject* NativePyObject::_make(PyObject* po) {
-    NativePyObject* ret = new NativePyObject();
-    ret->_constructor(po);
-    return ret;
+class NativePyObject_ibox0 : public ::x10::lang::IBox< NativePyObject> {
+public:
+    static  ::x10::lang::Any::itable< NativePyObject_ibox0 > itable;
+    x10_boolean equals( ::x10::lang::Any* arg0) {
+        return this->value->equals(arg0);
+    }
+    x10_int hashCode() {
+        return this->value->hashCode();
+    }
+     ::x10::lang::String* toString() {
+        return this->value->toString();
+    }
+     ::x10::lang::String* typeName() {
+        return this->value->typeName();
+    }
+    
+};
+ ::x10::lang::Any::itable< NativePyObject_ibox0 >  NativePyObject_ibox0::itable(&NativePyObject_ibox0::equals, &NativePyObject_ibox0::hashCode, &NativePyObject_ibox0::toString, &NativePyObject_ibox0::typeName);
+ ::x10::lang::Any::itable<  NativePyObject >  NativePyObject::_itable_0(&NativePyObject::equals, &NativePyObject::hashCode, &NativePyObject::toString, &NativePyObject::typeName);
+::x10aux::itable_entry NativePyObject::_itables[2] = {::x10aux::itable_entry(&::x10aux::getRTT< ::x10::lang::Any>, &NativePyObject::_itable_0), ::x10aux::itable_entry(NULL, (void*)" NativePyObject")};
+::x10aux::itable_entry NativePyObject::_iboxitables[2] = {::x10aux::itable_entry(&::x10aux::getRTT< ::x10::lang::Any>, &NativePyObject_ibox0::itable), ::x10aux::itable_entry(NULL, (void*)" NativePyObject")};
+
+
+ ::x10::lang::String* NativePyObject::typeName(){
+    return ::x10aux::type_name((*this));
+}
+ ::x10::lang::String* NativePyObject::toString() {
+     return ::x10::lang::String::_make("<NativePyObject>", false);
+    
+}
+x10_int NativePyObject::hashCode() {
+    x10_int result = ((x10_int)1);
+    assert(false);
+    return result;
+    
+}
+x10_boolean NativePyObject::equals( ::x10::lang::Any* other) {
+    if (!(::x10aux::instanceof< NativePyObject>(other))) {
+        return false;
+        
+    }
+    return (*this) -> NativePyObject::equals(::x10aux::class_cast< NativePyObject>(other));
+    
+}
+x10_boolean NativePyObject::_struct_equals( ::x10::lang::Any* other) {
+    if (!(::x10aux::instanceof< NativePyObject>(other))) {
+        return false;
+        
+    }
+    return (*this) -> NativePyObject::_struct_equals(::x10aux::class_cast< NativePyObject>(other));
+    
+}
+void  NativePyObject::_serialize( NativePyObject this_, ::x10aux::serialization_buffer& buf) {
+    
 }
 
-void NativePyObject::_constructor(PyObject* po) {
-    FMGL(pointer) = po;
+void  NativePyObject::_deserialize_body(::x10aux::deserialization_buffer& buf) {
+    assert(false);
 }
 
-//RTT_CC_DECLS0(NativePyObject, "org.scalegraph.python.NativePyObject", x10aux::RuntimeType::class_kind)
-
-void NativePyObject::__fieldInitializers_NativePyObject() {
-    //    this->FMGL(strtmp) = (::x10aux::class_cast_unchecked< ::x10::lang::String*>(reinterpret_cast< ::x10::lang::NullType*>(X10_NULL)));
-}
-const ::x10aux::serialization_id_t NativePyObject::_serialization_id = 
-    ::x10aux::DeserializationDispatcher::addDeserializer( NativePyObject::_deserializer);
-
-void NativePyObject::_serialize_body(::x10aux::serialization_buffer& buf) {
-    //    buf.write(this->FMGL(strtmp));
-}
-
-::x10::lang::Reference*  NativePyObject::_deserializer(::x10aux::deserialization_buffer& buf) {
-     NativePyObject* this_ = new (::x10aux::alloc_z< NativePyObject>())  NativePyObject();
-    buf.record_reference(this_);
-    this_->_deserialize_body(buf);
-    return this_;
-}
-
-void NativePyObject::_deserialize_body(::x10aux::deserialization_buffer& buf) {
-    //    FMGL(strtmp) = buf.read< ::x10::lang::String*>();
-}
 
 ::x10aux::RuntimeType NativePyObject::rtt;
 void NativePyObject::_initRTT() {
     if (rtt.initStageOne(&rtt)) return;
-    const ::x10aux::RuntimeType** parents = NULL; 
-    rtt.initStageTwo("NativePyObject",::x10aux::RuntimeType::class_kind, 0, parents, 0, NULL, NULL);
+    const ::x10aux::RuntimeType* parents[1] = { ::x10aux::getRTT< ::x10::lang::Any>()};
+    rtt.initStageTwo("NativePyObject",::x10aux::RuntimeType::struct_kind, 1, parents, 0, NULL, NULL);
 }
+
 
 
 }}} // namespace org { namespace scalegraph { namespace python {

@@ -39,32 +39,32 @@ class NativePython : public ::x10::lang::X10Class {
 
     void finalize();
     void osAfterFork();
-    NativePyObject* importImport(::x10::lang::String* name);
-    NativePyObject* importAddModule(::x10::lang::String* name);
-    NativePyObject* moduleGetDict(NativePyObject* module);
-    NativePyObject* dictNew();
-    x10_int dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value);
-    NativePyObject* dictGetItemString(NativePyObject* dict, ::x10::lang::String* key);
-    NativePyObject* dictFromHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap);
-    ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* dictAsHashMap(NativePyObject* dict);
-    NativePyObject* dictImportHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap);
-    NativePyObject* listNew();
-    NativePyObject* listFromRail(::x10::lang::Rail<NativePyObject* >* rail);
-    ::x10::lang::Rail<NativePyObject* >* listAsRail(NativePyObject* list);
-    NativePyObject* tupleNew();
-    NativePyObject* tupleFromRail(::x10::lang::Rail<NativePyObject* >* rail);
-    ::x10::lang::Rail<NativePyObject* >* tupleAsRail(NativePyObject* tuple);
-    NativePyObject* unicodeFromString(::x10::lang::String* str);
-    ::x10::lang::String* unicodeAsASCIIString(NativePyObject* obj);
-    NativePyObject* longFromLong(x10_long value);
-    x10_long longAsLong(NativePyObject* obj);
+    NativePyObject importImport(::x10::lang::String* name);
+    NativePyObject importAddModule(::x10::lang::String* name);
+    NativePyObject moduleGetDict(NativePyObject module);
+    NativePyObject dictNew();
+    x10_int dictSetItemString(NativePyObject dict, ::x10::lang::String* key, NativePyObject value);
+    NativePyObject dictGetItemString(NativePyObject dict, ::x10::lang::String* key);
+    NativePyObject dictFromHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap);
+    ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* dictAsHashMap(NativePyObject dict);
+    NativePyObject dictImportHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap);
+    NativePyObject listNew();
+    NativePyObject listFromRail(::x10::lang::Rail<NativePyObject >* rail);
+    ::x10::lang::Rail<NativePyObject >* listAsRail(NativePyObject list);
+    NativePyObject tupleNew();
+    NativePyObject tupleFromRail(::x10::lang::Rail<NativePyObject >* rail);
+    ::x10::lang::Rail<NativePyObject >* tupleAsRail(NativePyObject tuple);
+    NativePyObject unicodeFromString(::x10::lang::String* str);
+    ::x10::lang::String* unicodeAsASCIIString(NativePyObject obj);
+    NativePyObject longFromLong(x10_long value);
+    x10_long longAsLong(NativePyObject obj);
     x10_int runSimpleString(::x10::lang::String* command);
-    NativePyObject* runString(::x10::lang::String* command, NativePyObject* global, NativePyObject* local);
-    NativePyObject* callObject(NativePyObject* callable, ::x10::lang::Rail<NativePyObject* > *args);
-    ::x10::lang::String* objectStr(NativePyObject* obj);
+    NativePyObject runString(::x10::lang::String* command, NativePyObject global, NativePyObject local);
+    NativePyObject callObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args);
+    ::x10::lang::String* objectStr(NativePyObject obj);
 
     void test();
-    void calltest(::org::scalegraph::python::NativePyObject* module);
+    void calltest(NativePyObject module);
     
 	// Serialization
     /*

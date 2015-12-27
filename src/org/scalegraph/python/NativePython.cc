@@ -29,7 +29,7 @@ void NativePython::osAfterFork() {
 }
 
 // Return value: New reference.
-NativePyObject* NativePython::importImport(::x10::lang::String* name) {
+NativePyObject NativePython::importImport(::x10::lang::String* name) {
     PyObject *pName;
     PyObject *pModule;
 
@@ -50,7 +50,7 @@ NativePyObject* NativePython::importImport(::x10::lang::String* name) {
 }
 
 // Return value: Borrowed reference.
-NativePyObject* NativePython::importAddModule(::x10::lang::String* name) {
+NativePyObject NativePython::importAddModule(::x10::lang::String* name) {
     PyObject *pModule;
 
     pModule = PyImport_AddModule(name->c_str());
@@ -63,7 +63,7 @@ NativePyObject* NativePython::importAddModule(::x10::lang::String* name) {
 }
 
 // Return value: Borrowed reference.
-NativePyObject* NativePython::moduleGetDict(NativePyObject* module) {
+NativePyObject NativePython::moduleGetDict(NativePyObject module) {
     PyObject *pObj;
     PyObject *pDict;
 
@@ -84,7 +84,7 @@ NativePyObject* NativePython::moduleGetDict(NativePyObject* module) {
 }
 
 // Return value: New reference.
-NativePyObject* NativePython::dictNew() {
+NativePyObject NativePython::dictNew() {
     PyObject *pObj;
     pObj = PyDict_New();
     if (pObj == NULL) {
@@ -94,7 +94,7 @@ NativePyObject* NativePython::dictNew() {
     return NativePyObject::_make(pObj);
 }
 
-x10_int NativePython::dictSetItemString(NativePyObject* dict, ::x10::lang::String* key, NativePyObject* value) {
+x10_int NativePython::dictSetItemString(NativePyObject dict, ::x10::lang::String* key, NativePyObject value) {
     int ret;
     PyObject *pDict;
     PyObject *pValue;
@@ -131,7 +131,7 @@ x10_int NativePython::dictSetItemString(NativePyObject* dict, ::x10::lang::Strin
 }
 
 // Return value: Borrowed reference.
-NativePyObject* NativePython::dictGetItemString(NativePyObject* dict, ::x10::lang::String* key) {
+NativePyObject NativePython::dictGetItemString(NativePyObject dict, ::x10::lang::String* key) {
     PyObject *pObj;
     PyObject *pDict;
 
@@ -155,60 +155,60 @@ NativePyObject* NativePython::dictGetItemString(NativePyObject* dict, ::x10::lan
     return NativePyObject::_make(pObj);
 }
 
-NativePyObject* NativePython::dictFromHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap) {
+NativePyObject NativePython::dictFromHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap) {
     assert(false);
     return NULL;
 }
 
-::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* NativePython::dictAsHashMap(NativePyObject* dict) {
+::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* NativePython::dictAsHashMap(NativePyObject dict) {
     assert(false);
     return NULL;
 }
 
-NativePyObject* NativePython::dictImportHashMap(NativePyObject* dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject* >* hashmap) {
+NativePyObject NativePython::dictImportHashMap(NativePyObject dict, ::x10::util::HashMap< ::x10::lang::String*, NativePyObject >* hashmap) {
     assert(false);
     return NULL;
 }
         
-NativePyObject* NativePython::listNew() {
+NativePyObject NativePython::listNew() {
     assert(false);
     return NULL;
 }
 
-NativePyObject* NativePython::listFromRail(::x10::lang::Rail<NativePyObject* >* rail) {
+NativePyObject NativePython::listFromRail(::x10::lang::Rail<NativePyObject >* rail) {
     assert(false);
     return NULL;
 }
 
-::x10::lang::Rail<NativePyObject* >* NativePython::listAsRail(NativePyObject* list) {
+::x10::lang::Rail<NativePyObject >* NativePython::listAsRail(NativePyObject list) {
     assert(false);
     return NULL;
 }
 
-NativePyObject* NativePython::tupleNew() {
+NativePyObject NativePython::tupleNew() {
     assert(false);
     return NULL;
 }
 
-NativePyObject* NativePython::tupleFromRail(::x10::lang::Rail<NativePyObject* >* rail) {
+NativePyObject NativePython::tupleFromRail(::x10::lang::Rail<NativePyObject >* rail) {
     assert(false);
     return NULL;
 }
 
-::x10::lang::Rail<NativePyObject* >* NativePython::tupleAsRail(NativePyObject* tuple) {
+::x10::lang::Rail<NativePyObject >* NativePython::tupleAsRail(NativePyObject tuple) {
     assert(false);
     return NULL;
 }
 
-NativePyObject* NativePython::unicodeFromString(::x10::lang::String* str) {
+NativePyObject NativePython::unicodeFromString(::x10::lang::String* str) {
     PyObject* ret;
     ret = PyUnicode_FromString(str->c_str());
     return NativePyObject::_make(ret);
 }
 
-::x10::lang::String* NativePython::unicodeAsASCIIString(NativePyObject* obj) {
+::x10::lang::String* NativePython::unicodeAsASCIIString(NativePyObject obj) {
     ::x10::lang::String* ret;
-    if (obj) {
+    if (obj != NULL) {
         PyObject* pystr = obj->getPyObject();
         if (pystr && PyUnicode_Check(pystr)) {
             PyObject* tmp = PyUnicode_AsEncodedString(pystr, "ASCII", "strict");
@@ -234,7 +234,7 @@ NativePyObject* NativePython::unicodeFromString(::x10::lang::String* str) {
 }
 
 // Return value: New reference.
-NativePyObject* NativePython::longFromLong(x10_long value) {
+NativePyObject NativePython::longFromLong(x10_long value) {
     PyObject* ret;
     ret = PyLong_FromLong(value);
     if (ret == NULL) {
@@ -244,7 +244,7 @@ NativePyObject* NativePython::longFromLong(x10_long value) {
     return NativePyObject::_make(ret);
 }
 
-x10_long NativePython::longAsLong(NativePyObject* obj) {
+x10_long NativePython::longAsLong(NativePyObject obj) {
     x10_long ret;
     if (obj != NULL) {
         ret = PyLong_AsLong(obj->getPyObject());
@@ -265,7 +265,7 @@ x10_int NativePython::runSimpleString(::x10::lang::String* command) {
 }
 
 // Return value: New reference
-NativePyObject* NativePython::runString(::x10::lang::String* command, NativePyObject* globals, NativePyObject* locals) {
+NativePyObject NativePython::runString(::x10::lang::String* command, NativePyObject globals, NativePyObject locals) {
     PyObject* pObj;
     PyObject* pGlobals;
     PyObject* pLocals;
@@ -299,11 +299,11 @@ NativePyObject* NativePython::runString(::x10::lang::String* command, NativePyOb
     return NativePyObject::_make(pObj);
 }
 
-NativePyObject* NativePython::callObject(NativePyObject* callable, ::x10::lang::Rail<NativePyObject* > *args) {
+NativePyObject NativePython::callObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args) {
     return NULL;
 }
 
-::x10::lang::String* NativePython::objectStr(NativePyObject* obj) {
+::x10::lang::String* NativePython::objectStr(NativePyObject obj) {
     PyObject* pystr;
     ::x10::lang::String* ret;
     if (obj != NULL) {
@@ -334,13 +334,13 @@ void NativePython::test() {
                        "sys.stdout.flush()\n");
 }
 
-void NativePython::calltest(::org::scalegraph::python::NativePyObject* module) {
+void NativePython::calltest(NativePyObject module) {
     PyObject *pValue;
     PyObject *pArgs;
     PyObject *pFunc;
 
     pArgs = Py_BuildValue("ii", 123L, 456L);
-    pFunc = PyObject_GetAttrString(module->FMGL(pointer), "multiply");
+    pFunc = PyObject_GetAttrString(module->getPyObject(), "multiply");
     pValue = PyObject_CallObject(pFunc, pArgs);
 
     fprintf(stderr, "result = %ld\n", PyLong_AsLong(pValue));

@@ -32,9 +32,9 @@ class NativePyException : public ::x10::lang::CheckedThrowable {
     ::x10::lang::String* FMGL(strValue);
     ::x10::lang::String* FMGL(strTraceback);
     
-    NativePyObject*   FMGL(pType);
-    NativePyObject*   FMGL(pValue);
-    NativePyObject*   FMGL(pTraceback);
+    NativePyObject   FMGL(pType);
+    NativePyObject   FMGL(pValue);
+    NativePyObject   FMGL(pTraceback);
     
     static NativePyException* _make();
     static NativePyException* _make(const char*);
