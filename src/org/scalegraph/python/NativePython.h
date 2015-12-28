@@ -60,7 +60,7 @@ class NativePython : public ::x10::lang::X10Class {
     x10_long longAsLong(NativePyObject obj);
     x10_int runSimpleString(::x10::lang::String* command);
     NativePyObject runString(::x10::lang::String* command, NativePyObject global, NativePyObject local);
-    NativePyObject callObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args);
+    NativePyObject objectCallObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args);
     ::x10::lang::String* objectStr(NativePyObject obj);
 
     void test();

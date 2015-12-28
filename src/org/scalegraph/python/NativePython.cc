@@ -411,8 +411,29 @@ NativePyObject NativePython::runString(::x10::lang::String* command, NativePyObj
     return NativePyObject::_make(pObj);
 }
 
-NativePyObject NativePython::callObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args) {
-    return NULL;
+// Return value: New reference.
+NativePyObject NativePython::objectCallObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args) {
+
+    if (callable == NULL ||
+        !PyCallable_Check(callable.getPyObject())) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::objectCallObject, bad NativePyObject for callable")));
+        return NULL;
+    }
+    PyObject* pArgs = NULL;
+    if (args != NULL) {
+        pArgs = tupleFromRail(args).getPyObject();
+    }
+
+    PyObject* ret;
+    ret = PyObject_CallObject(callable.getPyObject(), pArgs);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        Py_XDECREF(pArgs);
+        return NULL;
+    }
+
+    Py_XDECREF(pArgs);
+    return ret;
 }
 
 ::x10::lang::String* NativePython::objectStr(NativePyObject obj) {

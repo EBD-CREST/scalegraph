@@ -46,7 +46,7 @@ import x10.compiler.Pinned;
 	public native def longAsLong(obj: NativePyObject) throws NativePyException :Long;
 	public native def runSimpleString(command: String) :Int;
 	public native def runString(command: String, globals: NativePyObject, locals: NativePyObject) throws NativePyException :NativePyObject;
-	public native def callObject(callable :NativePyObject, args :Rail[NativePyObject]) throws NativePyException :NativePyObject;
+	public native def objectCallObject(callable :NativePyObject, args :Rail[NativePyObject]) throws NativePyException :NativePyObject;
 	public native def objectStr(obj: NativePyObject) :String;
 //
 	public native def test(): void;
