@@ -241,19 +241,75 @@ NativePyObject NativePython::listFromRail(::x10::lang::Rail<NativePyObject >* ra
     return ret;
 }
 
-NativePyObject NativePython::tupleNew() {
-    assert(false);
-    return NULL;
+// Return value: New reference.
+NativePyObject NativePython::tupleNew(x10_long size) {
+    PyObject* pLongSize;
+    pLongSize = PyLong_FromLong((long) size);
+    if (pLongSize == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    Py_ssize_t sSizeSize;
+    sSizeSize = PyLong_AsSsize_t(pLongSize);
+    Py_DECREF(pLongSize);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    PyObject* ret;
+    ret = PyTuple_New(sSizeSize);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    return ret;
 }
 
+// Return value: New reference.
+// Reference of each element of the return List is stealed.
 NativePyObject NativePython::tupleFromRail(::x10::lang::Rail<NativePyObject >* rail) {
-    assert(false);
-    return NULL;
+    PyObject* ret;
+    x10_long size = (x10_long)(::x10aux::nullCheck(rail)->FMGL(size));
+    ret = PyTuple_New((Py_ssize_t)size);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    for (x10_long i = 0; i < size; i++) {
+        NativePyObject nitem;
+        nitem = ::x10aux::nullCheck(rail)->x10::lang::Rail<NativePyObject>::__apply(i);
+        if (nitem == NULL) {
+            ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::tupleFromRail, bad PyObject on the Rail")));
+            return NULL;
+        }
+        PyTuple_SetItem(ret, (Py_ssize_t)i, nitem.getPyObject());
+        if (PyErr_Occurred()) {
+            ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+            return NULL;
+        }
+    }
+    return ret;
 }
 
+// Each element of the return rail: Borrowed reference
 ::x10::lang::Rail<NativePyObject >* NativePython::tupleAsRail(NativePyObject tuple) {
-    assert(false);
-    return NULL;
+    if (tuple == NULL ||
+        !PyTuple_Check(tuple.getPyObject())) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::tupleAsRail, bad PyObject argument")));
+        return NULL;
+    }
+
+    PyObject* pTuple = tuple.getPyObject();
+    Py_ssize_t size = PyTuple_Size(pTuple);
+    ::x10::lang::Rail<NativePyObject>* ret =  ::x10::lang::Rail<NativePyObject>::_make((x10_long)size);
+
+    for (x10_long i = 0; i < (x10_long)size; i++) {
+        PyObject* item = PyTuple_GetItem(pTuple, (Py_ssize_t)i);
+        NativePyObject nitem = item;
+        ::x10aux::nullCheck(ret)->x10::lang::Rail<NativePyObject>::__set(i, nitem);
+    }
+    
+    return ret;
 }
 
 NativePyObject NativePython::unicodeFromString(::x10::lang::String* str) {

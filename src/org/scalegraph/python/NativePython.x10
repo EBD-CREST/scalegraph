@@ -37,7 +37,7 @@ import x10.compiler.Pinned;
 	public native def listNew(size :Long) throws NativePyException :NativePyObject;
 	public native def listFromRail(rail :Rail[NativePyObject]) throws NativePyException :NativePyObject;
 	public native def listAsRail(list :NativePyObject) throws NativePyException :Rail[NativePyObject];
-	public native def tupleNew() throws NativePyException :NativePyObject;
+	public native def tupleNew(size :Long) throws NativePyException :NativePyObject;
 	public native def tupleFromRail(rail :Rail[NativePyObject]) throws NativePyException :NativePyObject;
 	public native def tupleAsRail(tuple: NativePyObject) throws NativePyException :Rail[NativePyObject];
 	public native def unicodeFromString(str: String) :NativePyObject; 

@@ -52,6 +52,16 @@ class TestPython {
 		test_listAsRail();
 		test_listAsRail();
 
+		test_tupleNew();
+		test_tupleNew();
+		test_tupleNew();
+		test_tupleFromRail();
+		test_tupleFromRail();
+		test_tupleFromRail();
+		test_tupleAsRail();
+		test_tupleAsRail();
+		test_tupleAsRail();
+
 	}
 
 	public def test_importFile() {
@@ -194,6 +204,76 @@ class TestPython {
 			val locals = python.dictNew();
 			python.runString("result = ['aaa', 'bbb', 'ccc']", globals, locals);
 			val result = python.listAsRail(python.dictGetItemString(locals, "result"));
+			for (i in result.range()) {
+				Console.OUT.println("result(i) = " + python.unicodeAsASCIIString(result(i)));
+			}
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_tupleNew() {
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val testtuple = python.tupleNew(0);
+			python.dictSetItemString(locals, "testtuple", testtuple);
+			python.runString("result = str(testtuple + (5, 4, 3, 2, 1))", globals, locals);
+			val result = python.unicodeAsASCIIString(python.dictGetItemString(locals, "result"));
+			Console.OUT.println("result = " + result);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_tupleFromRail() {
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val testrail = new Rail[NativePyObject](3);
+			testrail(0) = python.longFromLong(111);
+			testrail(1) = python.longFromLong(222);
+			testrail(2) = python.longFromLong(333);
+			val testtuple = python.tupleFromRail(testrail);
+			python.dictSetItemString(locals, "testtuple", testtuple);
+			python.runString("result = str(testtuple + (5, 4, 3, 2, 1))", globals, locals);
+			val result = python.unicodeAsASCIIString(python.dictGetItemString(locals, "result"));
+			Console.OUT.println("result = " + result);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_tupleAsRail() {
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			python.runString("result = ('aaa', 'bbb', 'ccc')", globals, locals);
+			val result = python.tupleAsRail(python.dictGetItemString(locals, "result"));
 			for (i in result.range()) {
 				Console.OUT.println("result(i) = " + python.unicodeAsASCIIString(result(i)));
 			}

@@ -51,7 +51,7 @@ class NativePython : public ::x10::lang::X10Class {
     NativePyObject listNew(x10_long size);
     NativePyObject listFromRail(::x10::lang::Rail<NativePyObject >* rail);
     ::x10::lang::Rail<NativePyObject >* listAsRail(NativePyObject list);
-    NativePyObject tupleNew();
+    NativePyObject tupleNew(x10_long size);
     NativePyObject tupleFromRail(::x10::lang::Rail<NativePyObject >* rail);
     ::x10::lang::Rail<NativePyObject >* tupleAsRail(NativePyObject tuple);
     NativePyObject unicodeFromString(::x10::lang::String* str);
