@@ -62,9 +62,16 @@ class TestPython {
 		test_tupleAsRail();
 		test_tupleAsRail();
 
+		test_objectCallObjectFunc();
+		test_objectCallObjectFunc();
+		test_objectCallObjectFunc();
+		test_objectCallObjectLambda();
+		test_objectCallObjectLambda();
+		test_objectCallObjectLambda();
 	}
 
 	public def test_importFile() {
+		Console.OUT.println("### test_importFile");
 		val python = new NativePython();
 		try {
 			val po = python.importImport("multiply");
@@ -80,6 +87,7 @@ class TestPython {
 	}
 
 	public def test_runSimpleString() {
+		Console.OUT.println("### test_runSimpleString");
 		val python = new NativePython();
 		python.runSimpleString("print('runSimpleString ok')");
 		python.finalize();
@@ -87,6 +95,7 @@ class TestPython {
 	}
 
 	public def test_runString() {
+		Console.OUT.println("### test_runString");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -105,6 +114,7 @@ class TestPython {
 	}
 
 	public def test_dictLong() {
+		Console.OUT.println("### test_dictLong");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -127,6 +137,7 @@ class TestPython {
 	}
 
 	public def test_dictString() {
+		Console.OUT.println("### test_dictString");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -149,6 +160,7 @@ class TestPython {
 	}
 
 	public def test_listNew() {
+		Console.OUT.println("### test_listNew");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -171,6 +183,7 @@ class TestPython {
 	}
 
 	public def test_listFromRail() {
+		Console.OUT.println("### test_listFromRail");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -197,6 +210,7 @@ class TestPython {
 	}
 
 	public def test_listAsRail() {
+		Console.OUT.println("### test_listAsRail");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -219,6 +233,7 @@ class TestPython {
 	}
 
 	public def test_tupleNew() {
+		Console.OUT.println("### test_tupleNew");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -241,6 +256,7 @@ class TestPython {
 	}
 
 	public def test_tupleFromRail() {
+		Console.OUT.println("### test_tupleFromRail()");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -267,6 +283,7 @@ class TestPython {
 	}
 
 	public def test_tupleAsRail() {
+		Console.OUT.println("### test_tupleAsRail()");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -277,6 +294,64 @@ class TestPython {
 			for (i in result.range()) {
 				Console.OUT.println("result(i) = " + python.unicodeAsASCIIString(result(i)));
 			}
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_objectCallObjectFunc() {
+		Console.OUT.println("### test_objectCallObjectFunc()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			python.dictSetItemString(locals, "strleft", python.unicodeFromString("123"));
+			python.dictSetItemString(locals, "strright", python.unicodeFromString("456"));
+			python.runString("def testfunc(a, b):\n" +
+							 "    return a + b\n",
+							 globals, locals);
+			val testrail = new Rail[NativePyObject](2);
+			testrail(0) = python.dictGetItemString(locals, "strleft");
+			testrail(1) = python.dictGetItemString(locals, "strright");
+			val testcall = python.dictGetItemString(locals, "testfunc");
+			val result = python.objectCallObject(testcall, testrail);
+			val str_result = python.unicodeAsASCIIString(result);
+			Console.OUT.println("result = " + str_result);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_objectCallObjectLambda() {
+		Console.OUT.println("### test_objectCallObjectLambda()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			python.dictSetItemString(locals, "left", python.longFromLong(15));
+			python.dictSetItemString(locals, "right", python.longFromLong(2));
+			python.runString("testlambda = lambda a, b: a ** b", globals, locals);
+			val testrail = new Rail[NativePyObject](2);
+			testrail(0) = python.dictGetItemString(locals, "left");
+			testrail(1) = python.dictGetItemString(locals, "right");
+			val testcall = python.dictGetItemString(locals, "testlambda");
+			val result = python.objectCallObject(testcall, testrail);
+			val str_result = python.objectStr(result);
+			Console.OUT.println("result = " + str_result);
 		} catch (exception :NativePyException) {
 			exception.extractExcInfo();
 			Console.OUT.println("catched exception");
