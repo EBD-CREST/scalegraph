@@ -180,6 +180,7 @@ NativePyObject NativePython::listNew(x10_long size) {
     }
     Py_ssize_t sSizeSize;
     sSizeSize = PyLong_AsSsize_t(pLongSize);
+    Py_DECREF(pLongSize);
     if (PyErr_Occurred()) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
         return NULL;
@@ -271,11 +272,11 @@ NativePyObject NativePython::unicodeFromString(::x10::lang::String* str) {
                 char* str = PyBytes_AS_STRING(tmp);
                 ret = ::x10::lang::String::_make(::x10aux::alloc_utils::strdup(str), true);
                 Py_DECREF(tmp);
-                Py_DECREF(pystr);
+                //                Py_DECREF(pystr);
                 return ret;
             } else {
                 ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
-                Py_DECREF(pystr);
+                //                Py_DECREF(pystr);
                 return NULL;
             }
         } else {
