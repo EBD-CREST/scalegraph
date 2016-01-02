@@ -68,6 +68,9 @@ class TestPython {
 		test_objectCallObjectLambda();
 		test_objectCallObjectLambda();
 		test_objectCallObjectLambda();
+		test_objectCallObjectLambdaPickled();
+		test_objectCallObjectLambdaPickled();
+		test_objectCallObjectLambdaPickled();
 	}
 
 	public def test_importFile() {
@@ -362,5 +365,35 @@ class TestPython {
 		python.finalize();
 		return true;
 	}
+
+	public def test_objectCallObjectLambdaPickled() {
+		Console.OUT.println("### test_objectCallObjectLambdaPickled()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			python.dictSetItemString(locals, "five", python.longFromLong(5));
+			python.runString("import cloudpickle\n" +
+							 "squared = lambda x: x ** 2\n" +
+							 "pickled_lambda = cloudpickle.dumps(squared)",
+							 globals, locals);
+			python.runString("import pickle", globals, locals);
+			python.runString("obj=pickle.loads(pickled_lambda)", globals, locals);
+			python.runString("result=obj(five)", globals, locals);
+			val str_result = python.objectStr(python.dictGetItemString(locals, "result"));
+			Console.OUT.println("result = " + str_result);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+
 
 }
