@@ -19,7 +19,7 @@ class TestPython {
 	}
 
 	public def run() {
-/*
+
 		test_importFile();
 		test_runSimpleString();
 		test_runString();
@@ -74,14 +74,22 @@ class TestPython {
 		test_objectCallObjectLambdaPickled();
 		test_objectCallObjectLambdaPickled();
 		test_objectCallObjectLambdaPickled();
-*/
+
 		test_bytesAsMemoryChunk();
 		test_bytesAsMemoryChunk();
 		test_bytesAsMemoryChunk();
 
-		test_memoryViewFromMemoryChunk();
-		test_memoryViewFromMemoryChunk();
-		test_memoryViewFromMemoryChunk();
+		test_memoryViewFromMemoryChunkByte();
+		test_memoryViewFromMemoryChunkByte();
+		test_memoryViewFromMemoryChunkByte();
+
+		test_memoryViewFromMemoryChunkLong();
+		test_memoryViewFromMemoryChunkLong();
+		test_memoryViewFromMemoryChunkLong();
+
+		test_memoryViewFromMemoryChunkDouble();
+		test_memoryViewFromMemoryChunkDouble();
+		test_memoryViewFromMemoryChunkDouble();
 	}
 
 	public def test_importFile() {
@@ -428,8 +436,8 @@ class TestPython {
 		return true;
 	}
 
-	public def test_memoryViewFromMemoryChunk() {
-		Console.OUT.println("### test_memoryViewFromMemoryChunk()");
+	public def test_memoryViewFromMemoryChunkByte() {
+		Console.OUT.println("### test_memoryViewFromMemoryChunkByte()");
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
@@ -450,6 +458,58 @@ class TestPython {
 		return true;
 	}
 
+	public def test_memoryViewFromMemoryChunkLong() {
+		Console.OUT.println("### test_memoryViewFromMemoryChunkLong()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val mc = MemoryChunk.make[Long](5);
+			mc(0) = 12345;
+			mc(1) = 54321;
+			mc(2) = 8056850331;
+			mc(3) = 1330686508;
+			mc(4) = 8972;
+			val pobj = python.memoryViewFromMemoryChunk(mc);
+			python.dictSetItemString(locals, "mview", pobj);
+			python.runString("print(mview.cast('l').tolist())", globals, locals);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
 
+	public def test_memoryViewFromMemoryChunkDouble() {
+		Console.OUT.println("### test_memoryViewFromMemoryChunkDouble()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val mc = MemoryChunk.make[Double](5);
+			mc(0) = 3.14159265;
+			mc(1) = 1.41421356;
+			mc(2) = 2.43620679;
+			mc(3) = 0.4342944819;
+			mc(4) = 65536.0 * 65536.0;
+			val pobj = python.memoryViewFromMemoryChunk(mc);
+			python.dictSetItemString(locals, "mview", pobj);
+			python.runString("print(mview.cast('d').tolist())", globals, locals);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
 
 }

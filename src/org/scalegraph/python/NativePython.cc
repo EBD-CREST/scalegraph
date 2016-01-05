@@ -508,6 +508,43 @@ NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::
 }
 
 
+// Return value: New reference of memoryview object (pointed to memorychunk argument)
+NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_long> mc) {
+    void* mcptr = mc.pointer();
+    long size = mc.size() * sizeof(x10_long);
+    if (mcptr == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bytesFromMemoryChunk, bad MemoryChunk")));
+        return NULL;
+    }
+
+    PyObject* pObj = PyMemoryView_FromMemory(static_cast<char*>(mcptr), size, PyBUF_READ);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    return pObj;
+}
+
+
+// Return value: New reference of memoryview object (pointed to memorychunk argument)
+NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_double> mc) {
+    void* mcptr = mc.pointer();
+    long size = mc.size() * sizeof(x10_double);
+    if (mcptr == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bytesFromMemoryChunk, bad MemoryChunk")));
+        return NULL;
+    }
+
+    PyObject* pObj = PyMemoryView_FromMemory(static_cast<char*>(mcptr), size, PyBUF_READ);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    return pObj;
+}
+
+
+
 void NativePython::test() {
     PyRun_SimpleString("from time import time,ctime\n"
                        "print('Today is', ctime(time()))\n"

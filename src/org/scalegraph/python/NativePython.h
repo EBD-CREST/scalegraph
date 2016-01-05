@@ -67,6 +67,8 @@ class NativePython : public ::x10::lang::X10Class {
     ::x10::lang::String* objectStr(NativePyObject obj);
     ::org::scalegraph::util::MemoryChunk<x10_byte> bytesAsMemoryChunk(NativePyObject obj);
     NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_byte> mc);
+    NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_long> mc);
+    NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_double> mc);
     
     void test();
     void calltest(NativePyObject module);
