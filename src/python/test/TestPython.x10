@@ -1,4 +1,6 @@
 import x10.io.Console;
+import org.scalegraph.util.MemoryChunk;
+import org.scalegraph.util.SString;
 
 import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
@@ -17,6 +19,7 @@ class TestPython {
 	}
 
 	public def run() {
+/*
 		test_importFile();
 		test_runSimpleString();
 		test_runString();
@@ -71,6 +74,14 @@ class TestPython {
 		test_objectCallObjectLambdaPickled();
 		test_objectCallObjectLambdaPickled();
 		test_objectCallObjectLambdaPickled();
+*/
+		test_bytesAsMemoryChunk();
+		test_bytesAsMemoryChunk();
+		test_bytesAsMemoryChunk();
+
+		test_memoryViewFromMemoryChunk();
+		test_memoryViewFromMemoryChunk();
+		test_memoryViewFromMemoryChunk();
 	}
 
 	public def test_importFile() {
@@ -383,6 +394,51 @@ class TestPython {
 			python.runString("result=obj(five)", globals, locals);
 			val str_result = python.objectStr(python.dictGetItemString(locals, "result"));
 			Console.OUT.println("result = " + str_result);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_bytesAsMemoryChunk() {
+		Console.OUT.println("### test_bytesAsMemoryChunk()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			python.runString("result=b'Can you hear me?'", globals, locals);
+			val obj_result = python.dictGetItemString(locals, "result");
+			val mc = python.bytesAsMemoryChunk(obj_result);
+			val sstr = new SString(mc);
+			Console.OUT.println("result = " + sstr.toString());
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
+	public def test_memoryViewFromMemoryChunk() {
+		Console.OUT.println("### test_memoryViewFromMemoryChunk()");
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val sstr = new SString("Yes! I can hear you!!!");
+			val pobj = python.memoryViewFromMemoryChunk(sstr.bytes());
+			python.dictSetItemString(locals, "mview", pobj);
+			python.runString("print(mview.tobytes())", globals, locals);
 		} catch (exception :NativePyException) {
 			exception.extractExcInfo();
 			Console.OUT.println("catched exception");

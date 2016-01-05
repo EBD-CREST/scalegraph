@@ -30,6 +30,9 @@
 #include <org/scalegraph/python/NativePyObject.h>
 #undef ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
 
+namespace org { namespace scalegraph { namespace util { 
+template<class TPMGL(T)> class MemoryChunk;
+} } } 
 
 namespace org { namespace scalegraph { namespace python {
 
@@ -62,7 +65,9 @@ class NativePython : public ::x10::lang::X10Class {
     NativePyObject runString(::x10::lang::String* command, NativePyObject global, NativePyObject local);
     NativePyObject objectCallObject(NativePyObject callable, ::x10::lang::Rail<NativePyObject > *args);
     ::x10::lang::String* objectStr(NativePyObject obj);
-
+    ::org::scalegraph::util::MemoryChunk<x10_byte> bytesAsMemoryChunk(NativePyObject obj);
+    NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_byte> mc);
+    
     void test();
     void calltest(NativePyObject module);
     

@@ -14,6 +14,8 @@
 #include <x10aux/config.h>
 #include <x10/lang/String.h>
 #include <x10/lang/Rail.h>
+#include <x10/lang/Byte.h>
+#include <org/scalegraph/util/MemoryChunk.h>
 #include <org/scalegraph/python/NativePython.h>
 #include <org/scalegraph/python/NativePyObject.h>
 #include <org/scalegraph/python/NativePyException.h>
@@ -458,6 +460,51 @@ NativePyObject NativePython::objectCallObject(NativePyObject callable, ::x10::la
         }
     }
     return NULL;
+}
+
+
+// Return value: New MemoryChunk (memory is allocated)
+::org::scalegraph::util::MemoryChunk<x10_byte> NativePython::bytesAsMemoryChunk(NativePyObject obj) {
+    if (obj == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bytesAsMemoryChunk, bad NativePyObject")));
+        return ::org::scalegraph::util::MemoryChunk<x10_byte>::_make();
+    }
+
+    PyObject* pObj = obj->getPyObject();
+    Py_buffer pBuff;
+    int ret = PyObject_GetBuffer(pObj, &pBuff, PyBUF_SIMPLE);
+    if (ret != 0) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return ::org::scalegraph::util::MemoryChunk<x10_byte>::_make();
+    }
+
+    ::org::scalegraph::util::MemoryChunk<x10_byte> mc = ::org::scalegraph::util::MemoryChunk<x10_byte>::_make(::org::scalegraph::util::MakeStruct<x10_byte >::make(pBuff.len, 0, false, (char*)(void*)__FILE__, __LINE__));
+    void* mcptr = mc.pointer();
+
+    if (mcptr != NULL) {
+        memcpy(mcptr, pBuff.buf, pBuff.len);
+    }
+    PyBuffer_Release(&pBuff);
+    
+    return mc;
+}
+
+
+// Return value: New reference of memoryview object (pointed to memorychunk argument)
+NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_byte> mc) {
+    void* mcptr = mc.pointer();
+    long size = mc.size();
+    if (mcptr == NULL) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bytesFromMemoryChunk, bad MemoryChunk")));
+        return NULL;
+    }
+
+    PyObject* pObj = PyMemoryView_FromMemory(static_cast<char*>(mcptr), size, PyBUF_READ);
+    if (PyErr_Occurred()) {
+        ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
+        return NULL;
+    }
+    return pObj;
 }
 
 

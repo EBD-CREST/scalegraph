@@ -18,6 +18,8 @@ import x10.compiler.NativeCPPInclude;
 import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
+import org.scalegraph.util.MemoryChunk;
+
 @NativeCPPInclude("NativePython.h")
 @NativeCPPCompilationUnit("NativePython.cc")
 @NativeRep("c++", "org::scalegraph::python::NativePython*", "org::scalegraph::python::NativePython", null)
@@ -48,6 +50,10 @@ import x10.compiler.Pinned;
 	public native def runString(command: String, globals: NativePyObject, locals: NativePyObject) throws NativePyException :NativePyObject;
 	public native def objectCallObject(callable :NativePyObject, args :Rail[NativePyObject]) throws NativePyException :NativePyObject;
 	public native def objectStr(obj: NativePyObject) :String;
+
+	public native def bytesAsMemoryChunk(obj: NativePyObject) throws NativePyException :MemoryChunk[Byte];
+	public native def memoryViewFromMemoryChunk(mc: MemoryChunk[Byte]) throws NativePyException :NativePyObject;
+
 //
 	public native def test(): void;
 	public native def calltest(module :NativePyObject): void;

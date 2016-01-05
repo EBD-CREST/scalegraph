@@ -1,5 +1,7 @@
 import x10.io.Console;
 
+import org.scalegraph.util.MemoryChunk;
+
 //import org.scalegraph.python.NativePyObject;
 import SampleStruct;
 
@@ -46,6 +48,20 @@ class SamplePython {
 		}
 
 		return ret;
+	}
+
+	public def testMemoryChunk(param: MemoryChunk[Byte]) {
+		return param.size();
+	}
+
+	public def testMemoryChunk(param: Rail[Byte]) {
+		val mc = MemoryChunk.make[Byte](param, 0);
+		return mc;
+	}
+
+	public def getMemoryChunk(size: Long) {
+		val mc = MemoryChunk.make[Byte](size);
+		return mc;
 	}
 
 }
