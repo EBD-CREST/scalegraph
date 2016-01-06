@@ -371,7 +371,7 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
 		dirArgKeywords.put(NAME_STRONGLYCONNECTEDCOMPONENT,	API_STRONGLYCONNECTEDCOMPONENT);
 		dirArgKeywords.put(NAME_MAXFLOW,				API_MAXFLOW);
-		dirArgKeywords.put(NAME_SPECTRALCLUSTERING,		API_SPECTRALCLUTERING);
+		dirArgKeywords.put(NAME_SPECTRALCLUSTERING,		API_SPECTRALCLUSTERING);
 		dirArgKeywords.put(NAME_XPREGEL,				API_XPREGEL);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
@@ -790,7 +790,7 @@ public class ApiDriver {
 				callMaxFlow(makeGraph());
 				break;
 			case API_SPECTRALCLUSTERING:
-				callSpectralClustering(makeGrph());
+				callSpectralClustering(makeGraph());
 				break;
 			case API_XPREGEL:
 				callXpregel(makeGraph());
@@ -893,7 +893,7 @@ public class ApiDriver {
 				if (valueSCMaxIter <= 0) {
 					throw new ApiException.InvalidOptionValueException(NAME_SC_MAXITER);
 				}
-				if (valueSCThresholed <= 0.0) {
+				if (valueSCThreshold <= 0.0) {
 					throw new ApiException.InvalidOptionValueException(NAME_SC_THRESHOLD);
 				}
 				break;
@@ -1248,6 +1248,9 @@ public class ApiDriver {
 	}
 
 	public def callXpregel(graph :Graph) {
+		val pyXpregel = new PyXpregel();
+
+		pyXpregel.test();
 	}
 
 }
