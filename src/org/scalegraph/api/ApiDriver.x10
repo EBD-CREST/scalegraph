@@ -48,6 +48,8 @@ public class ApiDriver {
 	public static val API_HYPERANF				:Int = 50000n;
 	public static val API_STRONGLYCONNECTEDCOMPONENT	:Int = 60000n;
 	public static val API_MAXFLOW				:Int = 70000n;
+	public static val API_SPECTRALCLUSTERING	:Int = 80000n;
+	public static val API_XPREGEL				:Int = 90000n;
 
 	public static val NAME_PASSTHROUGH				:String = "gen";
 	public static val NAME_PAGERANK					:String = "pr";
@@ -57,6 +59,8 @@ public class ApiDriver {
 	public static val NAME_HYPERANF					:String = "hanf";
 	public static val NAME_STRONGLYCONNECTEDCOMPONENT	:String = "scc";
 	public static val NAME_MAXFLOW					:String = "mf";
+	public static val NAME_SPECTRALCLUSTERING		:String = "sc";
+	public static val NAME_XPREGEL					:String = "xpregel";
 	
 	public static val OPT_INPUT_FS_OS		:Int = 1000n;
 	public static val OPT_INPUT_FS_HDFS		:Int = 1001n;
@@ -198,6 +202,16 @@ public class ApiDriver {
 	public static val NAME_MF_EPS					:String = "--mf-eps";
 	public static val NAME_MF_RECURSIONLIMIT		:String = "--mf-recursionLimit";
 
+	public static val OPT_SC_NUM_CLUSTER			:Int = 80001n;
+	public static val OPT_SC_TOLERANCE				:Int = 80002n;
+	public static val OPT_SC_MAXITER				:Int = 80003n;
+	public static val OPT_SC_THRESHOLD				:Int = 80004n;
+
+	public static val NAME_SC_NUM_CLUSTER			:String = "--sc-num-cluster";
+	public static val NAME_SC_TOLERANCE				:String = "--sc-tolerance";
+	public static val NAME_SC_MAXITER				:String = "--sc-maxiter";
+	public static val NAME_SC_THRESHOLD				:String = "--sc-threshold";
+
 	public val dirArgKeywords :HashMap[String, Int] = new HashMap[String, Int](); 
 
 	public var apiType :Int = API_PASSTHROUGH;
@@ -263,6 +277,11 @@ public class ApiDriver {
 	public var valueMFSinkId			:Long = -1n;
 	public var valueMFEPS				:Double = 1e-6;
 	public var valueMFRecursionLimit	:Long = 1000000;
+
+	public var valueSCNumCluster			:Int = 2n;
+	public var valueSCTolerance				:Double = 0.01;
+	public var valueSCMaxIter				:Int = 1000n;
+	public var valueSCThreshold				:Double = 0.0001;
 
 	public var apiResult :Result;
 
@@ -352,6 +371,8 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_HYPERANF,				API_HYPERANF);
 		dirArgKeywords.put(NAME_STRONGLYCONNECTEDCOMPONENT,	API_STRONGLYCONNECTEDCOMPONENT);
 		dirArgKeywords.put(NAME_MAXFLOW,				API_MAXFLOW);
+		dirArgKeywords.put(NAME_SPECTRALCLUSTERING,		API_SPECTRALCLUTERING);
+		dirArgKeywords.put(NAME_XPREGEL,				API_XPREGEL);
 
 		dirArgKeywords.put(NAME_INPUT_FS_OS,		OPT_INPUT_FS_OS);
 		dirArgKeywords.put(NAME_INPUT_FS_HDFS,		OPT_INPUT_FS_HDFS);
@@ -422,6 +443,10 @@ public class ApiDriver {
 		dirArgKeywords.put(NAME_MF_EPS,				OPT_MF_EPS);
 		dirArgKeywords.put(NAME_MF_RECURSIONLIMIT,	OPT_MF_RECURSIONLIMIT);
 
+		dirArgKeywords.put(NAME_SC_NUM_CLUSTER,		OPT_SC_NUM_CLUSTER);
+		dirArgKeywords.put(NAME_SC_TOLERANCE,		OPT_SC_TOLERANCE);		
+		dirArgKeywords.put(NAME_SC_MAXITER,			OPT_SC_MAXITER);
+		dirArgKeywords.put(NAME_SC_THRESHOLD,		OPT_SC_THRESHOLD);
 	}
 
 	public def execute(args: Rail[String]) throws ApiException {
@@ -480,6 +505,13 @@ public class ApiDriver {
 				// In case the input CSV doesn't have weight column,
 				// The algorithm should be throw an Exception
 				// User may change optInputDataFileWeight
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+				break;
+			case API_SPECTRALCLUSTERING:
+				// Specification is not fixed yet.
+				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
+				break;
+			case API_XPREGEL:
 				optInputDataFileWeight = OPT_INPUT_DATA_FILE_WEIGHT_CSV;
 				break;
 			default:
@@ -700,6 +732,19 @@ public class ApiDriver {
 						valueMFRecursionLimit = Long.parse(splits(1));
 						break;
 
+					case OPT_SC_NUM_CLUSTER:
+						valueSCNumCluster = Int.parse(splits(1));
+						break;
+					case OPT_SC_TOLERANCE:
+						valueSCTolerance = Double.parse(splits(1));
+						break;
+					case OPT_SC_MAXITER:
+						valueSCMaxIter = Int.parse(splits(1));
+						break;
+					case OPT_SC_THRESHOLD:
+						valueSCThreshold = Double.parse(splits(1));
+						break;
+
 					default:
 						throw new ApiException.InvalidOptionException(splits(0));
 				}
@@ -743,6 +788,12 @@ public class ApiDriver {
 				break;
 			case API_MAXFLOW:
 				callMaxFlow(makeGraph());
+				break;
+			case API_SPECTRALCLUSTERING:
+				callSpectralClustering(makeGrph());
+				break;
+			case API_XPREGEL:
+				callXpregel(makeGraph());
 				break;
 			default:
 				assert(false);
@@ -826,6 +877,27 @@ public class ApiDriver {
 				if (valueMFSourceId == valueMFSinkId) {
 					throw new ApiException.InvalidOptionValueException(NAME_MF_SOURCE_ID + " and " + NAME_MF_SINK_ID);
 				}
+				break;
+			case API_SPECTRALCLUSTERING:
+				// Specification is not fixed yet.
+				// the following code is temporary
+				if (valueOutputDataFile.length() == 0n) {
+					throw new ApiException.OptionRequiredException(NAME_OUTPUT_DATA_FILE);
+				}
+				if (valueSCNumCluster < 2n) {
+					throw new ApiException.InvalidOptionValueException(NAME_SC_NUM_CLUSTER);
+				}
+				if (valueSCTolerance <= 0.0) {
+					throw new ApiException.InvalidOptionValueException(NAME_SC_TOLERANCE);
+				}
+				if (valueSCMaxIter <= 0) {
+					throw new ApiException.InvalidOptionValueException(NAME_SC_MAXITER);
+				}
+				if (valueSCThresholed <= 0.0) {
+					throw new ApiException.InvalidOptionValueException(NAME_SC_THRESHOLD);
+				}
+				break;
+			case API_XPREGEL:
 				break;
 			default:
 				break;
@@ -1161,4 +1233,21 @@ public class ApiDriver {
 
 		addResult("\"MaxFlow\"", result.maxFlow.toString());
 	}
+
+	public def callSpectralClustering(graph :Graph) {
+		val sc = new SpectralClustering(valueSCNumCluster,
+										valueSCTolerance,
+										valueSCMaxIter,
+										valueSCThreshold);
+
+		val matrix = graph.createDistSparseMatrix[Double](
+			Config.get().distXPregel(), "weight", false, false);
+		graph.del();
+		val result = sc.execute(matrix);
+		CSV.write(getFilePathOutput(), new NamedDistData(["sc_result" as String], [result as Any]), true);
+	}
+
+	public def callXpregel(graph :Graph) {
+	}
+
 }
