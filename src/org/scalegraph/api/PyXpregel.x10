@@ -11,12 +11,13 @@
 
 package org.scalegraph.api;
 
+import x10.util.ArrayList;
 import org.scalegraph.Config;
 import org.scalegraph.graph.Graph;
-import org.scalegraph.blas.DistSparseMatrix;
-import org.scalegraph.community.SpectralClusteringImpl;
-import org.scalegraph.io.ID;
-import org.scalegraph.util.DistMemoryChunk;
+import org.scalegraph.io.FilePath;
+import org.scalegraph.io.FileAccess;
+import org.scalegraph.io.FileMode;
+import org.scalegraph.io.GenericFile;
 import org.scalegraph.util.Logger;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
@@ -28,7 +29,7 @@ final public class PyXpregel {
 
 	public def this() {}
 
-	public def test() {
+	public def test_memoryViewFromMemoryChunkDouble() {
 		Logger.print("hogehoge...");
 
 		val python = new NativePython();
@@ -54,5 +55,71 @@ final public class PyXpregel {
 		}
 		python.finalize();
 	}
+
+	public def loadClosures() {
+		val path = FilePath(FilePath.FILEPATH_FS_OS, "_xpregel_closure.bin");
+		val file = new GenericFile(path, FileMode.Open, FileAccess.Read);
+
+		val buffSize = 16;
+		val buffArray = new ArrayList[MemoryChunk[Byte]]();
+		var totalSize :Long = 0;
+
+		for (;;) {
+			val buff = MemoryChunk.make[Byte](buffSize);
+			val sizeRead = file.read(buff);
+			if (sizeRead == 0) {
+				buff.del();
+				break;
+			} else {
+				totalSize += sizeRead;
+				buffArray.add(buff);
+			}
+		}
+
+		val buffTotal = MemoryChunk.make[Byte](totalSize);
+		var buffToCopy :Long = totalSize;
+		var buffOffset :Long = 0;
+		for (buff in buffArray) {
+			val sizeCopy = Math.min(buffSize, buffToCopy);
+			MemoryChunk.copy(buff, 0, buffTotal, buffOffset, sizeCopy);
+			buffToCopy -= sizeCopy;
+			buffOffset += sizeCopy;
+			buff.del();
+		}
+
+		return buffTotal;
+	}
+
+	public def test() {
+
+		val closures = loadClosures();
+
+		val python = new NativePython();
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val pobj = python.memoryViewFromMemoryChunk(closures);
+			python.dictSetItemString(locals, "closures", pobj);
+			python.runString("import pickle\n" +
+							 "import xpregel\n" +
+							 "(pickled_compute, pickled_aggregate, pickled_end)=pickle.loads(closures.tobytes())\n" +
+							 "compute=pickle.loads(pickled_compute)\n" +
+							 "aggregate=pickle.loads(pickled_aggregate)\n" +
+							 "end=pickle.loads(pickled_end)\n" +
+							 "compute([],[])\n" +
+							 "print(aggregate([1,2,3,4,5,6,7,8,9,10]))\n",
+							 globals, locals);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		python.finalize();
+		return true;
+	}
+
 
 }
