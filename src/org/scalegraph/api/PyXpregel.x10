@@ -12,6 +12,7 @@
 package org.scalegraph.api;
 
 import x10.util.ArrayList;
+import x10.util.Team;
 import org.scalegraph.Config;
 import org.scalegraph.graph.Graph;
 import org.scalegraph.io.FilePath;
@@ -21,11 +22,14 @@ import org.scalegraph.io.GenericFile;
 import org.scalegraph.util.Logger;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
+import org.scalegraph.util.Team2;
 import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 import org.scalegraph.python.NativePyException;
 
 final public class PyXpregel {
+
+	private static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
 
 	public def this() {}
 
@@ -90,16 +94,17 @@ final public class PyXpregel {
 		return buffTotal;
 	}
 
-	public def test() {
+	public def test_invokeClosure() {
 
-		val closures = loadClosures();
+//		val loadedClosures = loadClosures();
+		val loadedClosures = closures();
 
 		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
 			val locals = python.dictNew();
-			val pobj = python.memoryViewFromMemoryChunk(closures);
+			val pobj = python.memoryViewFromMemoryChunk(loadedClosures);
 			python.dictSetItemString(locals, "closures", pobj);
 			python.runString("import pickle\n" +
 							 "import xpregel\n" +
@@ -121,5 +126,23 @@ final public class PyXpregel {
 		return true;
 	}
 
+	public def shareClosures(loadedClosures :MemoryChunk[Byte]) {
+
+		Team.WORLD.placeGroup().broadcastFlat(() => {
+			PyXpregel.closures() = loadedClosures;
+		});
+
+	}
+
+	public def test() {
+
+		val loadedClosures = loadClosures();
+		shareClosures(loadedClosures);
+
+		Team.WORLD.placeGroup().broadcastFlat(() => {
+			test_invokeClosure();
+		});
+
+	}
 
 }
