@@ -20,7 +20,7 @@ workDir = '/Users/tosiyuki/EBD/scalegraph-dev/build'
 apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/build/apidriver'
 
 
-class base():
+class XPregelBase():
 
     def __init__(self):
         pass
