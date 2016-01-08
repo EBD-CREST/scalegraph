@@ -1248,7 +1248,7 @@ public class ApiDriver {
 	}
 
 	public def callXpregel(graph :Graph) {
-		val pyXpregel = new PyXpregel();
+		val pyXPregel = new PyXPregel();
 
 		pyXpregel.test();
 	}
