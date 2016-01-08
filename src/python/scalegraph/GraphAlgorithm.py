@@ -11,13 +11,7 @@
 
 import subprocess
 import json
-
-
-mpirunPath = 'mpirun'
-mpirunOpts = ['-np', '4']
-workDir = '/Users/tosiyuki/EBD/scalegraph-dev/build'
-apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/build/apidriver'
-
+import config
 
 OS = 231
 HDFS = 820
@@ -25,7 +19,6 @@ FILE = 133
 RMAT = 214
 
 
-    
 class ArgumentError(Exception):
     pass
 
@@ -141,7 +134,7 @@ class GraphAlgorithm:
         try:
             subprocess.run(['rm', '-rf', path],
                            stderr=subprocess.DEVNULL,
-                           cwd=workDir)
+                           cwd=config.work_dir)
         except:
             raise ConfigError("config problem for os command")
 
@@ -166,21 +159,21 @@ class GraphAlgorithm:
     def checkOutputDirOS(self, path):
         try:
             proc = subprocess.run("ls -l " + path + "/* | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numFiles = int(proc.stdout.split()[0])
             proc = subprocess.run("wc " + path + "/* | tail -1",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("head -1 " + path + "/part-00000",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
@@ -193,21 +186,21 @@ class GraphAlgorithm:
     def checkOutputFileOS(self, path):
         try:
             proc = subprocess.run("ls -l " + path + " | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numFiles = int(proc.stdout.split()[0])
             proc = subprocess.run("wc " + path,
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("head -1 " + path,
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
@@ -220,21 +213,21 @@ class GraphAlgorithm:
     def checkOutputDirHDFS(self, path):
         try:
             proc = subprocess.run("hdfs dfs -ls " + path + "/* | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numFiles = int(proc.stdout.split()[0])
             proc = subprocess.run("hdfs dfs -cat " + path + "/* | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("hdfs dfs -cat " + path + "/part-00000 | head -1",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
@@ -247,21 +240,21 @@ class GraphAlgorithm:
     def checkOutputFileHDFS(self, path):
         try:
             proc = subprocess.run("hdfs dfs -ls " + path + " | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numFiles = int(proc.stdout.split()[0])
             proc = subprocess.run("hdfs dfs -cat " + path + " | wc",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
                                   shell=True)
             numLines = int(proc.stdout.split()[0])
             proc = subprocess.run("hdfs dfs -cat " + path + " | head -1",
-                                  cwd=workDir,
+                                  cwd=config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True,
@@ -292,13 +285,13 @@ class GraphAlgorithm:
 
     def callApiDriver(self, args):
        
-        commandline = [mpirunPath] + mpirunOpts + \
-                      [apiDriverPath, self.algorithmName] + args
+        commandline = [config.mpirun_path] + config.mpirun_opts + \
+                      [config.apidriver_path, self.algorithmName] + args
 #        print(commandline)
 
         try:
             proc = subprocess.run(commandline,
-                                  cwd = workDir,
+                                  cwd = config.work_dir,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.DEVNULL,
                                   universal_newlines=True)

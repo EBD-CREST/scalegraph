@@ -10,104 +10,104 @@
 #
 
 import unittest
-import GraphAlgorithm
+import graphalgorithm
 
 
 class TestGraphAlgorithm(unittest.TestCase):
 
     def test_ErrorNoInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             status = self.algorithm.run(output_path="output_test")
 
     def test_ErrorNoInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         output_path="output_test")
             
     def test_ErrorInvalidInputFs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         input_fs=99999,
                                         output_path="output_test")
 
     def test_ErrorNotStrInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         output_path="output_test")
 
     def test_ErrorInvalidRmatScale(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         input_rmat_scale="abc",
                                         output_path="output_test")
 
     def test_ErrorInvalidInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             status = self.algorithm.run(input=99999,
                                         output_path="output_test")
             
     def test_ErrorNoOutput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT)
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT)
 
     def test_ErrorInvalidOutputFs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         output_fs=99999)
         
     def test_ErrorNotStrOutputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path=123)
 
     def test_ErrorTypeExtraOptions(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=99999)
 
     def test_ErrorInvalidExtraOptions(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--cause-error"])
 
     def test_ErrorNoValueInputHeaderSource(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--input-data-file-header-source"])
 
     def test_ErrorNoValueInputHeaderTarget(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--input-data-file-header-target"])
 
     def test_ErrorNoValueInputHeaderWeight(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--input-data-file-header-weight"])
 
     def test_ErrorNoValueOutputHeaderSource(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--output-data-file-header-source"])
 
     def test_ErrorNoValueOutputHeaderTarget(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--output-data-file-header-target"])
 
     def test_ErrorNoValueOutputHeaderWeight(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output_path="output_test",
                                         extra_options=["--output-data-file-header-weight"])
 
@@ -115,7 +115,7 @@ class TestGraphAlgorithm(unittest.TestCase):
 class TestGenerateGraph(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.GenerateGraph()
+        self.algorithm = graphalgorithm.GenerateGraph()
 
     def test_ErrorNoInput(self):
         pass
@@ -133,23 +133,23 @@ class TestGenerateGraph(TestGraphAlgorithm):
         pass
 
     def test_OutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
 
     def test_OutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputSummary, (4, 4097, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputSummary, (4, 16385, 'ID<Long>,source<Long>,target<Long>,weight<Double>'))
 
     def test_HeaderOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
                                     extra_options=["--output-data-file-header-source=newsource",
                                                    "--output-data-file-header-target=newtarget",
@@ -160,54 +160,54 @@ class TestGenerateGraph(TestGraphAlgorithm):
 class TestPageRank(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.PageRank()
+        self.algorithm = graphalgorithm.PageRank()
     
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputSummary, (4, 1025, 'ID<Long>,pagerank<Double>'))
 
     def test_ExtraOptions(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
                                     extra_options=["--pr-damping=0.95", "--pr-eps=0.002", "--pr-niter=50"])
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output_path="output_test",
-                           output_fs=GraphAlgorithm.HDFS)
+                           output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_ChangeEdgeHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-source=newheader",
                                "--output-data-file-header-target=newtarget"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--input-data-file-header-source=newheader",
@@ -215,10 +215,10 @@ class TestPageRank(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
 
     def test_NotReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=not-read"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputSummary, (4, 257, 'ID<Long>,pagerank<Double>'))
@@ -227,52 +227,52 @@ class TestPageRank(TestGraphAlgorithm):
 class TestDegreeDistribution(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.DegreeDistribution()
+        self.algorithm = graphalgorithm.DegreeDistribution()
 
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output_path="output_test",
-                           output_fs=GraphAlgorithm.HDFS)
+                           output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,inoutdeg<Long>')
 
     def test_NotReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=not-read"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
@@ -282,58 +282,58 @@ class TestDegreeDistribution(TestGraphAlgorithm):
 class TestBetweennessCentrality(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.BetweennessCentrality()
+        self.algorithm = graphalgorithm.BetweennessCentrality()
 
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output_path="output_test",
-                           output_fs=GraphAlgorithm.HDFS)
+                           output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ExtraOptions(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
                                     extra_options=["--bc-weighted=true"])
         self.assertEqual(self.algorithm.outputNumFiles, 4)
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=true"])
@@ -341,10 +341,10 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_RandomWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=true",
@@ -353,21 +353,21 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ErrorNoConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            self.algorithm.run(input=graphalgorithm.FILE,
                                input_path="input_test",
                                output_path="output_test",
                                extra_options=["--bc-weighted=true",
                                               "--input-data-file-weight-constant"])
         
     def test_ConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=true",
@@ -376,10 +376,10 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ChangeWeightHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=changed-weight"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=true",
@@ -388,10 +388,10 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
         
     def test_NotReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=not-read"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=false"])
@@ -399,11 +399,11 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
         
     def test_ChangeEdgeHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-source=newheader",
                                "--output-data-file-header-target=newtarget"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--bc-weighted=true",
@@ -413,11 +413,11 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ErrorReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=cause-error"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            self.algorithm.run(input=graphalgorithm.FILE,
                                input_path="input_test",
                                output_path="output_test",
                                extra_options=["--bc-weighted=true"])
@@ -426,59 +426,59 @@ class TestBetweennessCentrality(TestGraphAlgorithm):
 class TestHyperANF(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.HyperANF()
+        self.algorithm = graphalgorithm.HyperANF()
 
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output_path="output_test",
-                           output_fs=GraphAlgorithm.HDFS)
+                           output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_ExtraOptions(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
                                     extra_options=["--hanf-niter=100"])
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 102)
 
     def test_NotReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=not-read"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 1)
@@ -488,22 +488,22 @@ class TestHyperANF(TestGraphAlgorithm):
 class TestStronglyConnectedComponent(unittest.TestCase):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.StronglyConnectedComponent()
+        self.algorithm = graphalgorithm.StronglyConnectedComponent()
 
     def test_ErrorNoInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             status = self.algorithm.run(output1_path="output1_test",
                                         output2_path="output2_test")
 
     def test_ErrorNoInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         output1_path="output1_test",
                                         output2_path="output2_test")
             
     def test_ErrorInvalidInputFs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         input_fs=99999,
                                         output1_path="output1_test",
@@ -511,97 +511,97 @@ class TestStronglyConnectedComponent(unittest.TestCase):
 
 
     def test_ErrorNotStrInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         output1_path="output1_test",
                                         output2_path="output2_test")
 
     def test_ErrorInvalidRmatScale(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         input_rmat_scale="abc",
                                         output1_path="output1_test",
                                         output2_path="output2_test")
 
     def test_ErrorInvalidInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             status = self.algorithm.run(input=99999,
                                         output1_path="output1_test",
                                         output2_path="output2_test")
             
     def test_ErrorNoOutput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT)
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT)
 
     def test_ErrorNoOutput1(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output2_path="output2_test")
 
     def test_ErrorNoOutput2(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test")
             
     def test_ErrorInvalidOutput1Fs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test",
                                         output2_path="output2_test",
                                         output1_fs=99999)
 
     def test_ErrorInvalidOutput2Fs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test",
                                         output2_path="output2_test",
                                         output2_fs=99999)
             
     def test_ErrorNotStrOutput1FilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path=123,
                                         output2_path="output2_test")
 
     def test_ErrorNotStrOutput2FilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test",
                                         output2_path=123)
 
     def test_ErrorTypeExtraOptions(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test",
                                         output2_path="output2_test",
                                         extra_options=99999)
 
     def test_ErrorApiDriver(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            status = self.algorithm.run(input=graphalgorithm.RMAT,
                                         output1_path="output1_test",
                                         output2_path="output2_test",
                                         extra_options=["--invalid-option"])
 
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output1_path="output1_test",
                                     output2_path="output2_test")
         self.assertEqual(self.algorithm.output1Summary, (4, 257, 'ID<Long>,sccA<Long>'))
         self.assertEqual(self.algorithm.output2Summary, (4, 257, 'ID<Long>,sccB<Long>'))
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output1_path="output1_test",
                                     output2_path="output2_test",
-                                    output1_fs=GraphAlgorithm.HDFS,
-                                    output2_fs=GraphAlgorithm.HDFS)
+                                    output1_fs=graphalgorithm.HDFS,
+                                    output2_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.output1Summary, (4, 257, 'ID<Long>,sccA<Long>'))
         self.assertEqual(self.algorithm.output2Summary, (4, 257, 'ID<Long>,sccB<Long>'))
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output1_path="output1_test",
                                     output2_path="output2_test",
                                     input_rmat_scale=10)
@@ -609,9 +609,9 @@ class TestStronglyConnectedComponent(unittest.TestCase):
         self.assertEqual(self.algorithm.output2Summary, (4, 1025, 'ID<Long>,sccB<Long>'))
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output1_path="output1_test",
                            output2_path="output2_test")
@@ -619,33 +619,33 @@ class TestStronglyConnectedComponent(unittest.TestCase):
         self.assertEqual(self.algorithm.output2Summary, (4, 257, 'ID<Long>,sccB<Long>'))
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output1_path="output1_test",
                            output2_path="output2_test",
-                           output1_fs=GraphAlgorithm.HDFS,
-                           output2_fs=GraphAlgorithm.HDFS)
+                           output1_fs=graphalgorithm.HDFS,
+                           output2_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.output1Summary, (4, 257, 'ID<Long>,sccA<Long>'))
         self.assertEqual(self.algorithm.output2Summary, (4, 257, 'ID<Long>,sccB<Long>'))
 
     def test_ExtraOptions(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output1_path="output1_test",
                                     output2_path="output2_test",
-                                    output1_fs=GraphAlgorithm.HDFS,
-                                    output2_fs=GraphAlgorithm.HDFS,
+                                    output1_fs=graphalgorithm.HDFS,
+                                    output2_fs=graphalgorithm.HDFS,
                                     extra_options=["--scc-niter=100", "--enable-log-stderr"])
         self.assertEqual(self.algorithm.output1Summary, (4, 257, 'ID<Long>,sccA<Long>'))
         self.assertEqual(self.algorithm.output2Summary, (4, 257, 'ID<Long>,sccB<Long>'))
         
     def test_NotReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=not-read"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output1_path="output1_test",
                            output2_path="output2_test")
@@ -657,31 +657,31 @@ class TestStronglyConnectedComponent(unittest.TestCase):
 class TestMinimumSpanningTree(TestGraphAlgorithm):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.MinimumSpanningTree()
+        self.algorithm = graphalgorithm.MinimumSpanningTree()
 
     def test_InputRmatOutputOS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test")
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputRmatOutputHDFS(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test",
-                                    output_fs=GraphAlgorithm.HDFS)
+                                    output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
         
     def test_RmatScale(self):
-        status = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        status = self.algorithm.run(input=graphalgorithm.RMAT,
                                     output_path="output_test", input_rmat_scale=10)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputOSOutputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--enable-log-global"])
@@ -689,20 +689,20 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_InputHDFSOutputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
-                           input_fs=GraphAlgorithm.HDFS,
+                           input_fs=graphalgorithm.HDFS,
                            output_path="output_test",
-                           output_fs=GraphAlgorithm.HDFS)
+                           output_fs=graphalgorithm.HDFS)
         self.assertEqual(self.algorithm.outputNumFiles, 1)
         self.assertEqual(self.algorithm.outputNumLines, 1002)
 
     def test_ReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--input-data-file-weight-csv"])
@@ -710,10 +710,10 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_RandomWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--input-data-file-weight-random"])
@@ -721,21 +721,21 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ErrorNoConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            self.algorithm.run(input=graphalgorithm.FILE,
                                input_path="input_test",
                                output_path="output_test",
                                extra_options=["--input-data-file-weight-constant"])
 
     def test_ConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            self.algorithm.run(input=graphalgorithm.FILE,
                                input_path="input_test",
                                output_path="output_test",
                                extra_options=["--input-data-file-weight-constant=0.5"])
@@ -743,10 +743,10 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ChangeWeightHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=changed-weight"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--input-data-file-header-weight=changed-weight"])
@@ -754,19 +754,19 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
         self.assertEqual(self.algorithm.outputHeader, 'ID<Long>,bc<Double>')
 
     def test_ErrorReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=cause-error"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test")
     
     def test_ChangeEdgeHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-source=newheader",
                                "--output-data-file-header-target=newtarget"])
-        self.algorithm.run(input=GraphAlgorithm.FILE,
+        self.algorithm.run(input=graphalgorithm.FILE,
                            input_path="input_test",
                            output_path="output_test",
                            extra_options=["--input-data-file-header-source=newheader",
@@ -779,192 +779,192 @@ class TestMinimumSpanningTree(TestGraphAlgorithm):
 class TestMaxFlow(unittest.TestCase):
 
     def setUp(self):
-        self.algorithm = GraphAlgorithm.MaxFlow()
+        self.algorithm = graphalgorithm.MaxFlow()
 
     def test_ErrorNoInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             result = self.algorithm.run(source_id=0, sink_id=1)
 
     def test_ErrorNoInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.FILE,
                                         source_id=0, sink_id=1)
             
     def test_ErrorInvalidInputFs(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         input_fs=99999,
                                         source_id=0, sink_id=1)
 
     def test_ErrorNotStrInputFilePath(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path=123,
                                         source_id=0, sink_id=1)
 
     def test_ErrorInvalidRmatScale(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         input_rmat_scale="abc",
                                         source_id=0, sink_id=1)
 
     def test_ErrorInvalidInput(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
+        with self.assertRaises(graphalgorithm.ArgumentError):
             result = self.algorithm.run(input=99999,
                                         source_id=0, sink_id=1)
 
     def test_ErrorNoSourceIdNoSinkId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT)
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT)
 
     def test_ErrorNoSourceId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         sink_id=1)
             
     def test_ErrorNoSinkId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=1)
 
     def test_ErrorSourceIdEqualSinkId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=1, sink_id=1)
 
     def test_ErrorInvalidSourceId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id="abc", sink_id=1)
 
     def test_ErrorInvalidSinkId(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id="abc")
 
     def test_ErrorTypeExtraOptions(self):
-        with self.assertRaises(GraphAlgorithm.ArgumentError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ArgumentError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id=1,
                                         extra_options=99999)
 
     def test_ErrorInvalidExtraOptions(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id=1,
                                         extra_options=["--cause-error"])
     
     def test_ErrorNoValueInputHeaderSource(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id=1,
                                         extra_options=["--input-data-file-header-source"])
 
     def test_ErrorNoValueInputHeaderTarget(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id=1,
                                         extra_options=["--input-data-file-header-target"])
 
     def test_ErrorNoValueInputHeaderWeight(self):
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.RMAT,
                                         source_id=0, sink_id=1,
                                         extra_options=["--input-data-file-header-weight"])
 
     def test_InputRmat(self):
-        result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        result = self.algorithm.run(input=graphalgorithm.RMAT,
                                     source_id=0, sink_id=1)
         self.assertEqual(result, 0.0)
 
     def test_RmatScale(self):
-        result = self.algorithm.run(input=GraphAlgorithm.RMAT,
+        result = self.algorithm.run(input=graphalgorithm.RMAT,
                                     input_rmat_scale=6,
                                     source_id=0, sink_id=1)
         self.assertEqual(result, 0.0)
 
     def test_InputOS(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1)
         self.assertEqual(result, 0.0)
 
     def test_InputHDFS(self):
-        gen = GraphAlgorithm.GenerateGraph()
-        gen.run(output_path="input_test", output_fs=GraphAlgorithm.HDFS)
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        gen = graphalgorithm.GenerateGraph()
+        gen.run(output_path="input_test", output_fs=graphalgorithm.HDFS)
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
-                                    input_fs=GraphAlgorithm.HDFS,
+                                    input_fs=graphalgorithm.HDFS,
                                     source_id=0, sink_id=1)
         self.assertEqual(result, 0.0)
 
     def test_ReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test")
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-csv"])
         self.assertEqual(result, 0.0)
 
     def test_RandomWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-random"])
         self.assertEqual(result, 0.0)
 
     def test_ErrorNoConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path="input_test",
                                         source_id=0, sink_id=1,
                                         extra_options=["--input-data-file-weight-constant"])
         
     def test_ConstWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=ignore_this"])
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-weight-constant=0.5"])
         self.assertEqual(result, 0.0)
 
     def test_ChangeWeightHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=changed-weight"])
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-header-weight=changed-weight"])
         self.assertEqual(result, 0.0)
         
     def test_ErrorReadWeight(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-weight=cause-error"])
-        with self.assertRaises(GraphAlgorithm.ScaleGraphError):
-            result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        with self.assertRaises(graphalgorithm.ScaleGraphError):
+            result = self.algorithm.run(input=graphalgorithm.FILE,
                                         input_path="input_test",
                                         source_id=0, sink_id=1)
 
     def test_ChangeEdgeHeader(self):
-        gen = GraphAlgorithm.GenerateGraph()
+        gen = graphalgorithm.GenerateGraph()
         gen.run(output_path="input_test",
                 extra_options=["--output-data-file-header-source=newheader",
                                "--output-data-file-header-target=newtarget"])
-        result = self.algorithm.run(input=GraphAlgorithm.FILE,
+        result = self.algorithm.run(input=graphalgorithm.FILE,
                                     input_path="input_test",
                                     source_id=0, sink_id=1,
                                     extra_options=["--input-data-file-header-source=newheader",
