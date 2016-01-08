@@ -12,12 +12,7 @@
 import cloudpickle
 import pickle
 import subprocess
-
-
-mpirunPath = 'mpirun'
-mpirunOpts = ['-np', '4']
-workDir = '/Users/tosiyuki/EBD/scalegraph-dev/build'
-apiDriverPath = '/Users/tosiyuki/EBD/scalegraph-dev/build/apidriver'
+import config
 
 
 class XPregelBase():
@@ -29,7 +24,7 @@ class XPregelBase():
         pickled_compute = cloudpickle.dumps(self.compute)
         pickled_aggregator = cloudpickle.dumps(self.aggregator)
         pickled_terminator = cloudpickle.dumps(self.terminator)
-        f = open('_xpregel_closure.bin', 'wb')
+        f = open(config.work_dir + '_xpregel_closure.bin', 'wb')
         pickle.dump((pickled_compute, pickled_aggregator, pickled_terminator), f)
         f.close()
         
