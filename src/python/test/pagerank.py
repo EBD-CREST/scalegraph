@@ -8,15 +8,15 @@ class pagerank(xpregel.base):
             value = 1.0 / ctx.numberOfVertices
         else:
             value = 0.15 / ctx.numberOfVertices + 0.85 * sum(messages)
-        ctx.output(abs(value - ctx.value))
+        ctx.aggregate(abs(value - ctx.value))
         ctx.value = value
         next = value / ctx.numberOfOutEdges
-        ctx.sendMessages(ctx.outEdges, next)
+        ctx.sendMessageToAllNeighbors(next)
 
-    def aggregate(self, outputs):
+    def aggregator(self, outputs):
         return sum(outputs)
 
-    def end(self, superstep, aggValue):
+    def terminator(self, superstep, aggregatedValue):
         print("PageRank at superstep " + superstep + " = " + aggValue + "\n")
         return superstep == 30
 

@@ -30,6 +30,18 @@ void NativePython::osAfterFork() {
     PyOS_AfterFork();
 }
 
+void NativePython::sysPathAppend(::x10::lang::String* path) {
+    const char* spath = path->c_str();
+    const char* sformat = "import sys\nsys.path.append('%s')\n";
+    int len_spath = strlen(spath);
+    int len_sformat = strlen(sformat);
+    int len_sbuff = len_spath + len_sformat;
+    char* sbuff = new char[len_sbuff +  1];
+    snprintf(sbuff, len_sbuff, sformat, spath);
+    PyRun_SimpleString(sbuff);
+    delete sbuff;
+}
+
 // Return value: New reference.
 NativePyObject NativePython::importImport(::x10::lang::String* name) {
     PyObject *pName;
@@ -570,13 +582,27 @@ NativePython* NativePython::NativePython____this__NativePython() {
 void NativePython::_constructor() {
     this->NativePython::__fieldInitializers_NativePython();
     Py_Initialize();
-    PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append(\".\")");
+    //    PyRun_SimpleString("import sys");
+    //    PyRun_SimpleString("sys.path.append(\".\")");
+}
+
+void NativePython::_constructor(::x10::lang::String* path) {
+    this->NativePython::__fieldInitializers_NativePython();
+    Py_Initialize();
+    //    PyRun_SimpleString("import sys");
+    //    PyRun_SimpleString("sys.path.append(\".\")");
+    this->sysPathAppend(path);
 }
 
 NativePython* NativePython::_make() {
     NativePython* this_ = new (::x10aux::alloc_z< NativePython>())  NativePython();
     this_->_constructor();
+    return this_;
+}
+
+NativePython* NativePython::_make(::x10::lang::String* path) {
+    NativePython* this_ = new (::x10aux::alloc_z< NativePython>())  NativePython();
+    this_->_constructor(path);
     return this_;
 }
 

@@ -11,6 +11,6 @@
 
 mpirun_path = 'mpirun'
 mpirun_opts = ['-np', '4']
-work_dir = '/Users/tosiyuki/EBD/scalegraph-dev/build'
+work_dir = '/Users/tosiyuki/EBD/scalegraph-dev/build/'
 apidriver_path = '/Users/tosiyuki/EBD/scalegraph-dev/build/apidriver'
 

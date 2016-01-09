@@ -8,10 +8,10 @@ class base():
 
     def save(self):
         pickled_compute = cloudpickle.dumps(self.compute)
-        pickled_aggregate = cloudpickle.dumps(self.aggregate)
-        pickled_end = cloudpickle.dumps(self.end)
+        pickled_aggregator = cloudpickle.dumps(self.aggregator)
+        pickled_terminator = cloudpickle.dumps(self.terminator)
         f = open('_xpregel_closure.bin', 'wb')
-        pickle.dump((pickled_compute, pickled_aggregate, pickled_end), f)
+        pickle.dump((pickled_compute, pickled_aggregator, pickled_terminator), f)
         f.close()
         
     def run(self):

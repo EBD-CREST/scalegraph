@@ -27,8 +27,9 @@ import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 import org.scalegraph.python.NativePyException;
 
-final public class PyXpregel {
+final public class PyXPregel {
 
+	private static val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
 	private static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
 
 	public def this() {}
@@ -36,7 +37,7 @@ final public class PyXpregel {
 	public def test_memoryViewFromMemoryChunkDouble() {
 		Logger.print("hogehoge...");
 
-		val python = new NativePython();
+//		val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -49,7 +50,9 @@ final public class PyXpregel {
 			mc(4) = 65536.0 * 65536.0;
 			val pobj = python.memoryViewFromMemoryChunk(mc);
 			python.dictSetItemString(locals, "mview", pobj);
-			python.runString("print(mview.cast('d').tolist())", globals, locals);
+			python.runString("print(mview.cast('d').tolist())\n" +
+							 "sys.stdout.flush()\n",
+							 globals, locals);
 		} catch (exception :NativePyException) {
 			exception.extractExcInfo();
 			Console.OUT.println("catched exception");
@@ -57,11 +60,11 @@ final public class PyXpregel {
 			Console.OUT.println(exception.strTraceback);
 			exception.DECREF();
 		}
-		python.finalize();
+//		python.finalize();
 	}
 
 	public def loadClosures() {
-		val path = FilePath(FilePath.FILEPATH_FS_OS, "_xpregel_closure.bin");
+		val path = FilePath(FilePath.FILEPATH_FS_OS, "/Users/tosiyuki/EBD/scalegraph-dev/build/" + "_xpregel_closure.bin");
 		val file = new GenericFile(path, FileMode.Open, FileAccess.Read);
 
 		val buffSize = 16;
@@ -96,10 +99,12 @@ final public class PyXpregel {
 
 	public def test_invokeClosure() {
 
+//		val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+
 //		val loadedClosures = loadClosures();
 		val loadedClosures = closures();
 
-		val python = new NativePython();
+//		val python = new NativePython();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -108,12 +113,13 @@ final public class PyXpregel {
 			python.dictSetItemString(locals, "closures", pobj);
 			python.runString("import pickle\n" +
 							 "import xpregel\n" +
-							 "(pickled_compute, pickled_aggregate, pickled_end)=pickle.loads(closures.tobytes())\n" +
+							 "(pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())\n" +
 							 "compute=pickle.loads(pickled_compute)\n" +
-							 "aggregate=pickle.loads(pickled_aggregate)\n" +
-							 "end=pickle.loads(pickled_end)\n" +
+							 "aggregator=pickle.loads(pickled_aggregator)\n" +
+							 "terminator=pickle.loads(pickled_terminator)\n" +
 							 "compute([],[])\n" +
-							 "print(aggregate([1,2,3,4,5,6,7,8,9,10]))\n",
+							 "print(aggregator([1,2,3,4,5,6,7,8,9,10]))\n" +
+							 "sys.stdout.flush()\n",
 							 globals, locals);
 		} catch (exception :NativePyException) {
 			exception.extractExcInfo();
@@ -122,14 +128,14 @@ final public class PyXpregel {
 			Console.OUT.println(exception.strTraceback);
 			exception.DECREF();
 		}
-		python.finalize();
+//		python.finalize();
 		return true;
 	}
 
 	public def shareClosures(loadedClosures :MemoryChunk[Byte]) {
 
 		Team.WORLD.placeGroup().broadcastFlat(() => {
-			PyXpregel.closures() = loadedClosures;
+			PyXPregel.closures() = loadedClosures;
 		});
 
 	}

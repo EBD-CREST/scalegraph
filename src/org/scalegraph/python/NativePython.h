@@ -42,6 +42,7 @@ class NativePython : public ::x10::lang::X10Class {
 
     void finalize();
     void osAfterFork();
+    void sysPathAppend(::x10::lang::String* path);
     NativePyObject importImport(::x10::lang::String* name);
     NativePyObject importAddModule(::x10::lang::String* name);
     NativePyObject moduleGetDict(NativePyObject module);
@@ -86,7 +87,9 @@ class NativePython : public ::x10::lang::X10Class {
 
     virtual NativePython* NativePython____this__NativePython();
     void _constructor();
+    void _constructor(::x10::lang::String* path);
     static NativePython* _make();
+    static NativePython* _make(::x10::lang::String* path);
 
     virtual void __fieldInitializers_NativePython();
     

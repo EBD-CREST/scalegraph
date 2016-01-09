@@ -94,8 +94,9 @@ class TestPython {
 
 	public def test_importFile() {
 		Console.OUT.println("### test_importFile");
-		val python = new NativePython();
+		val python = new NativePython(".");
 		try {
+//			python.sysPathAppend(".");
 			val po = python.importImport("multiply");
 			python.calltest(po);
 		} catch (exception :NativePyException) {

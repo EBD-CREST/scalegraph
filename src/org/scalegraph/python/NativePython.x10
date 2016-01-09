@@ -25,8 +25,10 @@ import org.scalegraph.util.MemoryChunk;
 @NativeRep("c++", "org::scalegraph::python::NativePython*", "org::scalegraph::python::NativePython", null)
 @Pinned public class NativePython {
 	public native def this();
+	public native def this(path: String);
 	public native def finalize() :void;
 	public native def osAfterFork() :void;
+	public native def sysPathAppend(path: String) :void;
 	public native def importImport(name: String) throws NativePyException :NativePyObject;
 	public native def importAddModule(name: String) throws NativePyException :NativePyObject;
 	public native def moduleGetDict(module: NativePyObject) throws NativePyException :NativePyObject;

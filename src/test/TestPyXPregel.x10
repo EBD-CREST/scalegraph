@@ -19,9 +19,12 @@ class TestPyXPregel {
 
 	public def run() {
 
-		val pyxpregel = new PyXpregel();
+		val pyxpregel = new PyXPregel();
 
+//		pyxpregel.test_memoryViewFromMemoryChunkDouble();
 		pyxpregel.test();
+
+		Console.OUT.flush();
 	}
 
 }
