@@ -26,6 +26,7 @@ import org.scalegraph.util.MemoryChunk;
 @Pinned public class NativePython {
 	public native def this();
 	public native def this(path: String);
+	public native def initialize() :void;
 	public native def finalize() :void;
 	public native def osAfterFork() :void;
 	public native def sysPathAppend(path: String) :void;

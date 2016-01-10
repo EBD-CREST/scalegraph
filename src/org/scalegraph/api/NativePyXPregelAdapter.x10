@@ -23,4 +23,5 @@ import x10.compiler.Pinned;
 @NativeRep("c++", "org::scalegraph::api::NativePyXPregelAdapter*", "org::scalegraph::api::NativePyXPregelAdapter", null)
 @Pinned public class NativePyXPregelAdapter {
 	public native def this();
+	public native def initialize() :void;
 }

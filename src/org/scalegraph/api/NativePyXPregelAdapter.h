@@ -16,10 +16,14 @@
 
 namespace org { namespace scalegraph { namespace api {
 
+            
 class NativePyXPregelAdapter : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
 
+    void initialize();
+
+    
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();
     void _constructor();
     static NativePyXPregelAdapter* _make();

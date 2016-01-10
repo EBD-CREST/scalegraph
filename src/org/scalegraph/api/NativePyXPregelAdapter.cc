@@ -18,6 +18,40 @@
 namespace org { namespace scalegraph { namespace api {
 
 
+static PyObject* x10xpregeladapter_placeid(PyObject* self, PyObject* args) {
+
+    if (!PyArg_ParseTuple(args, ":placeid")) {
+        return NULL;
+    }
+    return PyLong_FromLong(12345678);
+}
+
+
+static PyMethodDef X10XPregelAdapterMethods[] = {
+    {"placeid", x10xpregeladapter_placeid, METH_VARARGS,
+     "Return the place id of the runnning process."},
+    {NULL, NULL, 0, NULL}
+};
+
+
+static PyModuleDef X10XPregelAdapterModule = {
+    PyModuleDef_HEAD_INIT, "x10xpregeladapter", NULL, -1, X10XPregelAdapterMethods,
+    NULL, NULL, NULL, NULL
+};
+
+
+static PyObject* PyInit_x10xpregeladapter(void) {
+    return PyModule_Create(&X10XPregelAdapterModule);
+}
+
+
+//-----------------------------------------
+
+void NativePyXPregelAdapter::initialize() {
+    PyImport_AppendInittab("x10xpregeladapter", &PyInit_x10xpregeladapter);
+}
+
+
 //-----------------------------------------
 
 NativePyXPregelAdapter* NativePyXPregelAdapter::NativePyXPregelAdapter____this__NativePyXPregelAdapter() {
@@ -26,7 +60,6 @@ NativePyXPregelAdapter* NativePyXPregelAdapter::NativePyXPregelAdapter____this__
 
 void NativePyXPregelAdapter::_constructor() {
     this->NativePyXPregelAdapter::__fieldInitializers_NativePyXPregelAdapter();
-    //    Py_Initialize();
 }
 
 NativePyXPregelAdapter* NativePyXPregelAdapter::_make() {

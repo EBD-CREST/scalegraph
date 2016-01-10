@@ -22,6 +22,10 @@
 
 namespace org { namespace scalegraph { namespace python {
 
+void NativePython::initialize() {
+    Py_Initialize();
+}
+
 void NativePython::finalize() {
     Py_Finalize();
 }
@@ -581,28 +585,11 @@ NativePython* NativePython::NativePython____this__NativePython() {
 
 void NativePython::_constructor() {
     this->NativePython::__fieldInitializers_NativePython();
-    Py_Initialize();
-    //    PyRun_SimpleString("import sys");
-    //    PyRun_SimpleString("sys.path.append(\".\")");
-}
-
-void NativePython::_constructor(::x10::lang::String* path) {
-    this->NativePython::__fieldInitializers_NativePython();
-    Py_Initialize();
-    //    PyRun_SimpleString("import sys");
-    //    PyRun_SimpleString("sys.path.append(\".\")");
-    this->sysPathAppend(path);
 }
 
 NativePython* NativePython::_make() {
     NativePython* this_ = new (::x10aux::alloc_z< NativePython>())  NativePython();
     this_->_constructor();
-    return this_;
-}
-
-NativePython* NativePython::_make(::x10::lang::String* path) {
-    NativePython* this_ = new (::x10aux::alloc_z< NativePython>())  NativePython();
-    this_->_constructor(path);
     return this_;
 }
 

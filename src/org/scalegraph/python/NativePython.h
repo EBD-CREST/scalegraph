@@ -40,6 +40,7 @@ class NativePython : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
 
+    void initialize();
     void finalize();
     void osAfterFork();
     void sysPathAppend(::x10::lang::String* path);
@@ -74,22 +75,9 @@ class NativePython : public ::x10::lang::X10Class {
     void test();
     void calltest(NativePyObject module);
     
-	// Serialization
-    /*
-
-    static void _serialize(NativePython* this_, x10aux::serialization_buffer& buf) {
-		assert (false);
-	}
-	static NativePython* _deserializer(x10aux::deserialization_buffer& buf) {
-		assert (false);
-	}
-    */
-
     virtual NativePython* NativePython____this__NativePython();
     void _constructor();
-    void _constructor(::x10::lang::String* path);
     static NativePython* _make();
-    static NativePython* _make(::x10::lang::String* path);
 
     virtual void __fieldInitializers_NativePython();
     

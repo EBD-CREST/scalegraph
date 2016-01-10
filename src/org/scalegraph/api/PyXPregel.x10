@@ -30,7 +30,7 @@ import org.scalegraph.python.NativePyException;
 final public class PyXPregel {
 
 	private static val adapter = new NativePyXPregelAdapter();
-	private static val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+	private static val python = new NativePython();
 	private static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
 
 	public def this() {}
@@ -38,7 +38,10 @@ final public class PyXPregel {
 	public def test_memoryViewFromMemoryChunkDouble() {
 		Logger.print("hogehoge...");
 
-//		val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+		adapter.initialize();
+		python.initialize();
+		python.sysPathAppend("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -100,7 +103,9 @@ final public class PyXPregel {
 
 	public def test_invokeClosure() {
 
-//		val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+		adapter.initialize();
+		python.initialize();
+		python.sysPathAppend("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
 
 //		val loadedClosures = loadClosures();
 		val loadedClosures = closures();
@@ -120,6 +125,8 @@ final public class PyXPregel {
 							 "terminator=pickle.loads(pickled_terminator)\n" +
 							 "compute([],[])\n" +
 							 "print(aggregator([1,2,3,4,5,6,7,8,9,10]))\n" +
+							 "import x10xpregeladapter\n" +
+							 "print(x10xpregeladapter.placeid())\n" +
 							 "sys.stdout.flush()\n",
 							 globals, locals);
 		} catch (exception :NativePyException) {
