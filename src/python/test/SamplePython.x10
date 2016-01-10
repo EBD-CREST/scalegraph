@@ -64,4 +64,8 @@ class SamplePython {
 		return mc;
 	}
 
+	public def hereid() {
+		return here.id;
+	}
+
 }
