@@ -12,6 +12,7 @@
 #include <Python.h>
 
 #include <x10aux/config.h>
+#include <x10/lang/Place.h>
 //#include <org/scalegraph/util/MemoryChunk.h>
 #include <org/scalegraph/api/NativePyXPregelAdapter.h>
 
@@ -23,7 +24,8 @@ static PyObject* x10xpregeladapter_placeid(PyObject* self, PyObject* args) {
     if (!PyArg_ParseTuple(args, ":placeid")) {
         return NULL;
     }
-    return PyLong_FromLong(12345678);
+    x10_long here_id = ::x10::lang::Place::_make(::x10aux::here)->FMGL(id);
+    return PyLong_FromLong(here_id);
 }
 
 
