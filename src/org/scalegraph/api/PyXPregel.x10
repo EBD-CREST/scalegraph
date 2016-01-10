@@ -29,6 +29,7 @@ import org.scalegraph.python.NativePyException;
 
 final public class PyXPregel {
 
+	private static val adapter = new NativePyXPregelAdapter();
 	private static val python = new NativePython("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
 	private static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
 
