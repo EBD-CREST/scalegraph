@@ -123,10 +123,10 @@ final public class PyXPregel {
 							 "compute=pickle.loads(pickled_compute)\n" +
 							 "aggregator=pickle.loads(pickled_aggregator)\n" +
 							 "terminator=pickle.loads(pickled_terminator)\n" +
-							 "compute([],[])\n" +
+							 "import xpregelcontext\n" +
+							 "ctx = xpregelcontext.VertexContext()\n" +
+							 "compute(ctx, [])\n" +
 							 "print(aggregator([1,2,3,4,5,6,7,8,9,10]))\n" +
-							 "import x10xpregeladapter\n" +
-							 "print(x10xpregeladapter.placeid())\n" +
 							 "sys.stdout.flush()\n",
 							 globals, locals);
 		} catch (exception :NativePyException) {
