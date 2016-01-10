@@ -94,9 +94,10 @@ class TestPython {
 
 	public def test_importFile() {
 		Console.OUT.println("### test_importFile");
-		val python = new NativePython(".");
+		val python = new NativePython();
+		python.initialize();
 		try {
-//			python.sysPathAppend(".");
+			python.sysPathAppend(".");
 			val po = python.importImport("multiply");
 			python.calltest(po);
 		} catch (exception :NativePyException) {
@@ -112,6 +113,7 @@ class TestPython {
 	public def test_runSimpleString() {
 		Console.OUT.println("### test_runSimpleString");
 		val python = new NativePython();
+		python.initialize();
 		python.runSimpleString("print('runSimpleString ok')");
 		python.finalize();
 		return true;
@@ -120,6 +122,7 @@ class TestPython {
 	public def test_runString() {
 		Console.OUT.println("### test_runString");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -139,6 +142,7 @@ class TestPython {
 	public def test_dictLong() {
 		Console.OUT.println("### test_dictLong");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -162,6 +166,7 @@ class TestPython {
 	public def test_dictString() {
 		Console.OUT.println("### test_dictString");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -185,6 +190,7 @@ class TestPython {
 	public def test_listNew() {
 		Console.OUT.println("### test_listNew");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -208,6 +214,7 @@ class TestPython {
 	public def test_listFromRail() {
 		Console.OUT.println("### test_listFromRail");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -235,6 +242,7 @@ class TestPython {
 	public def test_listAsRail() {
 		Console.OUT.println("### test_listAsRail");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -258,6 +266,7 @@ class TestPython {
 	public def test_tupleNew() {
 		Console.OUT.println("### test_tupleNew");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -281,6 +290,7 @@ class TestPython {
 	public def test_tupleFromRail() {
 		Console.OUT.println("### test_tupleFromRail()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -308,6 +318,7 @@ class TestPython {
 	public def test_tupleAsRail() {
 		Console.OUT.println("### test_tupleAsRail()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -331,6 +342,7 @@ class TestPython {
 	public def test_objectCallObjectFunc() {
 		Console.OUT.println("### test_objectCallObjectFunc()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -361,6 +373,7 @@ class TestPython {
 	public def test_objectCallObjectLambda() {
 		Console.OUT.println("### test_objectCallObjectLambda()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -389,6 +402,7 @@ class TestPython {
 	public def test_objectCallObjectLambdaPickled() {
 		Console.OUT.println("### test_objectCallObjectLambdaPickled()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -417,6 +431,7 @@ class TestPython {
 	public def test_bytesAsMemoryChunk() {
 		Console.OUT.println("### test_bytesAsMemoryChunk()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -440,6 +455,7 @@ class TestPython {
 	public def test_memoryViewFromMemoryChunkByte() {
 		Console.OUT.println("### test_memoryViewFromMemoryChunkByte()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -462,6 +478,7 @@ class TestPython {
 	public def test_memoryViewFromMemoryChunkLong() {
 		Console.OUT.println("### test_memoryViewFromMemoryChunkLong()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
@@ -489,6 +506,7 @@ class TestPython {
 	public def test_memoryViewFromMemoryChunkDouble() {
 		Console.OUT.println("### test_memoryViewFromMemoryChunkDouble()");
 		val python = new NativePython();
+		python.initialize();
 		try {
 			val main = python.importAddModule("__main__");
 			val globals = python.moduleGetDict(main);
