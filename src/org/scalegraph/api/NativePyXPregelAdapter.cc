@@ -10,6 +10,8 @@
  */
 
 #include <Python.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include <x10aux/config.h>
 #include <x10/lang/String.h>
@@ -89,17 +91,17 @@ void NativePyXPregelAdapter::initialize() {
     if (pid == 0) {
         // Child process
 
-        close(pipe_stdin[1]);
-        dup2(pipe_stdin[0], STDIN_FILENO);
-        close(pipe_stdin[0]);
+        ::close(pipe_stdin[1]);
+        ::dup2(pipe_stdin[0], STDIN_FILENO);
+        ::close(pipe_stdin[0]);
 
-        close(pipe_stdout[0]);
-        dup2(pipe_stdout[1], STDOUT_FILENO);
-        close(pipe_stdout[1]);
+        ::close(pipe_stdout[0]);
+        ::dup2(pipe_stdout[1], STDOUT_FILENO);
+        ::close(pipe_stdout[1]);
 
-        close(pipe_stderr[0]);
-        dup2(pipe_stderr[1], STDERR_FILENO);
-        close(pipe_stderr[1]);
+        ::close(pipe_stderr[0]);
+        ::dup2(pipe_stderr[1], STDERR_FILENO);
+        ::close(pipe_stderr[1]);
 
         // do something        
         // (call python closure)
@@ -107,7 +109,7 @@ void NativePyXPregelAdapter::initialize() {
         ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
                                                                              idx, i_range);
 
-        exit(0);
+        ::exit(0);
         return NULL;
 
     } else {
@@ -124,6 +126,9 @@ void NativePyXPregelAdapter::initialize() {
         // read pipe_stdout[0] and pipe_stderr[0]
         // and do something
 
+        int status;
+        ::waitpid(pid, &status, WUNTRACED);
+        
         return  ::org::scalegraph::io::GenericFile::_make(((x10_int)pipe_stdout[0]));
     }
 

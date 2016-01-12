@@ -159,14 +159,15 @@ final public class PyXPregel {
 
 	}
 
-	public def test() {
+	public def test_forkprocess() {
 
 		adapter.initialize();
 
 		try {
 			val file = adapter.fork(123, 0..1, (tid :Long, range :LongRange) => {
-				Console.OUT.println("Oni no pants ha ii pants sugoizo tsuyoi zo---");
-				Console.OUT.println("from " + tid);
+				Console.OUT.println("Oni no pants ha ii pants sugoizo tsuyoi zo--- " + tid);
+				Console.OUT.println("from " + here.id);
+				Console.OUT.flush();
 			});
 
 			val buffSize = 16;
@@ -204,6 +205,13 @@ final public class PyXPregel {
 			return;
 		}
 
+	}
+
+	public def test() {
+
+		Team.WORLD.placeGroup().broadcastFlat(() => {
+			test_forkprocess();
+		});
 
 	}
 
