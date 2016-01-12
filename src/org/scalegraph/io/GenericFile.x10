@@ -25,6 +25,11 @@ public class GenericFile {
 	private transient var osFile: NativeOSFile;
 	private transient var hdfsFile: NativeHDFSFile;
 
+	public def this(fd: Int) {
+		fileSystem = OS;
+		osFile = new NativeOSFile(fd);
+	}
+
 	public def this(filePath: FilePath, fileMode :Int, fileAccess :Int) {
 		switch (filePath.fsType) {
 			case FilePath.FILEPATH_FS_OS:

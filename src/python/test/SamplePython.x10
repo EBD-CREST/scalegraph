@@ -1,6 +1,8 @@
 import x10.io.Console;
 
 import org.scalegraph.util.MemoryChunk;
+import org.scalegraph.io.GenericFile;
+import org.scalegraph.exception.PyXPregelException;
 
 //import org.scalegraph.python.NativePyObject;
 import SampleStruct;
@@ -68,4 +70,15 @@ class SamplePython {
 		return here.id;
 	}
 
+	public def getStdErrFile() :GenericFile {
+		return new GenericFile(2N);
+	}
+
+	public def testThrow() throws PyXPregelException :void {
+		throw new PyXPregelException("hogehoge");
+	}
+
+	public def testFunc(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) {
+		func(idx, i_range);
+	}
 }

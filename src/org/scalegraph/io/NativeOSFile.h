@@ -12,6 +12,7 @@
 #ifndef __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
 #define __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
 
+#include <unistd.h>
 #include <x10rt.h>
 
 
@@ -37,6 +38,7 @@ public:
 	explicit NativeOSFile(int fd_) : FMGL(fd)(fd_) { }
 	NativeOSFile() : FMGL(fd)(-1) { }
 
+	static NativeOSFile _make(int fd);
 	static NativeOSFile _make(org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 	void _constructor (org::scalegraph::util::SString name, int  fileMode, int fileAccess);
 

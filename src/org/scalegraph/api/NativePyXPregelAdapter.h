@@ -13,6 +13,23 @@
 #define __ORG_SCALEGRAPH_API_NATIVEPYXPREGELADAPTER_H
 
 #include <x10rt.h>
+#include <org/scalegraph/io/GenericFile.h>
+
+namespace x10 { namespace lang { 
+class String;
+} } 
+namespace org { namespace scalegraph { namespace io { 
+class GenericFile;
+} } } 
+namespace org { namespace scalegraph { namespace exception { 
+class PyXPregelException;
+} } } 
+namespace x10 { namespace lang { 
+class LongRange;
+} } 
+namespace x10 { namespace lang { 
+template<class TPMGL(Z1), class TPMGL(Z2)> class VoidFun_0_2;
+} } 
 
 namespace org { namespace scalegraph { namespace api {
 
@@ -22,7 +39,8 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     RTT_H_DECLS_CLASS;
 
     void initialize();
-
+    ::org::scalegraph::io::GenericFile* fork(x10_long idx,  ::x10::lang::LongRange i_range,
+                                             ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();
     void _constructor();

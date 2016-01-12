@@ -12,8 +12,13 @@
 #include <Python.h>
 
 #include <x10aux/config.h>
+#include <x10/lang/String.h>
 #include <x10/lang/Place.h>
+#include <x10/lang/LongRange.h>
+#include <x10/lang/VoidFun_0_2.h>
 //#include <org/scalegraph/util/MemoryChunk.h>
+#include <org/scalegraph/io/GenericFile.h>
+#include <org/scalegraph/exception/PyXPregelException.h>
 #include <org/scalegraph/api/NativePyXPregelAdapter.h>
 
 namespace org { namespace scalegraph { namespace api {
@@ -53,6 +58,76 @@ void NativePyXPregelAdapter::initialize() {
     PyImport_AppendInittab("x10xpregeladapter", &PyInit_x10xpregeladapter);
 }
 
+::org::scalegraph::io::GenericFile* NativePyXPregelAdapter::fork(x10_long idx,  ::x10::lang::LongRange i_range,
+                                                                 ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func) {
+
+    int pipe_stdin[2];
+    int pipe_stdout[2];
+    int pipe_stderr[2];
+    
+    if (pipe(pipe_stdin) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return NULL;
+    }
+
+    if (pipe(pipe_stdout) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return NULL;
+    }
+
+    if (pipe(pipe_stderr) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return NULL;
+    }
+    
+    pid_t pid = ::fork();
+    if (pid < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("fork call failed"))));
+        return NULL;
+    }
+
+    if (pid == 0) {
+        // Child process
+
+        close(pipe_stdin[1]);
+        dup2(pipe_stdin[0], STDIN_FILENO);
+        close(pipe_stdin[0]);
+
+        close(pipe_stdout[0]);
+        dup2(pipe_stdout[1], STDOUT_FILENO);
+        close(pipe_stdout[1]);
+
+        close(pipe_stderr[0]);
+        dup2(pipe_stderr[1], STDERR_FILENO);
+        close(pipe_stderr[1]);
+
+        // do something        
+        // (call python closure)
+        
+        ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
+                                                                             idx, i_range);
+
+        exit(0);
+        return NULL;
+
+    } else {
+        // Parent process
+
+        close(pipe_stdin[0]);
+        close(pipe_stdout[1]);
+        close(pipe_stderr[1]);
+        
+		const char *s = "send from parent to child";
+		write(pipe_stdin[1], s, strlen(s));
+		close(pipe_stdin[1]);
+        
+        // read pipe_stdout[0] and pipe_stderr[0]
+        // and do something
+
+        return  ::org::scalegraph::io::GenericFile::_make(((x10_int)pipe_stdout[0]));
+    }
+
+}
 
 //-----------------------------------------
 

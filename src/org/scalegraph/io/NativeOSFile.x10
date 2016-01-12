@@ -25,6 +25,14 @@ import org.scalegraph.util.SString;
 @NativeCPPCompilationUnit("NativeOSFile.cc")
 @NativeRep("c++", "org::scalegraph::io::NativeOSFile", "org::scalegraph::io::NativeOSFile", null)
 @Pinned public struct NativeOSFile {
+
+	@Native("c++", "STDIN_FILENO")
+	public static val STDIN_FILENO: Int = 0n;
+	@Native("c++", "STDOUT_FILENO")
+	public static val STDOUT_FILENO: Int = 1n;
+	@Native("c++", "STDERR_FILENO")
+	public static val STDERR_FILENO: Int = 2n;
+
 	@Native("c++", "0")
 	public static val BEGIN: Int = 0n;
 	@Native("c++", "1")
@@ -32,6 +40,7 @@ import org.scalegraph.util.SString;
 	@Native("c++", "2")
 	public static val END: Int = 2n;
 	
+	public native def this(fd: Int);
 	public native def this(name: SString, fileMode :Int, fileAccess :Int);
 	public native def close(): void;
 	public native def read(buffer: MemoryChunk[Byte]): Long;

@@ -148,7 +148,7 @@ final public class PyXPregel {
 
 	}
 
-	public def test() {
+	public def test_runpythonclosure() {
 
 		val loadedClosures = loadClosures();
 		shareClosures(loadedClosures);
@@ -156,6 +156,54 @@ final public class PyXPregel {
 		Team.WORLD.placeGroup().broadcastFlat(() => {
 			test_invokeClosure();
 		});
+
+	}
+
+	public def test() {
+
+		adapter.initialize();
+
+		try {
+			val file = adapter.fork(123, 0..1, (tid :Long, range :LongRange) => {
+				Console.OUT.println("Oni no pants ha ii pants sugoizo tsuyoi zo---");
+				Console.OUT.println("from " + tid);
+			});
+
+			val buffSize = 16;
+			val buffArray = new ArrayList[MemoryChunk[Byte]]();
+			var totalSize :Long = 0;
+
+			for (;;) {
+				val buff = MemoryChunk.make[Byte](buffSize);
+			val sizeRead = file.read(buff);
+				if (sizeRead == 0) {
+					buff.del();
+					break;
+				} else {
+					totalSize += sizeRead;
+					buffArray.add(buff);
+				}
+			}
+			
+			val buffTotal = MemoryChunk.make[Byte](totalSize);
+			var buffToCopy :Long = totalSize;
+			var buffOffset :Long = 0;
+			for (buff in buffArray) {
+				val sizeCopy = Math.min(buffSize, buffToCopy);
+				MemoryChunk.copy(buff, 0, buffTotal, buffOffset, sizeCopy);
+				buffToCopy -= sizeCopy;
+				buffOffset += sizeCopy;
+				buff.del();
+			}
+
+			val str = SString(buffTotal);
+			Console.OUT.println(str.toString());
+
+		} catch (exception :CheckedThrowable) {
+			exception.printStackTrace();
+			return;
+		}
+
 
 	}
 

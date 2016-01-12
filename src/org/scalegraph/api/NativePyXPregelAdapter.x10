@@ -17,6 +17,8 @@ import x10.compiler.NativeCPPInclude;
 import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
+import org.scalegraph.io.GenericFile;
+import org.scalegraph.exception.PyXPregelException;
 
 @NativeCPPInclude("NativePyXPregelAdapter.h")
 @NativeCPPCompilationUnit("NativePyXPregelAdapter.cc")
@@ -24,4 +26,5 @@ import x10.compiler.Pinned;
 @Pinned public class NativePyXPregelAdapter {
 	public native def this();
 	public native def initialize() :void;
+	public native def fork(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) throws PyXPregelException :GenericFile;
 }

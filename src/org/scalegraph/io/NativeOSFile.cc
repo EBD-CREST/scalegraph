@@ -33,6 +33,10 @@ using ::x10::io::FileNotFoundException;
 using ::x10::io::IOException;
 using ::x10::lang::IllegalArgumentException;
 
+NativeOSFile NativeOSFile::_make(int fd) {
+    return NativeOSFile(fd);
+}
+
 NativeOSFile NativeOSFile::_make(org::scalegraph::util::SString name, int  fileMode, int fileAccess) {
 	NativeOSFile ret;
 	ret._constructor(name, fileMode, fileAccess);
