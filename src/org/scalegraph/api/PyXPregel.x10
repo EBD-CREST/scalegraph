@@ -174,17 +174,20 @@ final public class PyXPregel {
 			val buffArray = new ArrayList[MemoryChunk[Byte]]();
 			var totalSize :Long = 0;
 
+			Console.OUT.println("read start");
 			for (;;) {
 				val buff = MemoryChunk.make[Byte](buffSize);
-			val sizeRead = file.read(buff);
+				val sizeRead = file.read(buff);
 				if (sizeRead == 0) {
 					buff.del();
 					break;
 				} else {
 					totalSize += sizeRead;
 					buffArray.add(buff);
+					Console.OUT.println("read " + totalSize);
 				}
 			}
+			Console.OUT.println("read done");
 			
 			val buffTotal = MemoryChunk.make[Byte](totalSize);
 			var buffToCopy :Long = totalSize;
@@ -207,10 +210,84 @@ final public class PyXPregel {
 
 	}
 
+	public def test_forkprocess_binary() {
+
+		adapter.initialize();
+
+		try {
+			val file = adapter.fork(here.id, 0..1, (tid :Long, range :LongRange) => {
+
+				val size = 80000;
+				val writebuf = MemoryChunk.make[Long](size);
+
+				for (var i :Long = 0; i < size; i++) {
+					writebuf(i) = (tid + 1) * i;
+				}
+
+				val file = new GenericFile(GenericFile.STDOUT_FILENO);
+				file.write(writebuf, size * NativePyXPregelAdapter.sizeofLong);
+			});
+
+			val buffSize = 16;
+			val buffArray = new ArrayList[MemoryChunk[Byte]]();
+			var totalSize :Long = 0;
+
+//			Console.OUT.println("read start");
+			for (;;) {
+				val buff = MemoryChunk.make[Byte](buffSize);
+				val sizeRead = file.read(buff);
+				if (sizeRead == 0) {
+					buff.del();
+					break;
+				} else {
+					totalSize += sizeRead;
+					buffArray.add(buff);
+//					Console.OUT.println("read " + totalSize);
+				}
+			}
+//			Console.OUT.println("read done");
+			
+			val buffTotal = MemoryChunk.make[Byte](totalSize);
+			var buffToCopy :Long = totalSize;
+			var buffOffset :Long = 0;
+			for (buff in buffArray) {
+				val sizeCopy = Math.min(buffSize, buffToCopy);
+				MemoryChunk.copy(buff, 0, buffTotal, buffOffset, sizeCopy);
+				buffToCopy -= sizeCopy;
+				buffOffset += sizeCopy;
+				buff.del();
+			}
+
+			val receivedLongSize = totalSize / NativePyXPregelAdapter.sizeofLong;
+			val receivedLongArray = MemoryChunk.make[Long](receivedLongSize);
+			adapter.copyFromBuffer(buffTotal, 0, receivedLongSize * NativePyXPregelAdapter.sizeofLong, receivedLongArray);
+
+			Console.OUT.println("[" + here.id + "] totalSize: " + totalSize +
+								" receivedLongSize: " + receivedLongSize);
+			var flagOK: Boolean = true;
+			for (var i: Long = 0; i < receivedLongSize; i++) {
+				if (receivedLongArray(i) != (here.id + 1) * i) {
+					flagOK = false;
+					break;
+				}
+			}
+			if (flagOK == true) {
+				Console.OUT.println("[" + here.id + "] Success");
+			} else {
+				Console.OUT.println("[" + here.id + "] Fail");
+			}
+
+		} catch (exception :CheckedThrowable) {
+			exception.printStackTrace();
+			return;
+		}
+
+	}
+
 	public def test() {
 
 		Team.WORLD.placeGroup().broadcastFlat(() => {
-			test_forkprocess();
+			test_forkprocess_binary();
 		});
 
 	}

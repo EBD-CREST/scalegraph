@@ -146,6 +146,7 @@ void NativeHDFSFile::close() {
     assert(ret == 0);
 }
 
+#if 0
 x10_long NativeHDFSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
     tSize bytes;
     bytes = hdfsRead(FMGL(fs), FMGL(file), b.pointer(), b.size());
@@ -173,6 +174,7 @@ void NativeHDFSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
 		x10aux::throwException(IOException::_make(String::Lit("write error")));
     */
 }
+#endif
 
 void NativeHDFSFile::seek(x10_long offset, int origin) {
 	if(origin < 0 || origin > 2)

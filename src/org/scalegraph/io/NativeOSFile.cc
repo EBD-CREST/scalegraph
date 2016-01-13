@@ -93,6 +93,7 @@ void NativeOSFile::close() {
 	}
 }
 
+#if 0
 x10_long NativeOSFile::read(org::scalegraph::util::MemoryChunk<x10_byte> b) {
 	int readBytes = ::read(FMGL(fd), b.pointer(), b.size());
 	if(readBytes == -1)
@@ -105,6 +106,7 @@ void NativeOSFile::write(org::scalegraph::util::MemoryChunk<x10_byte> b) {
 	if(writeBytes != b.size())
 		x10aux::throwException(IOException::_make(String::Lit("write error")));
 }
+#endif
 
 void NativeOSFile::seek(x10_long offset, int origin) {
 	if(origin < 0 || origin > 2)

@@ -127,7 +127,7 @@ void NativePyXPregelAdapter::initialize() {
         // and do something
 
         int status;
-        ::waitpid(pid, &status, WUNTRACED);
+        //        ::waitpid(pid, &status, WUNTRACED);
         
         return  ::org::scalegraph::io::GenericFile::_make(((x10_int)pipe_stdout[0]));
     }

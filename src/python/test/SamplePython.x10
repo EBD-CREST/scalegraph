@@ -81,4 +81,7 @@ class SamplePython {
 	public def testFunc(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) {
 		func(idx, i_range);
 	}
+
+	public def testTypeParam[T](buffer: T) {
+	}
 }

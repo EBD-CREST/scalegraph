@@ -49,8 +49,9 @@ public:
 	NativeHDFSFile* operator->() { return this; }
 
 	void close();
-	x10_long read(org::scalegraph::util::MemoryChunk<x10_byte> b);
-	void write(org::scalegraph::util::MemoryChunk<x10_byte> b);
+	template<class TPMGL(T)> x10_long read(TPMGL(T) buffer);
+	template<class TPMGL(T)> void write(TPMGL(T) buffer);
+	template<class TPMGL(T)> void write(TPMGL(T) buffer, x10_long size_to_write);
 	void seek(x10_long offset, int origin);
 	x10_long getpos();
     void flush();
@@ -63,6 +64,35 @@ public:
 		assert (false);
 	}
 };
+
+
+template<class TPMGL(T)>
+x10_long NativeHDFSFile::read(TPMGL(T) b) {
+    tSize bytes;
+    bytes = hdfsRead(FMGL(fs), FMGL(file), b.pointer(), b.size());
+    assert(bytes >= 0);
+
+    return (x10_long)bytes;
+}
+
+
+template<class TPMGL(T)>
+void NativeHDFSFile::write(TPMGL(T) b) {
+    tSize bytes;
+    bytes = hdfsWrite(FMGL(fs), FMGL(file), b.pointer(), b.size());
+    assert(bytes >= 0);
+    assert((x10_long) bytes == (x10_long) b.size());
+}
+
+
+template<class TPMGL(T)>
+void NativeHDFSFile::write(TPMGL(T) b, x10_long size_to_write) {
+    tSize bytes;
+    bytes = hdfsWrite(FMGL(fs), FMGL(file), b.pointer(), size_to_write);
+    assert(bytes >= 0);
+    assert((x10_long) bytes == size_to_write);
+}
+
 
 }}} // namespace org { namespace scalegraph { namespace io {
 

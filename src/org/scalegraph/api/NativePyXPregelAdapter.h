@@ -12,6 +12,7 @@
 #ifndef __ORG_SCALEGRAPH_API_NATIVEPYXPREGELADAPTER_H
 #define __ORG_SCALEGRAPH_API_NATIVEPYXPREGELADAPTER_H
 
+#include <string.h>
 #include <x10rt.h>
 #include <org/scalegraph/io/GenericFile.h>
 
@@ -41,6 +42,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     void initialize();
     ::org::scalegraph::io::GenericFile* fork(x10_long idx,  ::x10::lang::LongRange i_range,
                                              ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
+    template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();
     void _constructor();
@@ -61,7 +63,16 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     
     public: void _deserialize_body(::x10aux::deserialization_buffer& buf);
 };
-            
+
+
+template<class TPMGL(T)>
+void NativePyXPregelAdapter::copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object) {
+
+    ::memmove(object->pointer() + offset, buffer->pointer(), (size_t) size_to_copy);
+}
+
+
+
 }}} // namespace org { namespace scalegraph { namespace api {
 
 #endif // __ORG_SCALEGRAPH_API_NATIVEPYXPREGELADAPTER_H

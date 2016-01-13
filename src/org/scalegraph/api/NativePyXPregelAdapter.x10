@@ -17,6 +17,7 @@ import x10.compiler.NativeCPPInclude;
 import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
+import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.io.GenericFile;
 import org.scalegraph.exception.PyXPregelException;
 
@@ -24,7 +25,21 @@ import org.scalegraph.exception.PyXPregelException;
 @NativeCPPCompilationUnit("NativePyXPregelAdapter.cc")
 @NativeRep("c++", "org::scalegraph::api::NativePyXPregelAdapter*", "org::scalegraph::api::NativePyXPregelAdapter", null)
 @Pinned public class NativePyXPregelAdapter {
+
+	@Native("c++", "sizeof(x10_byte)")
+	public static val sizeofByte: Int = 1n;
+
+	@Native("c++", "sizeof(x10_int)")
+	public static val sizeofInt: Int = 4n;
+
+	@Native("c++", "sizeof(x10_long)")
+	public static val sizeofLong: Int = 4n;
+
+	@Native("c++", "sizeof(x10_double)")
+	public static val sizeofDouble: Int = 4n;
+
 	public native def this();
 	public native def initialize() :void;
 	public native def fork(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) throws PyXPregelException :GenericFile;
+	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 }

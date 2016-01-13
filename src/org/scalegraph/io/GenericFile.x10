@@ -14,8 +14,13 @@ package org.scalegraph.io;
 import org.scalegraph.util.MemoryChunk;
 
 public class GenericFile {
+
 	public static val OS: Int = 0n;
 	public static val HDFS: Int = 1n;
+
+	public static val STDIN_FILENO = NativeOSFile.STDIN_FILENO;
+	public static val STDOUT_FILENO = NativeOSFile.STDOUT_FILENO;
+	public static val STDERR_FILENO = NativeOSFile.STDERR_FILENO;
 
 	public static val BEGIN: Int = 0n;
 	public static val CURRENT: Int = 1n;
@@ -67,25 +72,38 @@ public class GenericFile {
 		}
 	}
 
-	public def read(buffer: MemoryChunk[Byte]): Long {
+	public def read[T](buffer: T): Long {
 		switch (fileSystem) {
 			case OS:
-				return osFile.read(buffer);
+				return osFile.read[T](buffer);
 			case HDFS:
-				return hdfsFile.read(buffer);
+				return hdfsFile.read[T](buffer);
 			default:
 				assert(false);
 		}
 		return 0n;
 	}
 
-	public def write(buffer: MemoryChunk[Byte]): void {
+	public def write[T](buffer: T): void {
 		switch (fileSystem) {
 			case OS:
-				osFile.write(buffer);
+				osFile.write[T](buffer);
 				break;
 			case HDFS:
-				hdfsFile.write(buffer);
+				hdfsFile.write[T](buffer);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
+	public def write[T](buffer: T, size_to_write: Long): void {
+		switch (fileSystem) {
+			case OS:
+				osFile.write[T](buffer, size_to_write);
+				break;
+			case HDFS:
+				hdfsFile.write[T](buffer, size_to_write);
 				break;
 			default:
 				assert(false);
