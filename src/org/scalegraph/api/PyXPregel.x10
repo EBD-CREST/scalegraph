@@ -11,6 +11,7 @@
 
 package org.scalegraph.api;
 
+import x10.xrx.Runtime;
 import x10.util.ArrayList;
 import x10.util.Team;
 import org.scalegraph.Config;
@@ -257,7 +258,7 @@ final public class PyXPregel {
 				buffOffset += sizeCopy;
 				buff.del();
 			}
-
+			
 			val receivedLongSize = totalSize / NativePyXPregelAdapter.sizeofLong;
 			val receivedLongArray = MemoryChunk.make[Long](receivedLongSize);
 			adapter.copyFromBuffer(buffTotal, 0, receivedLongSize * NativePyXPregelAdapter.sizeofLong, receivedLongArray);
@@ -284,12 +285,123 @@ final public class PyXPregel {
 
 	}
 
-	public def test() {
+	public def test_fork_thread(tid :Long) :Boolean {
+
+		adapter.initialize();
+
+		try {
+			val file = adapter.fork(tid, 0..1, (_tid :Long, range :LongRange) => {
+
+				val size = 80000;
+				val writebuf = MemoryChunk.make[Long](size);
+
+				for (var i :Long = 0; i < size; i++) {
+					writebuf(i) = ((here.id + 1) * 32 + tid) * i;
+				}
+
+				val file = new GenericFile(GenericFile.STDOUT_FILENO);
+				file.write(writebuf, size * NativePyXPregelAdapter.sizeofLong);
+			});
+
+			val buffSize = 16;
+			val buffArray = new ArrayList[MemoryChunk[Byte]]();
+			var totalSize :Long = 0;
+
+			Console.OUT.println("#" + here.id + ":" + tid + " read start");
+			for (;;) {
+				val buff = MemoryChunk.make[Byte](buffSize);
+				val sizeRead = file.read(buff);
+				if (sizeRead == 0) {
+					buff.del();
+					break;
+				} else {
+					totalSize += sizeRead;
+					buffArray.add(buff);
+//					Console.OUT.println("#" + here.id + ":" + tid + " read " + totalSize);
+				}
+			}
+			Console.OUT.println("#" + here.id + ":" + tid + " read done");
+			
+			val buffTotal = MemoryChunk.make[Byte](totalSize);
+			var buffToCopy :Long = totalSize;
+			var buffOffset :Long = 0;
+			for (buff in buffArray) {
+				val sizeCopy = Math.min(buffSize, buffToCopy);
+				MemoryChunk.copy(buff, 0, buffTotal, buffOffset, sizeCopy);
+				buffToCopy -= sizeCopy;
+				buffOffset += sizeCopy;
+				buff.del();
+			}
+			
+			val receivedLongSize = totalSize / NativePyXPregelAdapter.sizeofLong;
+			val receivedLongArray = MemoryChunk.make[Long](receivedLongSize);
+			adapter.copyFromBuffer(buffTotal, 0, receivedLongSize * NativePyXPregelAdapter.sizeofLong, receivedLongArray);
+
+//			Console.OUT.println("[" + here.id + "] totalSize: " + totalSize +
+//								" receivedLongSize: " + receivedLongSize);
+			var flagOK: Boolean = true;
+			for (var i: Long = 0; i < receivedLongSize; i++) {
+				if (receivedLongArray(i) != ((here.id + 1) * 32 + tid) * i) {
+					flagOK = false;
+					break;
+				}
+			}
+			if (flagOK == true) {
+				Console.OUT.println("#" + here.id + ":" + tid + "  Success");
+			} else {
+				Console.OUT.println("#" + here.id + ":" + tid + "  Fail");
+			}
+			
+			return flagOK;
+
+		} catch (exception :CheckedThrowable) {
+			exception.printStackTrace();
+			return false;
+		}
+
+	}
+
+	public def test_broadcast_forkprocess_binary() {
 
 		Team.WORLD.placeGroup().broadcastFlat(() => {
 			test_forkprocess_binary();
 		});
 
+	}
+
+	public def test_call_fork_thread() {
+		
+		val nthreads = Runtime.NTHREADS;
+		val result = new Rail[Boolean](nthreads);
+
+		finish for(i in 0..(nthreads - 1)) {
+//			async result(i) = test_fork_thread(i);
+			result(i) = test_fork_thread(i);
+		}
+
+		for (i in 0..(nthreads - 1)) {
+			if (result(i) == true) {
+				Console.OUT.println("[" + here.id + ":" + i + "] Success");
+			} else {
+				Console.OUT.println("[" + here.id + ":" + i + "] Fail");
+			}
+		}
+
+	}
+
+	public def test_broadcast_call_fork_thread() {
+
+		Team.WORLD.placeGroup().broadcastFlat(() => {
+			test_call_fork_thread();
+		});
+
+	}
+
+	public def test() {
+		// test_runpythonclosure();
+		// test_forkprocess();
+		// test_broadcast_forkprocess_binary();
+		test_broadcast_call_fork_thread();
 	}
 
 }
