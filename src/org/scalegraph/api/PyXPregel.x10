@@ -165,11 +165,12 @@ final public class PyXPregel {
 		adapter.initialize();
 
 		try {
-			val file = adapter.fork(123, 0..1, (tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(123, 0..1, (tid :Long, range :LongRange) => {
 				Console.OUT.println("Oni no pants ha ii pants sugoizo tsuyoi zo--- " + tid);
 				Console.OUT.println("from " + here.id);
 				Console.OUT.flush();
 			});
+			val file = pipe.stdout;
 
 			val buffSize = 16;
 			val buffArray = new ArrayList[MemoryChunk[Byte]]();
@@ -216,7 +217,7 @@ final public class PyXPregel {
 		adapter.initialize();
 
 		try {
-			val file = adapter.fork(here.id, 0..1, (tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(here.id, 0..1, (tid :Long, range :LongRange) => {
 
 				val size = 80000;
 				val writebuf = MemoryChunk.make[Long](size);
@@ -228,6 +229,7 @@ final public class PyXPregel {
 				val file = new GenericFile(GenericFile.STDOUT_FILENO);
 				file.write(writebuf, size * NativePyXPregelAdapter.sizeofLong);
 			});
+			val file = pipe.stdout;
 
 			val buffSize = 16;
 			val buffArray = new ArrayList[MemoryChunk[Byte]]();
@@ -285,25 +287,55 @@ final public class PyXPregel {
 
 	}
 
-	public def test_fork_thread(tid :Long) :Boolean {
+	public def redirectStderr(file: GenericFile) {
 
-		adapter.initialize();
+		val stderr = new GenericFile(GenericFile.STDERR_FILENO);
+
+		val buffSize = 32;
+		val buff = MemoryChunk.make[Byte](buffSize);
+		for (;;) {
+			val sizeRead = file.read(buff);
+			if (sizeRead == 0) {
+				break;
+			} else {
+				stderr.write(buff, sizeRead);
+				stderr.flush();
+			}
+		}
+	}
+
+	public def test_fork_on_thread(tid :Long) :PyXPregelPipe {
 
 		try {
-			val file = adapter.fork(tid, 0..1, (_tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(tid, 0..1, (_tid :Long, range :LongRange) => {
+
+				Console.ERR.println("I'm a child of " + here.id + ":" + _tid);
 
 				val size = 80000;
 				val writebuf = MemoryChunk.make[Long](size);
 
 				for (var i :Long = 0; i < size; i++) {
-					writebuf(i) = ((here.id + 1) * 32 + tid) * i;
+					writebuf(i) = ((here.id + 1) * 32 + _tid) * i;
 				}
 
 				val file = new GenericFile(GenericFile.STDOUT_FILENO);
-				file.write(writebuf, size * NativePyXPregelAdapter.sizeofLong);
+//				file.write(writebuf, size * NativePyXPregelAdapter.sizeofLong);
 			});
+			return pipe;
 
-			val buffSize = 16;
+		} catch (exception :CheckedThrowable) {
+			exception.printStackTrace();
+			return PyXPregelPipe();
+		}
+	}
+
+	public def test_read_on_thread(pipe :PyXPregelPipe, tid :Long) :Boolean {
+
+			async redirectStderr(pipe.stderr);
+
+			val file = pipe.stdout;
+
+			val buffSize = 4096;
 			val buffArray = new ArrayList[MemoryChunk[Byte]]();
 			var totalSize :Long = 0;
 
@@ -353,12 +385,6 @@ final public class PyXPregel {
 			}
 			
 			return flagOK;
-
-		} catch (exception :CheckedThrowable) {
-			exception.printStackTrace();
-			return false;
-		}
-
 	}
 
 	public def test_broadcast_forkprocess_binary() {
@@ -371,12 +397,18 @@ final public class PyXPregel {
 
 	public def test_call_fork_thread() {
 		
+		adapter.initialize();
+
 		val nthreads = Runtime.NTHREADS;
+		val pipe = new Rail[PyXPregelPipe](nthreads);
 		val result = new Rail[Boolean](nthreads);
 
 		finish for(i in 0..(nthreads - 1)) {
-//			async result(i) = test_fork_thread(i);
-			result(i) = test_fork_thread(i);
+			async pipe(i) = test_fork_on_thread(i);
+		}
+
+		finish for(i in 0..(nthreads - 1)) {
+//			async result(i) = test_read_on_thread(pipe(i), i);
 		}
 
 		for (i in 0..(nthreads - 1)) {

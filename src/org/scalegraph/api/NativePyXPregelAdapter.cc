@@ -11,18 +11,26 @@
 
 #include <Python.h>
 #include <unistd.h>
-#include <sys/wait.h>
+#include <signal.h>
+//#include <sys/wait.h>
+#include <gc.h>
+#include <pthread.h>
 
 #include <x10aux/config.h>
 #include <x10/lang/String.h>
 #include <x10/lang/Place.h>
 #include <x10/lang/LongRange.h>
 #include <x10/lang/VoidFun_0_2.h>
-//#include <org/scalegraph/util/MemoryChunk.h>
-#include <org/scalegraph/io/GenericFile.h>
+#include <org/scalegraph/util/MemoryChunk.h>
 #include <org/scalegraph/exception/PyXPregelException.h>
 #include <org/scalegraph/api/NativePyXPregelAdapter.h>
+#include <org/scalegraph/api/PyXPregelPipe.h>
 
+extern "C" {
+    int GC_get_suspend_signal();
+    int GC_get_thr_restart_signal();
+}
+    
 namespace org { namespace scalegraph { namespace api {
 
 
@@ -60,8 +68,8 @@ void NativePyXPregelAdapter::initialize() {
     PyImport_AppendInittab("x10xpregeladapter", &PyInit_x10xpregeladapter);
 }
 
-::org::scalegraph::io::GenericFile* NativePyXPregelAdapter::fork(x10_long idx,  ::x10::lang::LongRange i_range,
-                                                                 ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func) {
+::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long idx,  ::x10::lang::LongRange i_range,
+                                                                   ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func) {
 
     int pipe_stdin[2];
     int pipe_stdout[2];
@@ -69,23 +77,54 @@ void NativePyXPregelAdapter::initialize() {
     
     if (pipe(pipe_stdin) < 0) {
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
-        return NULL;
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
 
     if (pipe(pipe_stdout) < 0) {
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
-        return NULL;
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
 
     if (pipe(pipe_stderr) < 0) {
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
-        return NULL;
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
+
+    sigset_t block, oblock, oblock2;
+    struct sigaction sa_sigpwr, sa_sigxcpu;
+
+    //    int sigsuspend = GC_get_suspend_signal();
+    //    int sigrestart = GC_get_thr_restart_signal();
+    int sigsuspend = SIGUSR1;
+    int sigrestart = SIGUSR2;
+
+#if 0
+    ::sigaction(sigsuspend, 0, &sa_sigpwr);
+    ::sigaction(sigrestart, 0, &sa_sigxcpu);
+    sa_sigpwr.sa_flags |= SA_RESTART;
+    sa_sigxcpu.sa_flags |= SA_RESTART;
+    ::sigaction(sigsuspend, &sa_sigpwr, 0);
+    ::sigaction(sigrestart, &sa_sigxcpu, 0);
+#endif
+    sigemptyset(&block);
+    sigaddset(&block, sigsuspend);
+    sigaddset(&block, sigrestart);
+        for (int k = 21; k < 32; k++) {
+            sigaddset(&block, k);
+        }
+    ::pthread_sigmask(SIG_BLOCK, &block, &oblock);
+    ::sigprocmask(SIG_BLOCK, &block, &oblock2);
+
+    fprintf(stderr, "mask signal = %d %d", sigsuspend, sigrestart);
     
     pid_t pid = ::fork();
     if (pid < 0) {
+
+        ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
+        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+        
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("fork call failed"))));
-        return NULL;
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
 
     if (pid == 0) {
@@ -105,23 +144,37 @@ void NativePyXPregelAdapter::initialize() {
 
         // do something        
         // (call python closure)
-        
-        ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
-                                                                             idx, i_range);
 
-        ::exit(0);
-        return NULL;
+        //        fprintf(stderr, "Child pid is %d\n", getpid());
+        
+        //::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
+        //                                                                             idx, i_range);
+
+        size_t size = 10;
+        //        x10_long* writebuf = new x10_long[size];
+        //        ::write(STDOUT_FILENO, writebuf, size * sizeof(x10_long));
+        
+        ::_exit(0);
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
 
     } else {
         // Parent process
 
+        ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
+        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+        fprintf(stderr, "%d forked %d\n", getpid(), pid);
+
+        ::kill(pid, SIGCONT);
+        
         close(pipe_stdin[0]);
         close(pipe_stdout[1]);
         close(pipe_stderr[1]);
-        
+
+        /*
 		const char *s = "send from parent to child";
 		write(pipe_stdin[1], s, strlen(s));
 		close(pipe_stdin[1]);
+        */
         
         // read pipe_stdout[0] and pipe_stderr[0]
         // and do something
@@ -129,7 +182,9 @@ void NativePyXPregelAdapter::initialize() {
         int status;
         //        ::waitpid(pid, &status, WUNTRACED);
         
-        return  ::org::scalegraph::io::GenericFile::_make(((x10_int)pipe_stdout[0]));
+        return ::org::scalegraph::api::PyXPregelPipe::_make(pipe_stdin[1],
+                                                            pipe_stdout[0],
+                                                            pipe_stderr[0]);
     }
 
 }

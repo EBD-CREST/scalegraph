@@ -18,8 +18,8 @@ import x10.compiler.NativeCPPCompilationUnit;
 import x10.compiler.Pinned;
 
 import org.scalegraph.util.MemoryChunk;
-import org.scalegraph.io.GenericFile;
 import org.scalegraph.exception.PyXPregelException;
+import org.scalegraph.api.PyXPregelPipe;
 
 @NativeCPPInclude("NativePyXPregelAdapter.h")
 @NativeCPPCompilationUnit("NativePyXPregelAdapter.cc")
@@ -40,6 +40,6 @@ import org.scalegraph.exception.PyXPregelException;
 
 	public native def this();
 	public native def initialize() :void;
-	public native def fork(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) throws PyXPregelException :GenericFile;
+	public native def fork(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) throws PyXPregelException :PyXPregelPipe;
 	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 }

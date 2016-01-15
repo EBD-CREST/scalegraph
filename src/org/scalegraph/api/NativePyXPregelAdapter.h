@@ -14,16 +14,19 @@
 
 #include <string.h>
 #include <x10rt.h>
-#include <org/scalegraph/io/GenericFile.h>
+
+#define ORG_SCALEGRAPH_UTIL_MEMORYCHUNK_H_NODEPS
+#include <org/scalegraph/util/MemoryChunk.h>
+#undef ORG_SCALEGRAPH_UTIL_MEMORYCHUNK_H_NODEPS
 
 namespace x10 { namespace lang { 
 class String;
 } } 
-namespace org { namespace scalegraph { namespace io { 
-class GenericFile;
-} } } 
 namespace org { namespace scalegraph { namespace exception { 
 class PyXPregelException;
+} } } 
+namespace org { namespace scalegraph { namespace api { 
+class PyXPregelPipe;
 } } } 
 namespace x10 { namespace lang { 
 class LongRange;
@@ -40,8 +43,8 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     RTT_H_DECLS_CLASS;
 
     void initialize();
-    ::org::scalegraph::io::GenericFile* fork(x10_long idx,  ::x10::lang::LongRange i_range,
-                                             ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
+    ::org::scalegraph::api::PyXPregelPipe fork(x10_long idx,  ::x10::lang::LongRange i_range,
+                                               ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
     template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();

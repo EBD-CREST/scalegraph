@@ -3,6 +3,7 @@ import x10.io.Console;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.io.GenericFile;
 import org.scalegraph.exception.PyXPregelException;
+import org.scalegraph.api.PyXPregelPipe;
 
 //import org.scalegraph.python.NativePyObject;
 import SampleStruct;
@@ -84,4 +85,15 @@ class SamplePython {
 
 	public def testTypeParam[T](buffer: T) {
 	}
+
+	public def newpipe(stdin :Int, stdout :Int, stderr :Int) {
+		return PyXPregelPipe(stdin, stdout, stderr);
+	}
+
+	public def asyncTest() {
+		for (i in 0..4) {
+			async testTypeParam(i);
+		}
+	}
+
 }
