@@ -68,7 +68,10 @@ void NativePyXPregelAdapter::initialize() {
     PyImport_AppendInittab("x10xpregeladapter", &PyInit_x10xpregeladapter);
 }
 
-::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long idx,  ::x10::lang::LongRange i_range,
+::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long place_id,
+                                                                   x10_long thread_id,
+                                                                   x10_long idx,
+                                                                   ::x10::lang::LongRange i_range,
                                                                    ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func) {
 
     int pipe_stdin[2];
@@ -145,16 +148,28 @@ void NativePyXPregelAdapter::initialize() {
         // do something        
         // (call python closure)
 
-        //        fprintf(stderr, "Child pid is %d\n", getpid());
+        fprintf(stderr, "Child pid is %d\n", getpid());
         
         //::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
         //                                                                             idx, i_range);
 
-        size_t size = 10;
+        //size_t size = 10;
         //        x10_long* writebuf = new x10_long[size];
         //        ::write(STDOUT_FILENO, writebuf, size * sizeof(x10_long));
         
-        ::_exit(0);
+
+        size_t arglen = 128;
+        char* arg0 = new char[arglen];
+        char* arg1 = new char[arglen];
+        char* arg2 = new char[arglen];
+        snprintf(arg0, arglen, "pyxpregelworker");
+        snprintf(arg1, arglen, "%lld", (long long)place_id);
+        snprintf(arg2, arglen, "%lld", (long long)thread_id);
+        execl("/Users/tosiyuki/EBD/scalegraph-dev/src/cpp/pyxpregelworker/pyxpregelworker",
+              arg0, arg1, arg2, 0);
+        perror("pyxpregelworker");
+
+        ::_exit(1);
         return ::org::scalegraph::api::PyXPregelPipe::_make();
 
     } else {

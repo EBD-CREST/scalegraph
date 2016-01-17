@@ -43,7 +43,8 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     RTT_H_DECLS_CLASS;
 
     void initialize();
-    ::org::scalegraph::api::PyXPregelPipe fork(x10_long idx,  ::x10::lang::LongRange i_range,
+    ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,
+                                               x10_long idx,  ::x10::lang::LongRange i_range,
                                                ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
     template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
     

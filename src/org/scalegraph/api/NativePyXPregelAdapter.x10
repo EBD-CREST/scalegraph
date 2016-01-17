@@ -40,6 +40,8 @@ import org.scalegraph.api.PyXPregelPipe;
 
 	public native def this();
 	public native def initialize() :void;
-	public native def fork(idx :Long, i_range :LongRange, func :(Long, LongRange)=>void) throws PyXPregelException :PyXPregelPipe;
+	public native def fork(place_id :Long, thread_id :Long, 
+						   idx :Long, i_range :LongRange,
+						   func :(Long, LongRange)=>void) throws PyXPregelException :PyXPregelPipe;
 	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 }

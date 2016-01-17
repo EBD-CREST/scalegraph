@@ -165,7 +165,7 @@ final public class PyXPregel {
 		adapter.initialize();
 
 		try {
-			val pipe = adapter.fork(123, 0..1, (tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(here.id, 0, 123, 0..1, (tid :Long, range :LongRange) => {
 				Console.OUT.println("Oni no pants ha ii pants sugoizo tsuyoi zo--- " + tid);
 				Console.OUT.println("from " + here.id);
 				Console.OUT.flush();
@@ -217,7 +217,7 @@ final public class PyXPregel {
 		adapter.initialize();
 
 		try {
-			val pipe = adapter.fork(here.id, 0..1, (tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(here.id, 0, here.id, 0..1, (tid :Long, range :LongRange) => {
 
 				val size = 80000;
 				val writebuf = MemoryChunk.make[Long](size);
@@ -307,7 +307,7 @@ final public class PyXPregel {
 	public def test_fork_on_thread(tid :Long) :PyXPregelPipe {
 
 		try {
-			val pipe = adapter.fork(tid, 0..1, (_tid :Long, range :LongRange) => {
+			val pipe = adapter.fork(here.id, tid, tid, 0..1, (_tid :Long, range :LongRange) => {
 
 				Console.ERR.println("I'm a child of " + here.id + ":" + _tid);
 
@@ -446,6 +446,13 @@ final public class PyXPregel {
 
 		Team.WORLD.placeGroup().broadcastFlat(() => {
 			test_write_shmem_on_place();
+			try {
+				val pipe = adapter.fork(here.id, 0, here.id, 0..1, (_tid :Long, range :LongRange) => {});
+				test_read_on_thread(pipe, 0);
+			} catch (exception :CheckedThrowable) {
+				exception.printStackTrace();
+				return;
+			}
 		});
 	}
 
