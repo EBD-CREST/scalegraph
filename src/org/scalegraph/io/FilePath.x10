@@ -15,6 +15,7 @@ public struct FilePath {
 
 	public static val FILEPATH_FS_OS		:Int = 0n;
 	public static val FILEPATH_FS_HDFS		:Int = 1000n;
+	public static val FILEPATH_FS_SHM		:Int = 2000n;
 
 	public val fsType		:Int;
 	public val pathString	:String;
@@ -25,6 +26,7 @@ public struct FilePath {
 		switch (fsType) {
 			case FILEPATH_FS_OS:
 			case FILEPATH_FS_HDFS:
+			case FILEPATH_FS_SHM:
 				break;
 			default:
 				assert(false);

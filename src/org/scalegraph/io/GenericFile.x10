@@ -11,12 +11,15 @@
 
 package org.scalegraph.io;
 
+import x10.util.ArrayList;
 import org.scalegraph.util.MemoryChunk;
 
 public class GenericFile {
 
+	public static val NONE: Int = -1n;
 	public static val OS: Int = 0n;
 	public static val HDFS: Int = 1n;
+	public static val SHM: Int = 2n;
 
 	public static val STDIN_FILENO = NativeOSFile.STDIN_FILENO;
 	public static val STDOUT_FILENO = NativeOSFile.STDOUT_FILENO;
@@ -29,6 +32,13 @@ public class GenericFile {
 	private val fileSystem: Int;
 	private transient var osFile: NativeOSFile;
 	private transient var hdfsFile: NativeHDFSFile;
+	private transient var shmFile: NativeSHMFile;
+
+	private static val sharedNames :Cell[ArrayList[String]] = new Cell[ArrayList[String]](new ArrayList[String]());
+
+	public def this() {
+		fileSystem = NONE;
+	}
 
 	public def this(fd: Int) {
 		fileSystem = OS;
@@ -43,6 +53,9 @@ public class GenericFile {
 			case FilePath.FILEPATH_FS_HDFS:
 				fileSystem = HDFS;
 				break;
+			case FilePath.FILEPATH_FS_SHM:
+				fileSystem = SHM;
+				break;
 			default:
 				assert(false);
 				fileSystem = OS; // supress compile error
@@ -53,6 +66,10 @@ public class GenericFile {
 				break;
 			case HDFS:
 				hdfsFile = new NativeHDFSFile(filePath.pathString, fileMode, fileAccess);
+				break;
+			case SHM:
+				shmFile = new NativeSHMFile(filePath.pathString, fileMode, fileAccess);
+				sharedNames().add(filePath.pathString);
 				break;
 			default:
 				assert(false);
@@ -66,6 +83,9 @@ public class GenericFile {
 				break;
 			case HDFS:
 				hdfsFile.close();
+				break;
+			case SHM:
+				shmFile.close();
 				break;
 			default:
 				assert(false);
@@ -143,8 +163,61 @@ public class GenericFile {
 			case HDFS:
 				hdfsFile.flush();
 				break;
+			case SHM:
+				shmFile.flush();
+				break;
 			default:
 				assert(false);
+		}
+	}
+
+	public def copyToShmem[T](buffer: T): void {
+		switch (fileSystem) {
+			case SHM:
+				shmFile.copyToShmem[T](buffer);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
+	public def copyToShmem[T](buffer: T, size_to_copy: Long): void {
+		switch (fileSystem) {
+			case SHM:
+				shmFile.copyToShmem[T](buffer, size_to_copy);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
+	public def copyFromShmem[T](buffer: T): void {
+		switch (fileSystem) {
+			case SHM:
+				shmFile.copyFromShmem[T](buffer);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
+	public def copyFromShmem[T](buffer: T, size_to_copy: Long): void {
+		switch (fileSystem) {
+			case SHM:
+				shmFile.copyFromShmem[T](buffer, size_to_copy);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
+	public static def unlink(name: String) {
+		NativeSHMFile.unlink(name);
+	}
+
+	public static def unlinkAll() {
+		for (name in sharedNames()) {
+			NativeSHMFile.unlink(name);
 		}
 	}
  }

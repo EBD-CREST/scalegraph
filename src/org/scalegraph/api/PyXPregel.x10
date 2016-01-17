@@ -429,11 +429,32 @@ final public class PyXPregel {
 
 	}
 
+	public def test_write_shmem_on_place() {
+		val size = 10000;
+		val buffer = MemoryChunk.make[Long](size);
+
+		for (i in 0..(size - 1)) {
+			buffer(i) = (here.id + 1) * i;
+		}
+
+		val shmem = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM, "/pyxpregel." + here.id.toString()),
+									FileMode.Create, FileAccess.ReadWrite);
+		shmem.copyToShmem(buffer, size * NativePyXPregelAdapter.sizeofLong);
+	}
+
+	public def test_write_shmem() {
+
+		Team.WORLD.placeGroup().broadcastFlat(() => {
+			test_write_shmem_on_place();
+		});
+	}
+
 	public def test() {
 		// test_runpythonclosure();
 		// test_forkprocess();
 		// test_broadcast_forkprocess_binary();
-		test_broadcast_call_fork_thread();
+		// test_broadcast_call_fork_thread();
+		test_write_shmem();
 	}
 
 }
