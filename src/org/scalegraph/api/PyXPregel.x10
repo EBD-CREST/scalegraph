@@ -445,10 +445,22 @@ final public class PyXPregel {
 	public def test_write_shmem() {
 
 		Team.WORLD.placeGroup().broadcastFlat(() => {
+
+			val nthreads = Runtime.NTHREADS;
+			val pipe = new Rail[PyXPregelPipe](nthreads);
+			val result = new Rail[Boolean](nthreads);
+
 			test_write_shmem_on_place();
 			try {
-				val pipe = adapter.fork(here.id, 0, here.id, 0..1, (_tid :Long, range :LongRange) => {});
-				test_read_on_thread(pipe, 0);
+//				finish for(i in 0..(nthreads - 1)) {
+//					async pipe(i) = adapter.fork(here.id, i, here.id, 0..1, (_tid :Long, range :LongRange) => {});
+//				}
+				for(i in 0..(nthreads - 1)) {
+					pipe(i) = adapter.fork(here.id, i, here.id, 0..1, (_tid :Long, range :LongRange) => {});
+				}
+				finish for(i in 0..(nthreads - 1)) {
+					async test_read_on_thread(pipe(i), 0);
+				}
 			} catch (exception :CheckedThrowable) {
 				exception.printStackTrace();
 				return;
