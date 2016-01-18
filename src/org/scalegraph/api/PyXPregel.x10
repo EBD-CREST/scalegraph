@@ -453,10 +453,10 @@ final public class PyXPregel {
 			test_write_shmem_on_place();
 			try {
 //				finish for(i in 0..(nthreads - 1)) {
-//					async pipe(i) = adapter.fork(here.id, i, here.id, 0..1, (_tid :Long, range :LongRange) => {});
+//					async pipe(i) = adapter.fork(here.id, i, here.id, 0..1);
 //				}
 				for(i in 0..(nthreads - 1)) {
-					pipe(i) = adapter.fork(here.id, i, here.id, 0..1, (_tid :Long, range :LongRange) => {});
+					pipe(i) = adapter.fork(here.id, i, here.id, 0..1);
 				}
 				finish for(i in 0..(nthreads - 1)) {
 					async test_read_on_thread(pipe(i), 0);

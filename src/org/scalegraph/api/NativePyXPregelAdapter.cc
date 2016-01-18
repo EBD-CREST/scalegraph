@@ -68,6 +68,134 @@ void NativePyXPregelAdapter::initialize() {
     PyImport_AppendInittab("x10xpregeladapter", &PyInit_x10xpregeladapter);
 }
 
+/* exec worker process after fork
+ *
+ */
+::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long place_id,
+                                                                   x10_long thread_id,
+                                                                   x10_long idx,
+                                                                   ::x10::lang::LongRange i_range) {
+
+    int pipe_stdin[2];
+    int pipe_stdout[2];
+    int pipe_stderr[2];
+    
+    if (pipe(pipe_stdin) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
+    }
+
+    if (pipe(pipe_stdout) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
+    }
+
+    if (pipe(pipe_stderr) < 0) {
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("pipe call failed"))));
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
+    }
+
+    sigset_t block, oblock, oblock2;
+    struct sigaction sa_sigpwr, sa_sigxcpu;
+
+    //    int sigsuspend = GC_get_suspend_signal();
+    //    int sigrestart = GC_get_thr_restart_signal();
+    int sigsuspend = SIGUSR1;
+    int sigrestart = SIGUSR2;
+
+#if 0
+    ::sigaction(sigsuspend, 0, &sa_sigpwr);
+    ::sigaction(sigrestart, 0, &sa_sigxcpu);
+    sa_sigpwr.sa_flags |= SA_RESTART;
+    sa_sigxcpu.sa_flags |= SA_RESTART;
+    ::sigaction(sigsuspend, &sa_sigpwr, 0);
+    ::sigaction(sigrestart, &sa_sigxcpu, 0);
+#endif
+    sigemptyset(&block);
+    sigaddset(&block, sigsuspend);
+    sigaddset(&block, sigrestart);
+        for (int k = 21; k < 32; k++) {
+            sigaddset(&block, k);
+        }
+    ::pthread_sigmask(SIG_BLOCK, &block, &oblock);
+    ::sigprocmask(SIG_BLOCK, &block, &oblock2);
+
+    fprintf(stderr, "mask signal = %d %d", sigsuspend, sigrestart);
+    
+    pid_t pid = ::fork();
+    if (pid < 0) {
+
+        ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
+        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+        
+        ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("fork call failed"))));
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
+    }
+
+    if (pid == 0) {
+        // Child process
+
+        ::close(pipe_stdin[1]);
+        ::dup2(pipe_stdin[0], STDIN_FILENO);
+        ::close(pipe_stdin[0]);
+
+        ::close(pipe_stdout[0]);
+        ::dup2(pipe_stdout[1], STDOUT_FILENO);
+        ::close(pipe_stdout[1]);
+
+        ::close(pipe_stderr[0]);
+        ::dup2(pipe_stderr[1], STDERR_FILENO);
+        ::close(pipe_stderr[1]);
+
+        // do something        
+        // (call python closure)
+
+        fprintf(stderr, "Child pid is %d\n", getpid());
+        
+        size_t arglen = 128;
+        char* arg0 = new char[arglen];
+        char* arg1 = new char[arglen];
+        char* arg2 = new char[arglen];
+        snprintf(arg0, arglen, "pyxpregelworker");
+        snprintf(arg1, arglen, "%lld", (long long)place_id);
+        snprintf(arg2, arglen, "%lld", (long long)thread_id);
+        execl("/Users/tosiyuki/EBD/scalegraph-dev/src/cpp/pyxpregelworker/pyxpregelworker",
+              arg0, arg1, arg2, 0);
+        perror("pyxpregelworker");
+
+        ::_exit(1);
+        return ::org::scalegraph::api::PyXPregelPipe::_make();
+
+    } else {
+        // Parent process
+
+        ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
+        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+        fprintf(stderr, "%d forked %d\n", getpid(), pid);
+
+        ::kill(pid, SIGCONT);
+        
+        close(pipe_stdin[0]);
+        close(pipe_stdout[1]);
+        close(pipe_stderr[1]);
+
+        // read pipe_stdout[0] and pipe_stderr[0]
+        // and do something
+
+        int status;
+        //        ::waitpid(pid, &status, WUNTRACED);
+        
+        return ::org::scalegraph::api::PyXPregelPipe::_make(pipe_stdin[1],
+                                                            pipe_stdout[0],
+                                                            pipe_stderr[0]);
+    }
+
+}
+
+
+/*
+ * call closure after fork
+ */
 ::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long place_id,
                                                                    x10_long thread_id,
                                                                    x10_long idx,
@@ -203,6 +331,7 @@ void NativePyXPregelAdapter::initialize() {
     }
 
 }
+
 
 //-----------------------------------------
 
