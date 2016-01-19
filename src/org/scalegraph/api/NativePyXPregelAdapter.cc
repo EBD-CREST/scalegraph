@@ -278,24 +278,13 @@ void NativePyXPregelAdapter::initialize() {
 
         fprintf(stderr, "Child pid is %d\n", getpid());
         
-        //::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
-        //                                                                             idx, i_range);
+        ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>::__apply(::x10aux::nullCheck(func), 
+                                                                             idx, i_range);
 
         //size_t size = 10;
         //        x10_long* writebuf = new x10_long[size];
         //        ::write(STDOUT_FILENO, writebuf, size * sizeof(x10_long));
         
-
-        size_t arglen = 128;
-        char* arg0 = new char[arglen];
-        char* arg1 = new char[arglen];
-        char* arg2 = new char[arglen];
-        snprintf(arg0, arglen, "pyxpregelworker");
-        snprintf(arg1, arglen, "%lld", (long long)place_id);
-        snprintf(arg2, arglen, "%lld", (long long)thread_id);
-        execl("/Users/tosiyuki/EBD/scalegraph-dev/src/cpp/pyxpregelworker/pyxpregelworker",
-              arg0, arg1, arg2, 0);
-        perror("pyxpregelworker");
 
         ::_exit(1);
         return ::org::scalegraph::api::PyXPregelPipe::_make();
