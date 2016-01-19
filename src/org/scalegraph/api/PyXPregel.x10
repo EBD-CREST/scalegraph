@@ -15,7 +15,6 @@ import x10.xrx.Runtime;
 import x10.util.ArrayList;
 import x10.util.Team;
 import org.scalegraph.Config;
-import org.scalegraph.graph.Graph;
 import org.scalegraph.io.FilePath;
 import org.scalegraph.io.FileAccess;
 import org.scalegraph.io.FileMode;
@@ -24,6 +23,9 @@ import org.scalegraph.util.Logger;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 import org.scalegraph.util.Team2;
+import org.scalegraph.graph.Graph;
+import org.scalegraph.xpregel.PyXPregelGraph;
+import org.scalegraph.blas.DistSparseMatrix;
 import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 import org.scalegraph.python.NativePyException;
@@ -403,12 +405,15 @@ final public class PyXPregel {
 		val pipe = new Rail[PyXPregelPipe](nthreads);
 		val result = new Rail[Boolean](nthreads);
 
-		finish for(i in 0..(nthreads - 1)) {
-			async pipe(i) = test_fork_on_thread(i);
+//		finish for(i in 0..(nthreads - 1)) {
+//			async pipe(i) = test_fork_on_thread(i);
+//		}
+		for(i in 0..(nthreads - 1)) {
+			pipe(i) = test_fork_on_thread(i);
 		}
 
 		finish for(i in 0..(nthreads - 1)) {
-//			async result(i) = test_read_on_thread(pipe(i), i);
+			async result(i) = test_read_on_thread(pipe(i), i);
 		}
 
 		for (i in 0..(nthreads - 1)) {
@@ -472,8 +477,103 @@ final public class PyXPregel {
 		// test_runpythonclosure();
 		// test_forkprocess();
 		// test_broadcast_forkprocess_binary();
-		// test_broadcast_call_fork_thread();
+		//test_broadcast_call_fork_thread();
 		test_write_shmem();
 	}
+
+/////////////////////
+
+
+	/** If directed is true, the graph is considered directed graph.
+	 * Default: true
+	 */
+	public var directed :Boolean = true;
+	
+	/** The name of the attribute used to give edge weights for the calculation of weighted PageRank.
+	 * Default: "weight"
+	 */
+	public var weights :String = "weight";
+
+
+	// The algorithm interface needs two execute methods.
+	// 1) Accept a Graph object.
+	// 2) Accept a sparse matrix.
+
+	/** Run the calculation of PageRank.
+	 * @param g The graph object. 
+	 */
+	public def execute(g :Graph) {
+		val matrix = g.createDistSparseMatrix[Double](
+				Config.get().distXPregel(), weights, directed, false);
+//		Config.get().stopWatch().lap("Graph construction");
+		return execute(matrix);
+	}
+	
+	/** Run the calculation of PageRank.
+	 * This method is faster than run(Graph) method when it is called several times on the same graph.
+	 * @param matrix 1D row distributed adjacency matrix with edge weights.
+	 */
+	public def execute(matrix :DistSparseMatrix[Double]) = execute(this, matrix);
+
+	// Algorithm implementations are defined as static methods to avoid
+	// unexpected deep copy of 'this' object.
+	
+	private static def execute(param :PyXPregel, matrix :DistSparseMatrix[Double]) {
+
+		val xpgraph = PyXPregelGraph.make[Double, Double](matrix);
+
+		
+		// compute PageRank
+//		val xpgraph = XPregelGraph.make[Double, Double](matrix);
+//		xpgraph.updateInEdge();
+		
+//		sw.lap("UpdateInEdge");
+//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("Update In Edge:"); }
+		
+//		xpgraph.iterate[Double,Double]((ctx :VertexContext[Double, Double, Double, Double], messages :MemoryChunk[Double]) => {
+//			val value :Double;
+//			if(ctx.superstep() == 0n)
+//				value = 1.0 / ctx.numberOfVertices();
+//			else
+//				value = (1.0-damping) / ctx.numberOfVertices() + damping * MathAppend.sum(messages);
+
+//			ctx.aggregate(Math.abs(value - ctx.value()));
+//			ctx.setValue(value);
+//			ctx.sendMessageToAllNeighbors(value / ctx.numberOfOutEdges());
+//		},
+//		(values :MemoryChunk[Double]) => MathAppend.sum(values),
+//		(superstep :Int, aggVal :Double) => {
+//			if (here.id == 0) {
+//				sw.lap("PageRank at superstep " + superstep + " = " + aggVal + " ");
+//			}
+//			return (superstep >= niter || aggVal < eps);
+//		});
+
+//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Main Iterate:"); }
+		
+//		xpgraph.once((ctx :VertexContext[Double, Double, Byte, Byte]) => {
+//			ctx.output(ctx.value());
+//		});
+		val result = xpgraph.stealOutput[Double]();
+		
+//		sw.lap("Retrieve output");
+//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Retrieve Output:"); }
+//		sw.flush();
+		
+		return result;
+	}
+
+	// The algorithm interface also needs two helper methods like this.
+	
+	/** Run the calculation of XPregel with default parameters.
+	 * @param g The graph object. 
+	 */
+	public static def run(g :Graph) = new PyXPregel().execute(g);
+
+	/** Run the calculation of XPregel with default parameters.
+	 * This method is faster than run(Graph) method when it is called several times on the same graph.
+	 * @param matrix 1D row distributed adjacency matrix with edge weights.
+	 */
+	public static def run(matrix :DistSparseMatrix[Double]) = new PyXPregel().execute(matrix);
 
 }
