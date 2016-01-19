@@ -39,6 +39,24 @@ template <> struct TypeIdOf<x10_char> { static const int value = 12; };
 template <> struct TypeIdOf<x10::lang::String> { static const int value = 13; };
 template <> struct TypeIdOf<org::scalegraph::util::SString> { static const int value = 13; };
 
+
+template <typename T> struct SizeOf {
+	static const int value = -1;
+};
+
+template <> struct SizeOf<x10_boolean> { static const int value = (int) sizeof(x10_boolean); };
+template <> struct SizeOf<x10_byte> { static const int value = (int) sizeof(x10_byte); };
+template <> struct SizeOf<x10_short> { static const int value = (int) sizeof(x10_short); };
+template <> struct SizeOf<x10_int> { static const int value = (int) sizeof(x10_int); };
+template <> struct SizeOf<x10_long> { static const int value = (int) sizeof(x10_long); };
+template <> struct SizeOf<x10_float> { static const int value = (int) sizeof(x10_float); };
+template <> struct SizeOf<x10_double> { static const int value = (int) sizeof(x10_double); };
+template <> struct SizeOf<x10_ubyte> { static const int value = (int) sizeof(x10_ubyte); };
+template <> struct SizeOf<x10_ushort> { static const int value = (int) sizeof(x10_ushort); };
+template <> struct SizeOf<x10_uint> { static const int value = (int) sizeof(x10_uint); };
+template <> struct SizeOf<x10_ulong> { static const int value = (int) sizeof(x10_ulong); };
+template <> struct SizeOf<x10_char> { static const int value = (int) sizeof(x10_char); };
+
 } } } // namespace org { namespace scalegraph { namespace id {
 
 #endif // __ORG_SCALEGRAPH_ID_TYPEHELPER_H

@@ -42,6 +42,9 @@ public final class Type {
 	
 	@Native("c++", "org::scalegraph::id::TypeIdOf<#T >::value")
 	public static native def typeId[T]() :Int;
+
+	@Native("c++", "org::scalegraph::id::SizeOf<#T >::value")
+	public static native def sizeOf[T]() :Int;
 	
 	public static def typeId(dmc :Any) :Int {
 		if(dmc instanceof DistMemoryChunk[Boolean])

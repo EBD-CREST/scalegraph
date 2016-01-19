@@ -51,5 +51,17 @@ import org.scalegraph.api.PyXPregelPipe;
 	public static native def setProperty_outEdge_vertexes_size(value :Long) :void;
 	public static native def setProperty_inEdge_offsets_size(value :Long) :void;
 	public static native def setProperty_inEdge_vertexes_size(value :Long) :void;
+	public static native def setProperty_vertexValue_size(value :Long) :void;
+	public static native def setProperty_vertexValue_type(value :Int) :void;
+	public static native def setProperty_vertexActive_mc_size(value :Long) :void;
+	public static native def setProperty_vertexShouldBeActive_mc_size(value :Long) :void;
+	public static native def setProperty_message_values_size(value :Long) :void;
+	public static native def setProperty_message_offsets_size(value :Long) :void;
+	public static native def setProperty_message_value_type(value :Int) :void;
+	public static native def setProperty_vertex_range_min(value :Long) :void;
+	public static native def setProperty_vertex_range_max(value :Long) :void;
+
 	public static native def writePropertyToShmem(place_id :Long) :void;
+
+
 }

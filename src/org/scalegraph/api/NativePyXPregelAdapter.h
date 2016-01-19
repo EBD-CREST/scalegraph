@@ -42,6 +42,15 @@ struct NativePyXPregelAdapterProperty {
     long long outEdge_vertexes_size;
     long long inEdge_offsets_size;
     long long inEdge_vertexes_size;
+    long long vertexValue_size;
+    int vertexValue_type;
+    long long vertexActive_mc_size;
+    long long vertexShouldBeActive_mc_size;
+    long long message_values_size;
+    long long message_offsets_size;
+    int message_value_type;
+    long long vertex_range_min;
+    long long vertex_range_max;
 };
 
 class NativePyXPregelAdapter : public ::x10::lang::X10Class {
@@ -74,6 +83,42 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
         property.inEdge_vertexes_size = value;
     }
 
+    static void setProperty_vertexValue_size(x10_long value) {
+        property.vertexValue_size = value;
+    }
+
+    static void setProperty_vertexValue_type(x10_int value) {
+        property.vertexValue_type = value;
+    }
+
+    static void setProperty_vertexActive_mc_size(x10_long value) {
+        property.vertexActive_mc_size = value;
+    }
+
+    static void setProperty_vertexShouldBeActive_mc_size(x10_long value) {
+        property.vertexShouldBeActive_mc_size = value;
+    }
+
+    static void setProperty_message_values_size(x10_long value) {
+        property.message_values_size = value;
+    }
+
+    static void setProperty_message_offsets_size(x10_long value) {
+        property.message_offsets_size = value;
+    }
+    
+    static void setProperty_message_value_type(x10_int value) {
+        property.message_value_type = value;
+    }
+
+    static void setProperty_vertex_range_min(x10_long value) {
+        property.vertex_range_min = value;
+    }
+
+    static void setProperty_vertex_range_max(x10_long value) {
+        property.vertex_range_max = value;
+    }
+    
     static void writePropertyToShmem(x10_long place_id);
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();

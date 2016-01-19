@@ -16,7 +16,7 @@ import x10.compiler.Inline;
 
 public final class Bitmap {
 	public static val BitsPerWord = 64;
-	var mc :MemoryChunk[ULong];
+	public var mc :MemoryChunk[ULong];
 	var size :Long;
 	
 	public def this(size :Long) {
