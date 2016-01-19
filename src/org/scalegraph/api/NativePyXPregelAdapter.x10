@@ -46,4 +46,10 @@ import org.scalegraph.api.PyXPregelPipe;
 						   idx :Long, i_range :LongRange,
 						   func :(Long, LongRange)=>void) throws PyXPregelException :PyXPregelPipe;
 	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
+
+	public static native def setProperty_outEdge_offsets_size(value :Long) :void;
+	public static native def setProperty_outEdge_vertexes_size(value :Long) :void;
+	public static native def setProperty_inEdge_offsets_size(value :Long) :void;
+	public static native def setProperty_inEdge_vertexes_size(value :Long) :void;
+	public static native def writePropertyToShmem(place_id :Long) :void;
 }

@@ -37,11 +37,19 @@ template<class TPMGL(Z1), class TPMGL(Z2)> class VoidFun_0_2;
 
 namespace org { namespace scalegraph { namespace api {
 
-            
+struct NativePyXPregelAdapterProperty {
+    long long outEdge_offsets_size;
+    long long outEdge_vertexes_size;
+    long long inEdge_offsets_size;
+    long long inEdge_vertexes_size;
+};
+
 class NativePyXPregelAdapter : public ::x10::lang::X10Class {
   public:
     RTT_H_DECLS_CLASS;
 
+    static NativePyXPregelAdapterProperty property;
+    
     void initialize();
     ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,
                                                x10_long idx,  ::x10::lang::LongRange i_range);
@@ -49,6 +57,24 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
                                                x10_long idx,  ::x10::lang::LongRange i_range,
                                                ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
     template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
+
+    static void setProperty_outEdge_offsets_size(x10_long value) {
+        property.outEdge_offsets_size = value;
+    }
+
+    static void setProperty_outEdge_vertexes_size(x10_long value) {
+        property.outEdge_vertexes_size = value;
+    }
+
+    static void setProperty_inEdge_offsets_size(x10_long value) {
+        property.inEdge_offsets_size = value;
+    }
+
+    static void setProperty_inEdge_vertexes_size(x10_long value) {
+        property.inEdge_vertexes_size = value;
+    }
+
+    static void writePropertyToShmem(x10_long place_id);
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();
     void _constructor();
@@ -72,7 +98,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
 
 
 template<class TPMGL(T)>
-void NativePyXPregelAdapter::copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object) {
+        void NativePyXPregelAdapter::copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object) {
 
     ::memmove(object->pointer() + offset, buffer->pointer(), (size_t) size_to_copy);
 }

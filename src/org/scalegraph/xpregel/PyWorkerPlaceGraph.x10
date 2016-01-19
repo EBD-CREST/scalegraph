@@ -35,6 +35,12 @@ import org.scalegraph.blas.SparseMatrix;
 import org.scalegraph.graph.id.OnedR;
 import org.scalegraph.graph.id.IdStruct;
 
+import org.scalegraph.io.FilePath;
+import org.scalegraph.io.FileAccess;
+import org.scalegraph.io.FileMode;
+import org.scalegraph.io.GenericFile;
+import org.scalegraph.api.NativePyXPregelAdapter;
+
 import org.scalegraph.xpregel.VertexContext;
 import org.scalegraph.util.DistMemoryChunk;
 import x10.compiler.Native;
@@ -752,4 +758,37 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		
 		return outMem;
 	}
+
+
+	////////
+
+	public def exportOutEdgeToShmem() {
+		exportGraphEdgeToShmem("outEdge", mOutEdge);
+		NativePyXPregelAdapter.setProperty_outEdge_offsets_size(mOutEdge.offsets.size());
+		NativePyXPregelAdapter.setProperty_outEdge_vertexes_size(mOutEdge.vertexes.size());
+		NativePyXPregelAdapter.writePropertyToShmem(here.id);
+	}
+
+	public def exportInEdgeToShmem() {
+		exportGraphEdgeToShmem("inEdge", mInEdge);
+		NativePyXPregelAdapter.setProperty_inEdge_offsets_size(mInEdge.offsets.size());
+		NativePyXPregelAdapter.setProperty_inEdge_vertexes_size(mInEdge.vertexes.size());
+		NativePyXPregelAdapter.writePropertyToShmem(here.id);
+	}
+
+	public def exportGraphEdgeToShmem[E](name: String, graphEdge :GraphEdge[E]) {
+		val here_id = here.id.toString();
+		val name_shmem_offsets = "/scalegraph." + name + ".offsets" + here_id;
+		val name_shmem_vertexes = "/scalegraph." + name + ".vertexes" + here_id;
+		val file_shmem_offsets = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
+														  name_shmem_offsets),
+												 FileMode.Create, FileAccess.ReadWrite);
+		val file_shmem_vertexes = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
+														   name_shmem_vertexes),
+												  FileMode.Create, FileAccess.ReadWrite);
+		file_shmem_offsets.copyToShmem(graphEdge.offsets, graphEdge.offsets.size() * NativePyXPregelAdapter.sizeofLong);
+		file_shmem_vertexes.copyToShmem(graphEdge.vertexes, graphEdge.vertexes.size() * NativePyXPregelAdapter.sizeofLong);
+	}
+
+
 }

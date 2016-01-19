@@ -11,6 +11,10 @@
 
 #include <Python.h>
 #include <unistd.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <string.h>
+
 #include <signal.h>
 //#include <sys/wait.h>
 #include <gc.h>
@@ -319,6 +323,27 @@ void NativePyXPregelAdapter::initialize() {
                                                             pipe_stderr[0]);
     }
 
+}
+
+
+NativePyXPregelAdapterProperty NativePyXPregelAdapter::property;
+
+void NativePyXPregelAdapter::writePropertyToShmem(x10_long place_id) {
+
+    size_t namelen = 128;
+    char* name = new char[namelen];
+
+    snprintf(name, namelen, "/pyxpregel.property.%lld", place_id);
+    int shmfd = shm_open(name, O_RDWR|O_CREAT);
+    if (shmfd < 0) {
+        perror("shm_open");
+    }
+    size_t shmemlen = sizeof(NativePyXPregelAdapterProperty);
+    ftruncate(shmfd, shmemlen);
+    void* shmem = mmap(NULL, shmemlen, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
+    memcpy(shmem, &property, shmemlen);
+    munmap(shmem, shmemlen);
+    close(shmfd);
 }
 
 
