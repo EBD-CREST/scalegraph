@@ -525,7 +525,10 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			task(tid, r);
 		});
 	}
-	
+
+	public def run[M, A]() {
+	}
+
 /*
 	public def run[M, A](
 			compute :(VertexContext[V,E,M,A], MemoryChunk[M]) => void,

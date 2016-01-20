@@ -30,6 +30,11 @@ import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 import org.scalegraph.python.NativePyException;
 
+
+import org.scalegraph.graph.GraphGenerator;
+import org.scalegraph.util.random.Random;
+
+
 final public class PyXPregel {
 
 	private static val adapter = new NativePyXPregelAdapter();
@@ -473,12 +478,50 @@ final public class PyXPregel {
 		});
 	}
 
+	private def makeGraphFromRmat() {
+
+		val valueInputDataRmatScale		:Int = 6n;
+		val valueInputDataRmatEdgefactor :Int = 16n;
+		val valueInputDataRmatA			:Double = 0.45;
+		val valueInputDataRmatB			:Double = 0.15;
+		val valueInputDataRmatC			:Double = 0.15;
+
+		val rnd = new Random(2, 3);
+		val edgeList = GraphGenerator.genRMAT(valueInputDataRmatScale,
+											  valueInputDataRmatEdgefactor,
+											  valueInputDataRmatA,
+											  valueInputDataRmatB,
+											  valueInputDataRmatC,
+											  rnd);
+		val rawWeight = GraphGenerator.genRandomEdgeValue(valueInputDataRmatScale,
+														  valueInputDataRmatEdgefactor,
+														  rnd);
+		val g = Graph.make(edgeList);
+		g.setEdgeAttribute[Double]("weight", rawWeight);
+		return g;
+	}
+
+	public def test_xpregel() {
+
+		val graph = makeGraphFromRmat();
+    	val matrix = graph.createDistSparseMatrix[Double](
+    		Config.get().distXPregel(), "weight", true, false);
+		graph.del();
+
+		val xp = this;
+		val result = xp.execute(matrix);
+//		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
+	}
+
 	public def test() {
 		// test_runpythonclosure();
 		// test_forkprocess();
 		// test_broadcast_forkprocess_binary();
 		//test_broadcast_call_fork_thread();
-		test_write_shmem();
+
+		//test_write_shmem();
+
+		test_xpregel();
 	}
 
 /////////////////////
@@ -521,7 +564,7 @@ final public class PyXPregel {
 	private static def execute(param :PyXPregel, matrix :DistSparseMatrix[Double]) {
 
 		val xpgraph = PyXPregelGraph.make[Double, Double](matrix);
-
+		xpgraph.iterate[Double, Double]();
 		
 		// compute PageRank
 //		val xpgraph = XPregelGraph.make[Double, Double](matrix);

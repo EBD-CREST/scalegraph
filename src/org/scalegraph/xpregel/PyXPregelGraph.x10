@@ -239,6 +239,19 @@ public final class PyXPregelGraph[V,E] /*{V haszero,E haszero}*/ {
 			} catch (e :CheckedThrowable) { e.printStackTrace(); }
 		});
 	}
+
+
+	public def iterate[M,A]() {
+		ensurePlaceRoot();
+		val team_ = mTeam;
+		val workers_ = mWorkers;
+		team_.placeGroup().broadcastFlat( () => {
+			try {
+				workers_().run[M,A]();
+			} catch (e :CheckedThrowable) { e.printStackTrace(); }
+		});
+	}
+
 	
 	/**
 	 * Execute superstep.
