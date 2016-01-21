@@ -544,8 +544,19 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 		val shmemOutEdge = createShmemOutEdge();
 		val shmemInEdge = createShmemInEdge();
-		exportGraphEdgeToShmem(shmemOutEdge, mOutEdge);
-		exportGraphEdgeToShmem(shmemInEdge, mInEdge);
+		updateShmemGraphEdge(shmemOutEdge, mOutEdge);
+		updateShmemGraphEdge(shmemInEdge, mInEdge);
+
+		val shmemVertexValue = createShmemVertexValue[V]();
+		updateShmemMemoryChunk(shmemVertexValue, mVertexValue);
+
+		val shmemVertexActive = createShmemVertexActive();
+		updateShmemBitmap(shmemVertexActive, mVertexActive);
+
+		val shmemVertexShouldBeActive = createShmemVertexShouldBeActive();
+		updateShmemBitmap(shmemVertexShouldBeActive, mVertexShouldBeActive);
+
+		exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
 
 		NativePyXPregelAdapter.createShmemProperty(here.id);
 		NativePyXPregelAdapter.updateShmemProperty();
@@ -836,49 +847,59 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		return ShmemObjectEdge(file_shmem_offsets, file_shmem_vertexes);
 	}
 
-	public def exportGraphEdgeToShmem[E](shmem: ShmemObjectEdge, graphEdge :GraphEdge[E]) {
+	public def updateShmemGraphEdge[E](shmem: ShmemObjectEdge, graphEdge :GraphEdge[E]) {
 		shmem.offsets.copyToShmem(graphEdge.offsets, graphEdge.offsets.size() * Type.sizeOf[Long]());
 		shmem.vertexes.copyToShmem(graphEdge.vertexes, graphEdge.vertexes.size() * Type.sizeOf[Long]());
 //		shmem.offsets.close();
 //		shmem.vertexes.close();
 	}
 
-	public def exportVertexValueToShmem[V](vertexValue :MemoryChunk[V]) {
-		val here_id = here.id.toString();
-		val name_shmem = "/pyxpregel.vertexValue." + here_id;
-		val file_shmem = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
-												  name_shmem),
-										 FileMode.Create, FileAccess.ReadWrite);
-		file_shmem.copyToShmem(vertexValue, vertexValue.size() * Type.sizeOf[V]());
-		file_shmem.close();
-
-		NativePyXPregelAdapter.setProperty_vertexValue_size(vertexValue.size());
+	public def createShmemVertexValue[V]() :GenericFile {
+		NativePyXPregelAdapter.setProperty_vertexValue_size(mVertexValue.size());
 		NativePyXPregelAdapter.setProperty_vertexValue_type(Type.typeId[V]());
-//		NativePyXPregelAdapter.writePropertyToShmem(here.id);
+		return createShmemMemoryChunk("vertexValue", mVertexValue);
 	}
 
-	public def exportVertexActiveToShmem() {
-		exportBitmapToShmem("vertexActive", mVertexActive);
+	public def createShmemVertexActive() {
 		NativePyXPregelAdapter.setProperty_vertexActive_mc_size(mVertexActive.mc.size());
-//		NativePyXPregelAdapter.writePropertyToShmem(here.id);
+		return createShmemBitmap("vertexActive", mVertexActive);
 	}
 
-	public def exportVertexShouldBeActiveToShmem() {
-		exportBitmapToShmem("vertexShouldBeActive", mVertexShouldBeActive);
+	public def createShmemVertexShouldBeActive() {
 		NativePyXPregelAdapter.setProperty_vertexShouldBeActive_mc_size(mVertexShouldBeActive.mc.size());
-//		NativePyXPregelAdapter.writePropertyToShmem(here.id);
+		return createShmemBitmap("vertexShouldBeActive", mVertexShouldBeActive);
 	}
 
-	public def exportBitmapToShmem(name: String, bitmap: Bitmap) {
-		val here_id = here.id.toString();
-		val name_shmem = "/pyxpregel." + name + ".mc." + here_id;
-		val file_shmem = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
-												  name_shmem),
-										 FileMode.Create, FileAccess.ReadWrite);
-		file_shmem.copyToShmem(bitmap.mc, bitmap.mc.size() * NativePyXPregelAdapter.sizeofLong);
-		file_shmem.close();
+	public def exportShmemReceivedMessages[M](ectx :MessageCommunicator[M], vertex_range :LongRange) { M haszero} :void {
+		val range_min = vertex_range.min;
+		val messages :GrowableMemory[M] = new GrowableMemory[M](128);
+		val offsets :GrowableMemory[Long] = new GrowableMemory[Long](128);
+		val buffer :GrowableMemory[M] = new GrowableMemory[M](16);
+		offsets.add(0);
+		for (dst in vertex_range) {
+			val messages_to_dst = ectx.message(dst, buffer);
+			if (messages_to_dst.size() > 0) {
+				messages.add(messages_to_dst);
+			}
+			offsets.add(messages.size());
+		}
+		val message_values = messages.raw();
+		val message_offsets = offsets.raw();
+		val shmemMessageValues = createShmemMemoryChunk("message.values", message_values);
+		val shmemMessageOffsets = createShmemMemoryChunk("message.offsets", message_offsets);
+		updateShmemMemoryChunk(shmemMessageValues, message_values);
+		updateShmemMemoryChunk(shmemMessageOffsets, message_offsets);
+		shmemMessageValues.close();
+		shmemMessageOffsets.close();
+		
+		NativePyXPregelAdapter.setProperty_message_values_size(message_values.size());
+		NativePyXPregelAdapter.setProperty_message_offsets_size(message_offsets.size());
+		NativePyXPregelAdapter.setProperty_message_value_type(Type.typeId[M]());
+		NativePyXPregelAdapter.setProperty_vertex_range_min(range_min);
+		NativePyXPregelAdapter.setProperty_vertex_range_max(vertex_range.max);
 	}
 
+/*
 	public def exportReceivedMessagesToShmem[M](ectx :MessageCommunicator[M], vertex_range :LongRange) { M haszero } {
 		val range_min = vertex_range.min;
 		val messages :GrowableMemory[M] = new GrowableMemory[M](128);
@@ -903,14 +924,29 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		NativePyXPregelAdapter.setProperty_vertex_range_max(vertex_range.max);
 //		NativePyXPregelAdapter.writePropertyToShmem(here.id);
 	}
+*/
 
-	public def exportMemoryChunkToShmem[T](name: String, mc :MemoryChunk[T]) {
+	public def createShmemBitmap(name :String, bitmap :Bitmap) =
+		createShmemMemoryChunk(name + ".mc" , bitmap.mc);
+
+
+	public def updateShmemBitmap(shmem :GenericFile, bitmap :Bitmap) {
+		updateShmemMemoryChunk(shmem, bitmap.mc);
+	}
+
+	public def createShmemMemoryChunk[T](name: String, mc :MemoryChunk[T]) :GenericFile {
 		val here_id = here.id.toString();
 		val name_shmem = "/pyxpregel." + name + "." + here_id;
+		GenericFile.unlink(name_shmem);
 		val file_shmem = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
 												  name_shmem),
 										 FileMode.Create, FileAccess.ReadWrite);
-		file_shmem.copyToShmem(mc, mc.size() * Type.sizeOf[T]());
-		file_shmem.close();
+		file_shmem.ftruncate(mc.size() * Type.sizeOf[T]());
+		return file_shmem;
+	}
+
+	public def updateShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
+		shmem.copyToShmem(mc, mc.size() * Type.sizeOf[T]());
+//		shmem.close();
 	}
 }
