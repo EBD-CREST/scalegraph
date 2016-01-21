@@ -61,7 +61,7 @@ import org.scalegraph.api.PyXPregelPipe;
 	public static native def setProperty_vertex_range_min(value :Long) :void;
 	public static native def setProperty_vertex_range_max(value :Long) :void;
 
-	public static native def writePropertyToShmem(place_id :Long) :void;
-
+	public static native def createShmemProperty(place_id :Long) :void;
+	public static native def updateShmemProperty() :void;
 
 }

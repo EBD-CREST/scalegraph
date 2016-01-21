@@ -54,6 +54,7 @@ public:
 
 	void close();
     void flush();
+    void ftruncate(x10_long size);
 	template<class TPMGL(T)> void copyToShmem(TPMGL(T) buffer);
 	template<class TPMGL(T)> void copyToShmem(TPMGL(T) buffer, x10_long size_to_write);
 	template<class TPMGL(T)> void copyFromShmem(TPMGL(T) buffer);
@@ -75,7 +76,7 @@ template<class TPMGL(T)>
 void NativeSHMFile::copyToShmem(TPMGL(T) b) {
     size_t len = b.size();
     void* copy_from = b.pointer();
-    ftruncate(FMGL(fd), len);
+    //    ftruncate(FMGL(fd), len);
     void* shared_memory = ::mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, FMGL(fd), 0);
     ::memcpy(shared_memory, copy_from, len);
     //msync(shared_memory, len, MS_SYNC);
@@ -87,8 +88,13 @@ template<class TPMGL(T)>
 void NativeSHMFile::copyToShmem(TPMGL(T) b, x10_long size_to_write) {
     size_t len = size_to_write;
     void* copy_from = b.pointer();
-    ftruncate(FMGL(fd), len);
+    //    fprintf(stderr, "start copyToShmem %d %lld\n", FMGL(fd), len);
+    //    if (::ftruncate(FMGL(fd), (off_t)len) < 0) {
+    //        perror("ftruncate");
+    //        //        _exit(-1);
+    //    }
     void* shared_memory = ::mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, FMGL(fd), 0);
+    fprintf(stderr, "shared_memory = %p, copy_from = %p, len = %lld\n", shared_memory, copy_from, len);
     ::memcpy(shared_memory, copy_from, len);
     //msync(shared_memory, len, MS_SYNC);
     ::munmap(shared_memory, len);

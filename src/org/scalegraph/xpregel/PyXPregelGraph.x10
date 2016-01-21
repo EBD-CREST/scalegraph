@@ -241,7 +241,7 @@ public final class PyXPregelGraph[V,E] /*{V haszero,E haszero}*/ {
 	}
 
 
-	public def iterate[M,A]() {
+	public def iterate[M,A]() { M haszero, A haszero } {
 		ensurePlaceRoot();
 		val team_ = mTeam;
 		val workers_ = mWorkers;

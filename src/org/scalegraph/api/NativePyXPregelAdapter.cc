@@ -327,23 +327,30 @@ void NativePyXPregelAdapter::initialize() {
 
 
 NativePyXPregelAdapterProperty NativePyXPregelAdapter::property;
+void* NativePyXPregelAdapter::shmemProperty;
 
-void NativePyXPregelAdapter::writePropertyToShmem(x10_long place_id) {
+void NativePyXPregelAdapter::createShmemProperty(x10_long place_id) {
 
     size_t namelen = 128;
     char* name = new char[namelen];
 
-    snprintf(name, namelen, "/pyxpregel.property.%lld", place_id);
-    int shmfd = shm_open(name, O_RDWR|O_CREAT);
+    snprintf(name, namelen, "/pyxpregel.place.%lld", place_id);
+
+    ::shm_unlink(name);
+    fprintf(stderr, "shm_open %s %d\n", name, O_RDWR|O_CREAT);
+    int shmfd = ::shm_open(name, O_RDWR|O_CREAT, 0664);
     if (shmfd < 0) {
-        perror("shm_open");
+        perror("property shm_open");
+        _exit(1);
     }
     size_t shmemlen = sizeof(NativePyXPregelAdapterProperty);
     ftruncate(shmfd, shmemlen);
-    void* shmem = mmap(NULL, shmemlen, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
-    memcpy(shmem, &property, shmemlen);
-    munmap(shmem, shmemlen);
+    shmemProperty = mmap(NULL, shmemlen, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
     close(shmfd);
+}
+
+void NativePyXPregelAdapter::updateShmemProperty() {
+    memcpy(shmemProperty, &property, sizeof(NativePyXPregelAdapterProperty));
 }
 
 

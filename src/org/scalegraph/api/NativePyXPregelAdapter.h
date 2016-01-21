@@ -58,6 +58,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     RTT_H_DECLS_CLASS;
 
     static NativePyXPregelAdapterProperty property;
+    static void* shmemProperty;
     
     void initialize();
     ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,
@@ -119,7 +120,8 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
         property.vertex_range_max = value;
     }
     
-    static void writePropertyToShmem(x10_long place_id);
+    static void createShmemProperty(x10_long place_id);
+    static void updateShmemProperty();
     
     virtual NativePyXPregelAdapter* NativePyXPregelAdapter____this__NativePyXPregelAdapter();
     void _constructor();

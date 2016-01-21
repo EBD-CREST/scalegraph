@@ -78,10 +78,15 @@ void NativeSHMFile::_constructor (org::scalegraph::util::SString name, int  file
 	default:
 		x10aux::throwException(IllegalArgumentException::_make(String::Lit("FileMode is out of range.")));
 	}
-	FMGL(fd) = ::shm_open((char*)name->c_str(), flags, 0666);
-	if (FMGL(fd) == -1)
+    //    fprintf(stderr, "shm_open %s %d\n", (char*)name->c_str(), flags);
+	FMGL(fd) = ::shm_open((char*)name->c_str(), flags, 0664);
+	if (FMGL(fd) == -1) {
 		x10aux::throwException(FileNotFoundException::_make(String::__plus(
 				String::__plus(name->toString(), x10aux::makeStringLit(" -> ERRNO: ")), (x10_int)errno)));
+        perror((char*)name->c_str());
+        _exit(1);
+    }
+    //    fprintf(stderr, "shm_open OK %d\n", FMGL(fd));
 }
 
 void NativeSHMFile::close() {
@@ -97,6 +102,14 @@ void NativeSHMFile::flush() {
 void NativeSHMFile::unlink(::x10::lang::String* name) {
     ::shm_unlink(name->c_str());
 }
+
+void NativeSHMFile::ftruncate(x10_long size) {
+    if (::ftruncate(FMGL(fd), size) < 0) {
+        perror("ftruncate");
+        _exit(1);
+    }
+}
+
 
 RTT_CC_DECLS0(NativeSHMFile, "org.scalegraph.io.NativeSHMFile", x10aux::RuntimeType::class_kind)
 

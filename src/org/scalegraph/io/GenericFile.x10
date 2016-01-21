@@ -171,6 +171,16 @@ public class GenericFile {
 		}
 	}
 
+	public def ftruncate(size: Long): void {
+		switch (fileSystem) {
+			case SHM:
+				shmFile.ftruncate(size);
+				break;
+			default:
+				assert(false);
+		}
+	}
+
 	public def copyToShmem[T](buffer: T): void {
 		switch (fileSystem) {
 			case SHM:

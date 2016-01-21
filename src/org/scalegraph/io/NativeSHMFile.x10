@@ -29,6 +29,7 @@ import org.scalegraph.util.SString;
 	public native def this(name: SString, fileMode :Int, fileAccess :Int);
 	public native def close(): void;
 	public native def flush(): void;
+	public native def ftruncate(size :Long): void;
 	public native def copyToShmem[T](buffer: T): void;
 	public native def copyToShmem[T](buffer: T, size_to_copy: Long): void;
 	public native def copyFromShmem[T](buffer: T): void;
