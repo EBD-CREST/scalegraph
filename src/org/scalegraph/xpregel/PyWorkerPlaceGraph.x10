@@ -862,12 +862,12 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 	public def createShmemVertexActive() {
 		NativePyXPregelAdapter.setProperty_vertexActive_mc_size(mVertexActive.mc.size());
-		return createShmemBitmap("vertexActive", mVertexActive);
+		return createShmemBitmap("vertexA", mVertexActive);
 	}
 
 	public def createShmemVertexShouldBeActive() {
 		NativePyXPregelAdapter.setProperty_vertexShouldBeActive_mc_size(mVertexShouldBeActive.mc.size());
-		return createShmemBitmap("vertexShouldBeActive", mVertexShouldBeActive);
+		return createShmemBitmap("vertexSBA", mVertexShouldBeActive);
 	}
 
 	public def exportShmemReceivedMessages[M](ectx :MessageCommunicator[M], vertex_range :LongRange) { M haszero} :void {
@@ -927,7 +927,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 */
 
 	public def createShmemBitmap(name :String, bitmap :Bitmap) =
-		createShmemMemoryChunk(name + ".mc" , bitmap.mc);
+		createShmemMemoryChunk(name, bitmap.mc);
 
 
 	public def updateShmemBitmap(shmem :GenericFile, bitmap :Bitmap) {
