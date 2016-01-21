@@ -1,5 +1,21 @@
 
-all: pyxpregelworker
+PROG := pyxpregelworker
+SRCS := main.cc shmem.cc
+OBJS := $(SRCS:%.cc=%.o)
+DEPS := $(SRCS:%.cc=%.d)
+CXXFLAGS = `python3-config --cflags`
+LDFLAGS = `python3-config --ldflags`
+CXX = g++
 
-pyxpregelworker: main.cc
-	g++ `python3-config --cflags` `python3-config --ldflags` -o pyxpregelworker main.cc
+all: $(PROG)
+
+-include	$(DEPS)
+
+$(PROG): $(OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $^
+
+.cc.o:
+	$(CXX) $(CXXFLAGS) -MMD -MP -c $<
+
+.PHONY: clean
+	$(RM) $(PROG) $(OBJS)

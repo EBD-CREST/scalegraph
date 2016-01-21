@@ -59,6 +59,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
 
     static NativePyXPregelAdapterProperty property;
     static void* shmemProperty;
+    static long long placeId;
     
     void initialize();
     ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,

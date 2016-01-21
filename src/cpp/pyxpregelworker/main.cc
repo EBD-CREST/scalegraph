@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "shmem.h"
 
 int
 main(int argc, char** argv) {
@@ -23,6 +24,13 @@ main(int argc, char** argv) {
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append('/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph')");
 
+    int place_id = atoi(argv[1]);
+    int thread_id = atoi(argv[2]);
+
+    Shmem::MMapShmemProperty(place_id);
+    Shmem::DisplayShmemProperty();
+    
+#if 0
     size_t namelen = 128;
     char* name = new char[namelen];
 
@@ -55,6 +63,7 @@ main(int argc, char** argv) {
     } else {
         fprintf(stderr, "Child %d:%d BAD\n", place_id, thread_id);
     }
-
+#endif
+    
     return 0;
 }

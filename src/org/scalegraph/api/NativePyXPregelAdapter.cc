@@ -327,13 +327,15 @@ void NativePyXPregelAdapter::initialize() {
 
 
 NativePyXPregelAdapterProperty NativePyXPregelAdapter::property;
-void* NativePyXPregelAdapter::shmemProperty;
+void* NativePyXPregelAdapter::shmemProperty = NULL;
+long long NativePyXPregelAdapter::placeId = -1;
 
 void NativePyXPregelAdapter::createShmemProperty(x10_long place_id) {
 
     size_t namelen = 128;
     char* name = new char[namelen];
 
+    placeId = place_id;
     snprintf(name, namelen, "/pyxpregel.place.%lld", place_id);
 
     ::shm_unlink(name);
@@ -350,6 +352,32 @@ void NativePyXPregelAdapter::createShmemProperty(x10_long place_id) {
 }
 
 void NativePyXPregelAdapter::updateShmemProperty() {
+
+    if (shmemProperty == NULL ||
+        reinterpret_cast<long long>(shmemProperty) == -1) {
+        fprintf(stderr, "[%lld] NONE\n", placeId);
+        return;
+    }
+
+#define DISPLAYPROPLL(ID)                                               \
+    fprintf(stderr, "#%lld  " #ID " = %lld\n", placeId, property.ID);
+#define DISPLAYPROPI(ID) \
+    fprintf(stderr, "#%lld  " #ID " = %d\n", placeId, property.ID);
+
+    DISPLAYPROPLL(outEdge_offsets_size);
+    DISPLAYPROPLL(outEdge_vertexes_size);
+    DISPLAYPROPLL(inEdge_offsets_size);
+    DISPLAYPROPLL(inEdge_vertexes_size);
+    DISPLAYPROPLL(vertexValue_size);
+    DISPLAYPROPI(vertexValue_type);
+    DISPLAYPROPLL(vertexActive_mc_size);
+    DISPLAYPROPLL(vertexShouldBeActive_mc_size);
+    DISPLAYPROPLL(message_values_size);
+    DISPLAYPROPLL(message_offsets_size);
+    DISPLAYPROPI(message_value_type);
+    DISPLAYPROPLL(vertex_range_min);
+    DISPLAYPROPLL(vertex_range_max);
+
     memcpy(shmemProperty, &property, sizeof(NativePyXPregelAdapterProperty));
 }
 
