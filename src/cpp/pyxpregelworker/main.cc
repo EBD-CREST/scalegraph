@@ -29,6 +29,14 @@ main(int argc, char** argv) {
 
     Shmem::MMapShmemProperty(place_id);
     Shmem::DisplayShmemProperty();
+
+    PyObject* pymain = PyImport_AddModule("__main__");
+    PyObject* globals = PyModule_GetDict(pymain);
+    PyObject* locals = PyDict_New();
+    
+    Shmem::ReadShmemOutEdge(locals);
+    Shmem::ReadShmemInEdge(locals);
+    Shmem::ReadShmemVertexValue(locals);
     
 #if 0
     size_t namelen = 128;

@@ -37,7 +37,13 @@ public:
     static void MMapShmemProperty(long long);
     static void ReadShmemProperty();
     static void DisplayShmemProperty();
-    
+
+    static void* MMapShmemMemoryChunk(const char*);
+    static PyObject* NewMemoryViewFromMemoryChunk(void*, size_t);
+
+    static void ReadShmemOutEdge(PyObject*);
+    static void ReadShmemInEdge(PyObject*);
+    static void ReadShmemVertexValue(PyObject*);
 };
 
 #endif
