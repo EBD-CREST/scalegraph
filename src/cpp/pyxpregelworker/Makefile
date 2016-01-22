@@ -2,7 +2,7 @@
 INCLUDE := -I/Users/tosiyuki/EBD/sx10/x10.runtime/src-cpp
 
 PROG := pyxpregelworker
-SRCS := main.cc shmem.cc type.cc
+SRCS := main.cc shmem.cc type.cc x10xpregeladapter.cc
 OBJS := $(SRCS:%.cc=%.o)
 DEPS := $(SRCS:%.cc=%.d)
 CXXFLAGS = `python3-config --cflags`

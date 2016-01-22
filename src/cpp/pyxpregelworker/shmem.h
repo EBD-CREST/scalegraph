@@ -30,12 +30,13 @@ class Shmem {
         long long vertex_range_max;
     };
 
+public:
     static NativePyXPregelAdapterProperty* shmemProperty;
     static long long placeId;
+    static long long threadId;
     
-public:
-    static void MMapShmemProperty(long long);
-    static void ReadShmemProperty();
+    static void MMapShmemProperty(long long, long long);
+    static void ReadShmemProperty(PyObject*);
     static void DisplayShmemProperty();
 
     static void* MMapShmemMemoryChunk(const char*);

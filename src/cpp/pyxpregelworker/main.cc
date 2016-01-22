@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "shmem.h"
+#include "x10xpregeladapter.h"
 
 int
 main(int argc, char** argv) {
@@ -20,6 +21,7 @@ main(int argc, char** argv) {
         return 1;
     }
 
+    X10XPregelAdapterInitialize();
     Py_Initialize();
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append('/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph')");
@@ -27,16 +29,44 @@ main(int argc, char** argv) {
     int place_id = atoi(argv[1]);
     int thread_id = atoi(argv[2]);
 
-    Shmem::MMapShmemProperty(place_id);
-    Shmem::DisplayShmemProperty();
-
     PyObject* pymain = PyImport_AddModule("__main__");
     PyObject* globals = PyModule_GetDict(pymain);
     PyObject* locals = PyDict_New();
     
+    Shmem::MMapShmemProperty(place_id, thread_id);
+    Shmem::DisplayShmemProperty();
+    Shmem::ReadShmemProperty(locals);
+    
     Shmem::ReadShmemOutEdge(locals);
     Shmem::ReadShmemInEdge(locals);
     Shmem::ReadShmemVertexValue(locals);
+
+    PyObject* result = PyRun_String("from xpregelworker import run\n"
+                                    "from pprint import pprint\n"
+                                    /*
+                                    "print('----- globals -----')\n"
+                                    "pprint(globals())\n"
+                                    "print('----- locals -----')\n"
+                                    "pprint(locals())\n"
+                                    */
+                                    "print(placeId)\n"
+                                    "run()\n",
+                                    Py_file_input, globals, locals);
+
+    if (result == NULL) {
+        PyObject *type;
+        PyObject *value;
+        PyObject *traceback;
+
+        PyErr_Fetch(&type, &value, &traceback);
+        PyErr_NormalizeException(&type, &value, &traceback);
+
+        PyObject* pystr = PyObject_Str(value);
+        PyObject* tmp = PyUnicode_AsEncodedString(pystr, "ASCII", "strict");
+        const char* str = PyBytes_AS_STRING(tmp);
+        fprintf(stderr, "pyxpregelworker: %s\n", str);
+    }
+    exit(0);
     
 #if 0
     size_t namelen = 128;
