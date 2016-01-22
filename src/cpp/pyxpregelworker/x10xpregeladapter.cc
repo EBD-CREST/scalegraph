@@ -42,11 +42,69 @@ static PyObject* x10xpregeladapter_threadId(PyObject* self, PyObject* args) {
 }
 
 
+#define DEFMEMBERPROPLL(ID) \
+static PyObject* x10xpregeladapter_##ID(PyObject* self, PyObject* args) {\
+\
+    if (!PyArg_ParseTuple(args, ":" #ID)) {\
+        return NULL;\
+    }\
+    return PyLong_FromLongLong(Shmem::shmemProperty->ID);\
+}
+
+
+#define DEFMEMBERPROPI(ID) \
+static PyObject* x10xpregeladapter_##ID(PyObject* self, PyObject* args) {\
+\
+    if (!PyArg_ParseTuple(args, ":" #ID)) {\
+        return NULL;\
+    }\
+    return PyLong_FromLong((long)Shmem::shmemProperty->ID); \
+}
+
+
+DEFMEMBERPROPLL(outEdge_offsets_size);
+DEFMEMBERPROPLL(outEdge_vertexes_size);
+DEFMEMBERPROPLL(inEdge_offsets_size);
+DEFMEMBERPROPLL(inEdge_vertexes_size);
+DEFMEMBERPROPLL(vertexValue_size);
+DEFMEMBERPROPI(vertexValue_type);
+DEFMEMBERPROPLL(vertexActive_mc_size);
+DEFMEMBERPROPLL(vertexShouldBeActive_mc_size);
+DEFMEMBERPROPLL(message_values_size);
+DEFMEMBERPROPLL(message_offsets_size);
+DEFMEMBERPROPI(message_value_type);
+DEFMEMBERPROPLL(vertex_range_min);
+DEFMEMBERPROPLL(vertex_range_max);
+
+
 static PyMethodDef X10XPregelAdapterMethods[] = {
     {"placeId", x10xpregeladapter_placeId, METH_VARARGS,
      "Return the place id of the runnning process."},
     {"threadId", x10xpregeladapter_threadId, METH_VARARGS,
      "Return the thread id of the runnning process."},
+
+#define ITEMPROPLL(ID) \
+    {#ID, x10xpregeladapter_##ID, METH_VARARGS, \
+     "Return the " #ID " of the runnning process."},
+
+#define ITEMPROPI(ID) \
+    {#ID, x10xpregeladapter_##ID, METH_VARARGS, \
+     "Return the " #ID " of the runnning process."},
+
+    ITEMPROPLL(outEdge_offsets_size)
+    ITEMPROPLL(outEdge_vertexes_size)
+    ITEMPROPLL(inEdge_offsets_size)
+    ITEMPROPLL(inEdge_vertexes_size)
+    ITEMPROPLL(vertexValue_size)
+    ITEMPROPI(vertexValue_type)
+    ITEMPROPLL(vertexActive_mc_size)
+    ITEMPROPLL(vertexShouldBeActive_mc_size)
+    ITEMPROPLL(message_values_size)
+    ITEMPROPLL(message_offsets_size)
+    ITEMPROPI(message_value_type)
+    ITEMPROPLL(vertex_range_min)
+    ITEMPROPLL(vertex_range_max)
+
     {NULL, NULL, 0, NULL}
 };
 

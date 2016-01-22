@@ -19,7 +19,10 @@ import x10xpregeladapter
 
 def run():
     print("hogehoge")
-    print("[" + str(x10xpregeladapter.placeId()) + ":" + str(x10xpregeladapter.threadId()) + "]")
+    prefix = "[" + str(x10xpregeladapter.placeId()) + ":" + str(x10xpregeladapter.threadId()) + "] "
+    print(prefix + "outEdge_offsets_size = " + str(x10xpregeladapter.outEdge_offsets_size()))
+    print(prefix + "outEdge_vertexes_size = " + str(x10xpregeladapter.outEdge_vertexes_size()))
+    
 #    global placeId
 #    print(placeId)
 #    print("-----globals----->>>")
