@@ -150,6 +150,7 @@ Shmem::NewMemoryViewFromMemoryChunk(void* addr, size_t size) {
 }
 
 
+/*
 void
 Shmem::ReadShmemOutEdge(PyObject* dict) {
 
@@ -197,3 +198,4 @@ Shmem::ReadShmemVertexValue(PyObject* dict) {
     assert(PyErr_Occurred() == false);
 
 }
+*/

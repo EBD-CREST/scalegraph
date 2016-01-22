@@ -36,21 +36,9 @@ main(int argc, char** argv) {
     Shmem::MMapShmemProperty(place_id, thread_id);
     Shmem::DisplayShmemProperty();
     Shmem::ReadShmemProperty(locals);
-    
-    Shmem::ReadShmemOutEdge(locals);
-    Shmem::ReadShmemInEdge(locals);
-    Shmem::ReadShmemVertexValue(locals);
 
-    PyObject* result = PyRun_String("from xpregelworker import run\n"
-                                    "from pprint import pprint\n"
-                                    /*
-                                    "print('----- globals -----')\n"
-                                    "pprint(globals())\n"
-                                    "print('----- locals -----')\n"
-                                    "pprint(locals())\n"
-                                    */
-                                    "print(placeId)\n"
-                                    "run()\n",
+    PyObject* result = PyRun_String("import xpregelworker\n"
+                                    "xpregelworker.run()\n",
                                     Py_file_input, globals, locals);
 
     if (result == NULL) {

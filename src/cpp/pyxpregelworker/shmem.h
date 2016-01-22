@@ -42,9 +42,9 @@ public:
     static void* MMapShmemMemoryChunk(const char*);
     static PyObject* NewMemoryViewFromMemoryChunk(void*, size_t);
 
-    static void ReadShmemOutEdge(PyObject*);
-    static void ReadShmemInEdge(PyObject*);
-    static void ReadShmemVertexValue(PyObject*);
+    //    static void ReadShmemOutEdge(PyObject*);
+    //    static void ReadShmemInEdge(PyObject*);
+    //    static void ReadShmemVertexValue(PyObject*);
 };
 
 #endif
