@@ -239,6 +239,21 @@ static PyObject* x10xpregeladapter_write_buffer_to_shmem(PyObject* self, PyObjec
 }
 
 
+static PyObject* x10xpregeladapter_new_memoryview_from_shmem(PyObject* self, PyObject* args) {
+
+    const char* mc_name;
+    Py_ssize_t size;
+
+    if (!PyArg_ParseTuple(args, "sn:new_memoryview_from_shmem", &mc_name, &size)) {
+        return NULL;
+    }
+
+    void* shmem = Shmem::MMapShmemBuffer(mc_name, (size_t)size);
+    return Shmem::NewMemoryViewFromShmem(shmem, (size_t)size);
+}
+
+
+
 static PyObject* x10xpregeladapter_get_format(PyObject* self, PyObject* args) {
 
     int tid;
@@ -290,6 +305,7 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     {"message_offsets", x10xpregeladapter_message_offsets, METH_VARARGS, NULL},
 
     {"write_buffer_to_shmem", x10xpregeladapter_write_buffer_to_shmem, METH_VARARGS, NULL},
+    {"new_memoryview_from_shmem", x10xpregeladapter_new_memoryview_from_shmem, METH_VARARGS, NULL},
     {"get_format", x10xpregeladapter_get_format, METH_VARARGS, NULL},
     
     {NULL, NULL, 0, NULL}

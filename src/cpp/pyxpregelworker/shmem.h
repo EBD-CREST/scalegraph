@@ -61,6 +61,7 @@ public:
     static PyObject* NewMemoryViewFromShmem(void*, size_t);
 
     static void* CreateShmemBuffer(const char*, size_t);
+    static void* MMapShmemBuffer(const char*, size_t);
     static void MUnMapShmem(void*, size_t);
     
     //    static void ReadShmemOutEdge(PyObject*);

@@ -108,7 +108,14 @@ class XPregelContext():
     def sendMessageToAllNeighbors(self, src_vertex_id, message):
         self.send_message_outEdges_values.append(message)
         self.send_message_outEdges_src_ids.append(message)
-    
+
+    def writeSendMessageBuffer(self):
+        x10xpregeladapter.write_buffer_to_shmem("sendMsg_values", self.send_message_values)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsg_srcids", self.send_message_src_ids)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsg_dstids", self.send_message_dst_ids)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_message_outEdges_values)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcids", self.send_message_outEdges_src_ids)
+
         
 def test_context(ctx):
     for value in ctx.outEdge_offsets:
@@ -145,7 +152,16 @@ def test_receivedMessages(ctx):
         size_total_msgs += size
         size_max_msgs = max(size_max_msgs, size)
     ctx.log("receivedMessages", len(ctx.message_values), size_total_msgs, size_max_msgs)
-        
+
+def test_write_buffer(ctx):
+    ctx.sendMessage(0, 8, 3.1415)
+    ctx.sendMessage(0, 7, 3.1415 * 2)
+    ctx.sendMessage(0, 6, 3.1415 * 3)
+    ctx.writeSendMessageBuffer();
+    send_messages = x10xpregeladapter.new_memoryview_from_shmem("sendMsg_values", 24).cast('d')
+    for i in range(0, len(send_messages)):
+        ctx.log(i, send_messages[i])
+    
         
 def run():
     print("start")
@@ -158,7 +174,7 @@ def run():
     terminator=pickle.loads(pickled_terminator)
     ctx = XPregelContext()
     compute(ctx, [])
-    test_outEdges(ctx)
-    test_inEdges(ctx)
-    test_receivedMessages(ctx)
-    
+#    test_outEdges(ctx)
+#    test_inEdges(ctx)
+#    test_receivedMessages(ctx)
+    test_write_buffer(ctx)

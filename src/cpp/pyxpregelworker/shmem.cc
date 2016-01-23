@@ -180,6 +180,30 @@ Shmem::CreateShmemBuffer(const char* mc_name, size_t size)  {
     return shmem;
 }
 
+void*
+Shmem::MMapShmemBuffer(const char* mc_name, size_t size) {
+
+    size_t namelen = 128;
+    char* name = new char[namelen];
+
+    snprintf(name, namelen, "/pyxpregel.%s.%lld.%lld", mc_name, placeId, threadId);
+    int shmfd = shm_open(name, O_RDONLY, 0);
+    if (shmfd < 0) {
+        perror(name);
+        exit(1);
+    }
+        
+    struct stat fs;
+    fstat(shmfd, &fs);
+    assert (fs.st_size >= size);
+    
+    void* shmem = mmap(NULL, fs.st_size, PROT_READ, MAP_SHARED, shmfd, 0);
+    close(shmfd);
+
+    return shmem;
+}
+
+
 void
 Shmem::MUnMapShmem(void* addr, size_t size) {
 
