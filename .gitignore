@@ -13,3 +13,7 @@ x10_platform.conf
 *.gz
 *.tar
 *.pyc
+*.d
+*.o
+*.dSYM
+pyxpregelworker
