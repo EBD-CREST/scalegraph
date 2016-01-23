@@ -10,6 +10,7 @@
 #
 
 import sys
+import array
 import pickle
 import config
 import x10xpregeladapter
@@ -37,9 +38,11 @@ class XPregelContext():
         self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) + "]"
 
         # get type information
-        self.vertexValue_type = x10xpregeladapter.vertexValue_type();
-        self.message_value_type = x10xpregeladapter.message_value_type();
-
+        self.vertexValue_type = x10xpregeladapter.vertexValue_type()
+        self.vertexValue_format = x10xpregeladapter.get_format(self.vertexValue_type)
+        self.message_value_type = x10xpregeladapter.message_value_type()
+        self.message_value_format = x10xpregeladapter.get_format(self.message_value_type)
+        
         # get graph
         self.outEdge_offsets = x10xpregeladapter.outEdge_offsets().cast('q')
         self.outEdge_vertexes = x10xpregeladapter.outEdge_vertexes().cast('q')
@@ -47,7 +50,7 @@ class XPregelContext():
         self.inEdge_vertexes = x10xpregeladapter.inEdge_vertexes().cast('q')
 
         # get vertex values
-        self.vertexValue = x10xpregeladapter.vertexValue().cast(x10xpregeladapter.get_format(self.vertexValue_type))
+        self.vertexValue = x10xpregeladapter.vertexValue().cast(self.vertexValue_format)
 
         # setup place local range of vertexes 
         self.num_place_local_vertexes = len(self.vertexValue)
@@ -69,8 +72,11 @@ class XPregelContext():
         self.vertexShouldBeActive = x10xpregeladapter.vertexShouldBeActive().cast('Q')
 
         # get messages
-        self.message_values = x10xpregeladapter.message_values().cast(x10xpregeladapter.get_format(self.message_value_type))
+        self.message_values = x10xpregeladapter.message_values().cast(self.message_value_format)
         self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
+
+        # reserve send message buffer
+        self.newSendMessageBuffer()
 
     def log(self, *objs):
         print(self.log_prefix, *objs, file=sys.stderr)
@@ -86,6 +92,22 @@ class XPregelContext():
     def receivedMessages(self, vertex_id):
         return self.message_values[self.message_offsets[vertex_id]:
                                    self.message_offsets[vertex_id + 1]]
+
+    def newSendMessageBuffer(self):
+        self.send_message_values = array.array(self.message_value_format)
+        self.send_message_src_ids = array.array('q')
+        self.send_message_dst_ids = array.array('q')
+        self.send_message_outEdges_values = array.array(self.message_value_format)
+        self.send_message_outEdges_src_ids = array.array('q')
+        
+    def sendMessage(self, src_vertex_id, dst_vertex_id, message):
+        self.send_message_values.append(message)
+        self.send_message_src_ids.append(src_vertex_id)
+        self.send_message_dst_ids.append(dst_vertex_id)
+
+    def sendMessageToAllNeighbors(self, src_vertex_id, message):
+        self.send_message_outEdges_values.append(message)
+        self.send_message_outEdges_src_ids.append(message)
     
         
 def test_context(ctx):

@@ -28,19 +28,41 @@ class Shmem {
         int message_value_type;
     };
 
+    struct MapInfo {
+        void* addr;
+        size_t size;
+    };
+
+    struct PyXPregelMapInfo {
+        MapInfo outEdge_offsets;
+        MapInfo outEdge_vertexes;
+        MapInfo inEdge_offsets;
+        MapInfo inEdge_vertexes;
+        MapInfo vertexValue;
+        MapInfo vertexActive;
+        MapInfo vertexShouldBeActive;
+        MapInfo message_values;
+        MapInfo message_offsets;
+    };
+
 public:
     static NativePyXPregelAdapterProperty* shmemProperty;
     static long long placeId;
     static long long threadId;
     static long long numThreads;
+
+    static PyXPregelMapInfo pyXPregelMapInfo;
     
     static void MMapShmemProperty();
     static void ReadShmemProperty(PyObject*);
     static void DisplayShmemProperty();
 
-    static void* MMapShmemMemoryChunk(const char*);
+    static void* MMapShmemMemoryChunk(const char*, size_t, MapInfo*);
     static PyObject* NewMemoryViewFromMemoryChunk(void*, size_t);
 
+    static void* CreateShmemMemoryChunk(const char*, size_t);
+    static void MUnMapShmem(void*, size_t);
+    
     //    static void ReadShmemOutEdge(PyObject*);
     //    static void ReadShmemInEdge(PyObject*);
     //    static void ReadShmemVertexValue(PyObject*);

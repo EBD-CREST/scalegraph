@@ -564,6 +564,7 @@ final public class PyXPregel {
 	private static def execute(param :PyXPregel, matrix :DistSparseMatrix[Double]) {
 
 		val xpgraph = PyXPregelGraph.make[Double, Double](matrix);
+		xpgraph.updateInEdge();
 		xpgraph.iterate[Double, Double]();
 		
 		// compute PageRank

@@ -28,6 +28,7 @@ Shmem::NativePyXPregelAdapterProperty* Shmem::shmemProperty = NULL;
 long long Shmem::placeId = -1;
 long long Shmem::threadId = -1;
 long long Shmem::numThreads = -1;
+Shmem::PyXPregelMapInfo Shmem::pyXPregelMapInfo = {};
 
 void
 Shmem::MMapShmemProperty() {
@@ -110,14 +111,16 @@ Shmem::ReadShmemProperty(PyObject* dict) {
 
 
 void*
-Shmem::MMapShmemMemoryChunk(const char* mc_name) {
+Shmem::MMapShmemMemoryChunk(const char* mc_name, size_t size, MapInfo* oldMap) {
 
     size_t namelen = 128;
     char* name = new char[namelen];
 
-    //    placeId = place_id;
-    snprintf(name, namelen, "/pyxpregel.%s.%lld", mc_name, placeId);
+    if (oldMap->addr != NULL) {
+        munmap(oldMap->addr, oldMap->size);
+    }
 
+    snprintf(name, namelen, "/pyxpregel.%s.%lld", mc_name, placeId);
     int shmfd = shm_open(name, O_RDONLY, 0);
     if (shmfd < 0) {
         perror(name);
@@ -126,8 +129,13 @@ Shmem::MMapShmemMemoryChunk(const char* mc_name) {
         
     struct stat fs;
     fstat(shmfd, &fs);
-    void* shmem = static_cast<NativePyXPregelAdapterProperty*>(mmap(NULL, fs.st_size, PROT_READ, MAP_SHARED, shmfd, 0));
+    assert (fs.st_size >= size);
+
+    void* shmem = mmap(NULL, size, PROT_READ, MAP_SHARED, shmfd, 0);
     close(shmfd);
+
+    oldMap->addr = shmem;
+    oldMap->size = size;
 
     return shmem;
 }
@@ -144,52 +152,36 @@ Shmem::NewMemoryViewFromMemoryChunk(void* addr, size_t size) {
 }
 
 
-/*
-void
-Shmem::ReadShmemOutEdge(PyObject* dict) {
+/* Shmem::CreateShmemMemoryChunk
+ * Allocate new shared memory to return array to the parent process
+ */
+void*
+Shmem::CreateShmemMemoryChunk(const char* mc_name, size_t size)  {
 
-    void* shmem_offsets = MMapShmemMemoryChunk("outEdge.offsets");
-    void* shmem_vertexes = MMapShmemMemoryChunk("outEdge.vertexes");
-    PyObject* obj_offsets = NewMemoryViewFromMemoryChunk(shmem_offsets,
-                                                         shmemProperty->outEdge_offsets_size * sizeof(long long));
-    PyObject* obj_vertexes = NewMemoryViewFromMemoryChunk(shmem_vertexes,
-                                                          shmemProperty->outEdge_vertexes_size * sizeof(long long));
+    size_t namelen = 128;
+    char* name = new char[namelen];
 
-    PyDict_SetItemString(dict, "outEdge_offsets", obj_offsets);
-    assert(PyErr_Occurred() == false);
-    PyDict_SetItemString(dict, "outEdge_vertexes", obj_vertexes);
-    assert(PyErr_Occurred() == false);
-}
+    snprintf(name, namelen, "/pyxpregel.%s.%lld.%lld", mc_name, placeId, threadId);
 
-
-void
-Shmem::ReadShmemInEdge(PyObject* dict) {
+    shm_unlink(name);
+    int shmfd = shm_open(name, O_RDWR|O_CREAT, 0664);
+    if (shmfd < 0) {
+        perror(name);
+        exit(1);
+    }
+    if (ftruncate(shmfd, size) < 0) {
+        perror(name);
+        exit(1);
+    }
     
-    void* shmem_offsets = MMapShmemMemoryChunk("inEdge.offsets");
-    void* shmem_vertexes = MMapShmemMemoryChunk("inEdge.vertexes");
-    PyObject* obj_offsets = NewMemoryViewFromMemoryChunk(shmem_offsets,
-                                                         shmemProperty->inEdge_offsets_size * sizeof(long long));
-    PyObject* obj_vertexes = NewMemoryViewFromMemoryChunk(shmem_vertexes,
-                                                          shmemProperty->inEdge_vertexes_size * sizeof(long long));
+    void* shmem = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
+    close(shmfd);
 
-    PyDict_SetItemString(dict, "inEdge_offsets", obj_offsets);
-    assert(PyErr_Occurred() == false);
-    PyDict_SetItemString(dict, "inEdge_vertexes", obj_vertexes);
-    assert(PyErr_Occurred() == false);
+    return shmem;
 }
-
 
 void
-Shmem::ReadShmemVertexValue(PyObject* dict) {
+Shmem::MUnMapShmem(void* addr, size_t size) {
 
-    void* shmem = MMapShmemMemoryChunk("vertexValue");
-    PyObject* obj = NewMemoryViewFromMemoryChunk(shmem,
-                                                 shmemProperty->vertexValue_size * Type::SizeOf(shmemProperty->vertexValue_type));
-    
-    PyDict_SetItemString(dict, "vertexValue", obj);
-    assert(PyErr_Occurred() == false);
-    PyDict_SetItemString(dict, "vertexValueFormat", Type::PyFormat(shmemProperty->vertexValue_type));
-    assert(PyErr_Occurred() == false);
-
+    munmap(addr, size);
 }
-*/
