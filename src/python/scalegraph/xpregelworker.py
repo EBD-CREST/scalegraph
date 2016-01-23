@@ -72,17 +72,58 @@ class XPregelContext():
         self.message_values = x10xpregeladapter.message_values().cast(x10xpregeladapter.get_format(self.message_value_type))
         self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
 
-        
     def log(self, *objs):
         print(self.log_prefix, *objs, file=sys.stderr)
 
+    def outEdges(self, vertex_id):
+        return self.outEdge_vertexes[self.outEdge_offsets[vertex_id]:
+                                     self.outEdge_offsets[vertex_id + 1]]
 
+    def inEdges(self, vertex_id):
+        return self.inEdge_vertexes[self.inEdge_offsets[vertex_id]:
+                                    self.inEdge_offsets[vertex_id + 1]]
+
+    def receivedMessages(self, vertex_id):
+        return self.message_values[self.message_offsets[vertex_id]:
+                                   self.message_offsets[vertex_id + 1]]
+    
+        
 def test_context(ctx):
     for value in ctx.outEdge_offsets:
         ctx.log(value)
     for value in ctx.vertexValue:
         ctx.log(value)
+
+
+def test_outEdges(ctx):
+    size_total_edges = 0
+    size_max_edges = 0
+    for vid in ctx.range_place_local_vertexes:
+        size = len(ctx.outEdges(vid))
+        size_total_edges += size
+        size_max_edges = max(size_max_edges, size)
+    ctx.log("outEdges", len(ctx.outEdge_vertexes), size_total_edges, size_max_edges)
+
     
+def test_inEdges(ctx):
+    size_total_edges = 0
+    size_max_edges = 0
+    for vid in ctx.range_place_local_vertexes:
+        size = len(ctx.inEdges(vid))
+        size_total_edges += size
+        size_max_edges = max(size_max_edges, size)
+    ctx.log("inEdges", len(ctx.inEdge_vertexes), size_total_edges, size_max_edges)
+
+    
+def test_receivedMessages(ctx):
+    size_total_msgs = 0
+    size_max_msgs = 0
+    for vid in ctx.range_place_local_vertexes:
+        size = len(ctx.receivedMessages(vid))
+        size_total_msgs += size
+        size_max_msgs = max(size_max_msgs, size)
+    ctx.log("receivedMessages", len(ctx.message_values), size_total_msgs, size_max_msgs)
+        
         
 def run():
     print("start")
@@ -95,4 +136,7 @@ def run():
     terminator=pickle.loads(pickled_terminator)
     ctx = XPregelContext()
     compute(ctx, [])
+    test_outEdges(ctx)
+    test_inEdges(ctx)
+    test_receivedMessages(ctx)
     
