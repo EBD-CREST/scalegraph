@@ -10,7 +10,10 @@
 #
 
 import sys
+import pickle
+import config
 import x10xpregeladapter
+import xpregel
 
 class XPregelContext():
 
@@ -37,8 +40,23 @@ class XPregelContext():
     def log(self, *objs):
         print(self.log_prefix, *objs, file=sys.stderr)
 
+
+def test_context(ctx):
+    for value in ctx.outEdge_offsets:
+        ctx.log(value)
+    for value in ctx.vertexValue:
+        ctx.log(value)
+    
         
 def run():
     print("start")
+    f = open(config.work_dir + '_xpregel_closure.bin', 'rb')
+#    (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())
+    (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.load(f)
+    f.close()
+    compute=pickle.loads(pickled_compute)
+    aggregator=pickle.loads(pickled_aggregator)
+    terminator=pickle.loads(pickled_terminator)
     ctx = XPregelContext()
-    ctx.log("hogehoge", "uniuni")
+    compute(ctx, [])
+    

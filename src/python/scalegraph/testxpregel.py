@@ -14,7 +14,7 @@ import xpregel
 class TestXPregel(xpregel.XPregelBase):
 
     def compute(self, ctx, messages):
-        print("compute invoked!! on place " + str(ctx.placeid()))
+        ctx.log("compute invoked!!")
 
     def aggregator(self, outputs):
         return sum(outputs)
