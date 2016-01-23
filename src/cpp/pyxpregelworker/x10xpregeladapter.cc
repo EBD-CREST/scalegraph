@@ -91,9 +91,9 @@ static PyObject* x10xpregeladapter_outEdge_offsets(PyObject* self, PyObject* arg
     }
 
     size_t size = Shmem::shmemProperty->outEdge_offsets_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("outEdge.offsets", size,
-                                              &Shmem::pyXPregelMapInfo.outEdge_offsets);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("outEdge.offsets", size,
+                                   &Shmem::pyXPregelMapInfo.outEdge_offsets);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -104,9 +104,9 @@ static PyObject* x10xpregeladapter_outEdge_vertexes(PyObject* self, PyObject* ar
     }
 
     size_t size = Shmem::shmemProperty->outEdge_vertexes_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("outEdge.vertexes", size,
-                                              &Shmem::pyXPregelMapInfo.outEdge_vertexes);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("outEdge.vertexes", size,
+                                   &Shmem::pyXPregelMapInfo.outEdge_vertexes);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -118,9 +118,9 @@ static PyObject* x10xpregeladapter_inEdge_offsets(PyObject* self, PyObject* args
     }
 
     size_t size = Shmem::shmemProperty->inEdge_offsets_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("inEdge.offsets", size,
-                                              &Shmem::pyXPregelMapInfo.inEdge_offsets);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("inEdge.offsets", size,
+                                   &Shmem::pyXPregelMapInfo.inEdge_offsets);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -132,9 +132,9 @@ static PyObject* x10xpregeladapter_inEdge_vertexes(PyObject* self, PyObject* arg
     }
 
     size_t size = Shmem::shmemProperty->inEdge_vertexes_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("inEdge.vertexes", size,
-                                              &Shmem::pyXPregelMapInfo.inEdge_vertexes);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("inEdge.vertexes", size,
+                                   &Shmem::pyXPregelMapInfo.inEdge_vertexes);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -147,9 +147,9 @@ static PyObject* x10xpregeladapter_vertexValue(PyObject* self, PyObject* args) {
 
     size_t size = Shmem::shmemProperty->vertexValue_size *
             Type::SizeOf(Shmem::shmemProperty->vertexValue_type);
-    void* shmem = Shmem::MMapShmemMemoryChunk("vertexValue", size,
-                                              &Shmem::pyXPregelMapInfo.vertexValue);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("vertexValue", size,
+                                   &Shmem::pyXPregelMapInfo.vertexValue);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -162,9 +162,9 @@ static PyObject* x10xpregeladapter_vertexActive(PyObject* self, PyObject* args) 
 
     size_t size = Shmem::shmemProperty->vertexActive_mc_size *
             sizeof(unsigned long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("vertexA", size,
-                                              &Shmem::pyXPregelMapInfo.vertexActive);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("vertexA", size,
+                                   &Shmem::pyXPregelMapInfo.vertexActive);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -177,9 +177,9 @@ static PyObject* x10xpregeladapter_vertexShouldBeActive(PyObject* self, PyObject
 
     size_t size = Shmem::shmemProperty->vertexShouldBeActive_mc_size *
             sizeof(unsigned long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("vertexSBA", size,
-                                              &Shmem::pyXPregelMapInfo.vertexShouldBeActive);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("vertexSBA", size,
+                                   &Shmem::pyXPregelMapInfo.vertexShouldBeActive);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -192,9 +192,9 @@ static PyObject* x10xpregeladapter_message_values(PyObject* self, PyObject* args
 
     size_t size = Shmem::shmemProperty->message_values_size *
             Type::SizeOf(Shmem::shmemProperty->message_value_type);
-    void* shmem = Shmem::MMapShmemMemoryChunk("message.values", size,
-                                              &Shmem::pyXPregelMapInfo.message_values);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("message.values", size,
+                                   &Shmem::pyXPregelMapInfo.message_values);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -207,9 +207,9 @@ static PyObject* x10xpregeladapter_message_offsets(PyObject* self, PyObject* arg
 
     size_t size = Shmem::shmemProperty->message_offsets_size *
             sizeof(long long);
-    void* shmem = Shmem::MMapShmemMemoryChunk("message.offsets", size,
-                                              &Shmem::pyXPregelMapInfo.message_offsets);
-    PyObject* obj = Shmem::NewMemoryViewFromMemoryChunk(shmem, size);
+    void* shmem = Shmem::MMapShmem("message.offsets", size,
+                                   &Shmem::pyXPregelMapInfo.message_offsets);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
 
@@ -230,7 +230,7 @@ static PyObject* x10xpregeladapter_write_buffer_to_shmem(PyObject* self, PyObjec
     }
 
     size_t size = view.len;
-    void* shmem = Shmem::CreateShmemMemoryChunk(mc_name, size);
+    void* shmem = Shmem::CreateShmemBuffer(mc_name, size);
     memcpy(shmem, view.buf, size);
     Shmem::MUnMapShmem(shmem, size);
     PyBuffer_Release(&view);

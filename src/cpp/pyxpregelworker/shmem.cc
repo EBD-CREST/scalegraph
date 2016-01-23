@@ -111,7 +111,7 @@ Shmem::ReadShmemProperty(PyObject* dict) {
 
 
 void*
-Shmem::MMapShmemMemoryChunk(const char* mc_name, size_t size, MapInfo* oldMap) {
+Shmem::MMapShmem(const char* mc_name, size_t size, MapInfo* oldMap) {
 
     size_t namelen = 128;
     char* name = new char[namelen];
@@ -142,7 +142,7 @@ Shmem::MMapShmemMemoryChunk(const char* mc_name, size_t size, MapInfo* oldMap) {
 
 
 PyObject*
-Shmem::NewMemoryViewFromMemoryChunk(void* addr, size_t size) {
+Shmem::NewMemoryViewFromShmem(void* addr, size_t size) {
 
     PyObject* obj = PyMemoryView_FromMemory(static_cast<char*>(addr),
                                             size, PyBUF_READ);
@@ -152,11 +152,11 @@ Shmem::NewMemoryViewFromMemoryChunk(void* addr, size_t size) {
 }
 
 
-/* Shmem::CreateShmemMemoryChunk
+/* Shmem::CreateShmemBuffer
  * Allocate new shared memory to return array to the parent process
  */
 void*
-Shmem::CreateShmemMemoryChunk(const char* mc_name, size_t size)  {
+Shmem::CreateShmemBuffer(const char* mc_name, size_t size)  {
 
     size_t namelen = 128;
     char* name = new char[namelen];
