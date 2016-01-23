@@ -26,7 +26,7 @@
 
 static PyObject* x10xpregeladapter_place_id(PyObject* self, PyObject* args) {
 
-    if (!PyArg_ParseTuple(args, ":placeId")) {
+    if (!PyArg_ParseTuple(args, ":place_id")) {
         return NULL;
     }
     return PyLong_FromLongLong(Shmem::placeId);
@@ -35,10 +35,19 @@ static PyObject* x10xpregeladapter_place_id(PyObject* self, PyObject* args) {
 
 static PyObject* x10xpregeladapter_thread_id(PyObject* self, PyObject* args) {
 
-    if (!PyArg_ParseTuple(args, ":threadId")) {
+    if (!PyArg_ParseTuple(args, ":thread_id")) {
         return NULL;
     }
     return PyLong_FromLongLong(Shmem::threadId);
+}
+
+
+static PyObject* x10xpregeladapter_num_threads(PyObject* self, PyObject* args) {
+
+    if (!PyArg_ParseTuple(args, ":num_threads")) {
+        return NULL;
+    }
+    return PyLong_FromLongLong(Shmem::numThreads);
 }
 
 
@@ -73,8 +82,6 @@ DEFMEMBERPROPLL(vertexShouldBeActive_mc_size)
 DEFMEMBERPROPLL(message_values_size)
 DEFMEMBERPROPLL(message_offsets_size)
 DEFMEMBERPROPI(message_value_type)
-DEFMEMBERPROPLL(vertex_range_min)
-DEFMEMBERPROPLL(vertex_range_max)
 
 
 static PyObject* x10xpregeladapter_outEdge_offsets(PyObject* self, PyObject* args) {
@@ -213,9 +220,11 @@ static PyObject* x10xpregeladapter_get_format(PyObject* self, PyObject* args) {
 
 static PyMethodDef X10XPregelAdapterMethods[] = {
     {"place_id", x10xpregeladapter_place_id, METH_VARARGS,
-     "Return the place id of the runnning process."},
+     "Return the place id of the X10 process."},
     {"thread_id", x10xpregeladapter_thread_id, METH_VARARGS,
-     "Return the thread id of the runnning process."},
+     "Return the thread id of the X10 process."},
+    {"num_threads", x10xpregeladapter_num_threads, METH_VARARGS,
+     "Return the number of thread of the X10 process."},
 
 #define ITEMPROPLL(ID) \
     {#ID, x10xpregeladapter_##ID, METH_VARARGS, \
@@ -236,8 +245,6 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     ITEMPROPLL(message_values_size)
     ITEMPROPLL(message_offsets_size)
     ITEMPROPI(message_value_type)
-    ITEMPROPLL(vertex_range_min)
-    ITEMPROPLL(vertex_range_max)
 
     {"outEdge_offsets", x10xpregeladapter_outEdge_offsets, METH_VARARGS, NULL},
     {"outEdge_vertexes", x10xpregeladapter_outEdge_vertexes, METH_VARARGS, NULL},

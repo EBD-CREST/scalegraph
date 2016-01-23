@@ -49,8 +49,6 @@ struct NativePyXPregelAdapterProperty {
     long long message_values_size;
     long long message_offsets_size;
     int message_value_type;
-    long long vertex_range_min;
-    long long vertex_range_max;
 };
 
 class NativePyXPregelAdapter : public ::x10::lang::X10Class {
@@ -113,14 +111,6 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
         property.message_value_type = value;
     }
 
-    static void setProperty_vertex_range_min(x10_long value) {
-        property.vertex_range_min = value;
-    }
-
-    static void setProperty_vertex_range_max(x10_long value) {
-        property.vertex_range_max = value;
-    }
-    
     static void createShmemProperty(x10_long place_id);
     static void updateShmemProperty();
     

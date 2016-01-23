@@ -480,7 +480,7 @@ final public class PyXPregel {
 
 	private def makeGraphFromRmat() {
 
-		val valueInputDataRmatScale		:Int = 6n;
+		val valueInputDataRmatScale		:Int = 10n;
 		val valueInputDataRmatEdgefactor :Int = 16n;
 		val valueInputDataRmatA			:Double = 0.45;
 		val valueInputDataRmatB			:Double = 0.15;

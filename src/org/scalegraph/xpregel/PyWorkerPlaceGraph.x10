@@ -895,8 +895,6 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		NativePyXPregelAdapter.setProperty_message_values_size(message_values.size());
 		NativePyXPregelAdapter.setProperty_message_offsets_size(message_offsets.size());
 		NativePyXPregelAdapter.setProperty_message_value_type(Type.typeId[M]());
-		NativePyXPregelAdapter.setProperty_vertex_range_min(range_min);
-		NativePyXPregelAdapter.setProperty_vertex_range_max(vertex_range.max);
 	}
 
 /*
@@ -920,8 +918,6 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		NativePyXPregelAdapter.setProperty_message_values_size(message_values.size());
 		NativePyXPregelAdapter.setProperty_message_offsets_size(message_offsets.size());
 		NativePyXPregelAdapter.setProperty_message_value_type(Type.typeId[Double]());
-		NativePyXPregelAdapter.setProperty_vertex_range_min(range_min);
-		NativePyXPregelAdapter.setProperty_vertex_range_max(vertex_range.max);
 //		NativePyXPregelAdapter.writePropertyToShmem(here.id);
 	}
 */

@@ -27,17 +27,15 @@
 Shmem::NativePyXPregelAdapterProperty* Shmem::shmemProperty = NULL;
 long long Shmem::placeId = -1;
 long long Shmem::threadId = -1;
+long long Shmem::numThreads = -1;
 
 void
-Shmem::MMapShmemProperty(long long place_id, long long thread_id) {
+Shmem::MMapShmemProperty() {
 
     size_t namelen = 128;
     char* name = new char[namelen];
 
-    placeId = place_id;
-    threadId = thread_id;
-
-    snprintf(name, namelen, "/pyxpregel.place.%lld", place_id);
+    snprintf(name, namelen, "/pyxpregel.place.%lld", placeId);
     int shmfd = shm_open(name, O_RDONLY, 0);
     if (shmfd < 0) {
         perror(name);
@@ -77,8 +75,6 @@ Shmem::DisplayShmemProperty() {
     DISPLAYPROPLL(message_values_size);
     DISPLAYPROPLL(message_offsets_size);
     DISPLAYPROPI(message_value_type);
-    DISPLAYPROPLL(vertex_range_min);
-    DISPLAYPROPLL(vertex_range_max);
 }
 
 void
@@ -109,8 +105,6 @@ Shmem::ReadShmemProperty(PyObject* dict) {
     READPROPLL(message_values_size);
     READPROPLL(message_offsets_size);
     READPROPI(message_value_type);
-    READPROPLL(vertex_range_min);
-    READPROPLL(vertex_range_max);
 }
 
 

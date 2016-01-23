@@ -26,16 +26,15 @@ class Shmem {
         long long message_values_size;
         long long message_offsets_size;
         int message_value_type;
-        long long vertex_range_min;
-        long long vertex_range_max;
     };
 
 public:
     static NativePyXPregelAdapterProperty* shmemProperty;
     static long long placeId;
     static long long threadId;
+    static long long numThreads;
     
-    static void MMapShmemProperty(long long, long long);
+    static void MMapShmemProperty();
     static void ReadShmemProperty(PyObject*);
     static void DisplayShmemProperty();
 

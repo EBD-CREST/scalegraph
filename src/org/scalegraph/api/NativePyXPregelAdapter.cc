@@ -375,8 +375,6 @@ void NativePyXPregelAdapter::updateShmemProperty() {
     DISPLAYPROPLL(message_values_size);
     DISPLAYPROPLL(message_offsets_size);
     DISPLAYPROPI(message_value_type);
-    DISPLAYPROPLL(vertex_range_min);
-    DISPLAYPROPLL(vertex_range_max);
 
     memcpy(shmemProperty, &property, sizeof(NativePyXPregelAdapterProperty));
 }

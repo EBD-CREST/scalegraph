@@ -16,8 +16,8 @@
 int
 main(int argc, char** argv) {
 
-    if (argc < 3) {
-        fprintf(stderr, "Usage: pyxpregelworker <place id> <thread id>");
+    if (argc < 4) {
+        fprintf(stderr, "Usage: pyxpregelworker <place id> <thread id> <num threads>\n");
         return 1;
     }
 
@@ -28,12 +28,17 @@ main(int argc, char** argv) {
 
     int place_id = atoi(argv[1]);
     int thread_id = atoi(argv[2]);
+    int num_threads = atoi(argv[3]);
 
+    Shmem::placeId = place_id;
+    Shmem::threadId = thread_id;
+    Shmem::numThreads = num_threads;
+    
     PyObject* pymain = PyImport_AddModule("__main__");
     PyObject* globals = PyModule_GetDict(pymain);
     PyObject* locals = PyDict_New();
     
-    Shmem::MMapShmemProperty(place_id, thread_id);
+    Shmem::MMapShmemProperty();
     Shmem::DisplayShmemProperty();
     Shmem::ReadShmemProperty(locals);
 

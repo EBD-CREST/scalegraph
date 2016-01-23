@@ -15,27 +15,63 @@ import config
 import x10xpregeladapter
 import xpregel
 
+class Bitmap():
+
+    bitsPerWord = 64
+    
+    def __init__(self, size):
+        self.numWords = round((size + self.bitsPerWord - 1) / self.bitsPerWord - 0.5);
+        self.size = size
+
+
 class XPregelContext():
 
     def __init__(self):
+
+        # get runtime information
         self.place_id = x10xpregeladapter.place_id()
         self.thread_id = x10xpregeladapter.thread_id()
+        self.num_threads = x10xpregeladapter.num_threads()
+
+        # prepare prefix for log output
+        self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) + "]"
+
+        # get type information
         self.vertexValue_type = x10xpregeladapter.vertexValue_type();
         self.message_value_type = x10xpregeladapter.message_value_type();
-        self.vertex_range_min = x10xpregeladapter.vertex_range_min()
-        self.vertex_range_max = x10xpregeladapter.vertex_range_max()
 
+        # get graph
         self.outEdge_offsets = x10xpregeladapter.outEdge_offsets().cast('q')
         self.outEdge_vertexes = x10xpregeladapter.outEdge_vertexes().cast('q')
         self.inEdge_offsets = x10xpregeladapter.inEdge_offsets().cast('q')
         self.inEdge_vertexes = x10xpregeladapter.inEdge_vertexes().cast('q')
+
+        # get vertex values
         self.vertexValue = x10xpregeladapter.vertexValue().cast(x10xpregeladapter.get_format(self.vertexValue_type))
+
+        # setup place local range of vertexes 
+        self.num_place_local_vertexes = len(self.vertexValue)
+        self.range_place_local_vertexes = range(0, self.num_place_local_vertexes)
+        self.log("range_place_local_vertexes", self.range_place_local_vertexes)
+        
+        # setup thread local range of vertexes
+        numWords = Bitmap(self.num_place_local_vertexes).numWords
+        chunkWords = max(round((numWords + self.num_threads - 1) / self.num_threads - 0.5), 1)
+        rangeWords_min = min(numWords, self.thread_id * chunkWords)
+        rangeWords_max = min(numWords, rangeWords_min + chunkWords)
+        rangeThreadLocalVertexes_min = min(self.num_place_local_vertexes, rangeWords_min * Bitmap.bitsPerWord)
+        rangeThreadLocalVertexes_max = min(self.num_place_local_vertexes, rangeWords_max * Bitmap.bitsPerWord)
+        self.range_thread_local_vertexes = range(rangeThreadLocalVertexes_min, rangeThreadLocalVertexes_max)
+        self.log("range_thread_local_vertexes", self.range_thread_local_vertexes)
+        
+        # get acitve flags
         self.vertexActive = x10xpregeladapter.vertexActive().cast('Q')
         self.vertexShouldBeActive = x10xpregeladapter.vertexShouldBeActive().cast('Q')
+
+        # get messages
         self.message_values = x10xpregeladapter.message_values().cast(x10xpregeladapter.get_format(self.message_value_type))
         self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
 
-        self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) + "]"
         
     def log(self, *objs):
         print(self.log_prefix, *objs, file=sys.stderr)
