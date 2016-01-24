@@ -99,26 +99,26 @@ class XPregelContext():
 
     def newSendMessageBuffer(self):
         self.send_message_values = array.array(self.message_value_format)
-        self.send_message_src_ids = array.array('q')
-        self.send_message_dst_ids = array.array('q')
-        self.send_message_outEdges_values = array.array(self.message_value_format)
-        self.send_message_outEdges_src_ids = array.array('q')
+        self.send_message_srcIds = array.array('q')
+        self.send_message_dstIds = array.array('q')
+        self.send_messageToAllNeighbors_values = array.array(self.message_value_format)
+        self.send_messageToAllNeighbors_srcIds = array.array('q')
         
     def sendMessage(self, src_vertex_id, dst_vertex_id, message):
         self.send_message_values.append(message)
-        self.send_message_src_ids.append(src_vertex_id)
-        self.send_message_dst_ids.append(dst_vertex_id)
+        self.send_message_srcIds.append(src_vertex_id)
+        self.send_message_dstIds.append(dst_vertex_id)
 
     def sendMessageToAllNeighbors(self, src_vertex_id, message):
-        self.send_message_outEdges_values.append(message)
-        self.send_message_outEdges_src_ids.append(message)
+        self.send_messageToAllNeighbors_values.append(message)
+        self.send_messageToAllNeighbors_srcIds.append(src_vertex_id)
 
     def writeSendMessageBuffer(self):
         x10xpregeladapter.write_buffer_to_shmem("sendMsg_values", self.send_message_values)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsg_srcids", self.send_message_src_ids)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsg_dstids", self.send_message_dst_ids)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_message_outEdges_values)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcids", self.send_message_outEdges_src_ids)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsg_srcIds", self.send_message_srcIds)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsg_dstIds", self.send_message_dstIds)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_messageToAllNeighbors_values)
+        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcIds", self.send_messageToAllNeighbors_srcIds)
 
     def resetThreadLocalAggregateValues(self):
         self.threadLocalAggregateValues = []

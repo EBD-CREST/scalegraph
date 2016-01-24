@@ -125,7 +125,7 @@ Shmem::MMapShmem(const char* mc_name, size_t size, MapInfo* oldMap) {
     }
 
     snprintf(name, namelen, "/pyxpregel.%s.%lld", mc_name, placeId);
-    int shmfd = shm_open(name, O_RDONLY, 0);
+    int shmfd = shm_open(name, O_RDWR, 0);
     if (shmfd < 0) {
         perror(name);
         exit(1);
@@ -139,7 +139,7 @@ Shmem::MMapShmem(const char* mc_name, size_t size, MapInfo* oldMap) {
         size = fs.st_size;
     }
     
-    void* shmem = mmap(NULL, size, PROT_READ, MAP_SHARED, shmfd, 0);
+    void* shmem = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
     close(shmfd);
 
     oldMap->addr = shmem;
@@ -153,7 +153,7 @@ PyObject*
 Shmem::NewMemoryViewFromShmem(void* addr, size_t size) {
 
     PyObject* obj = PyMemoryView_FromMemory(static_cast<char*>(addr),
-                                            size, PyBUF_READ);
+                                            size, PyBUF_WRITE);
     assert(PyErr_Occurred() == false);
 
     return obj;
@@ -213,7 +213,7 @@ Shmem::MMapShmemBuffer(const char* mc_name, size_t size, MapInfo* oldMap) {
         size = fs.st_size;
     }
     
-    void* shmem = mmap(NULL, fs.st_size, PROT_READ, MAP_SHARED, shmfd, 0);
+    void* shmem = mmap(NULL, fs.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, shmfd, 0);
     close(shmfd);
 
     oldMap->addr = shmem;

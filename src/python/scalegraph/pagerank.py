@@ -20,7 +20,7 @@ class PageRank(xpregel.XPregelBase):
             value = 0.15 / ctx.numVertices + 0.85 * sum(messages)
         ctx.aggregate(abs(value - ctx.getVertexValue()))
         ctx.setVertexValue(value)
-        next = value / len(ctx.outEdges)
+        next = value / len(ctx.outEdges())
         ctx.sendMessageToAllNeighbors(next)
 
     def aggregator(self, outputs):
