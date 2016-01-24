@@ -15,12 +15,12 @@ class PageRank(xpregel.XPregelBase):
 
     def compute(self, ctx, messages):
         if ctx.superstep == 0:
-            value = 1.0 / ctx.numberOfVertices
+            value = 1.0 / ctx.numVertices
         else:
-            value = 0.15 / ctx.numberOfVertices + 0.85 * sum(messages)
-        ctx.aggregate(abs(value - ctx.value))
-        ctx.value = value
-        next = value / ctx.numberOfOutEdges
+            value = 0.15 / ctx.numVertices + 0.85 * sum(messages)
+        ctx.aggregate(abs(value - ctx.getVertexValue()))
+        ctx.setVertexValue(value)
+        next = value / len(ctx.outEdges)
         ctx.sendMessageToAllNeighbors(next)
 
     def aggregator(self, outputs):

@@ -58,6 +58,48 @@ main(int argc, char** argv) {
         PyObject* tmp = PyUnicode_AsEncodedString(pystr, "ASCII", "strict");
         const char* str = PyBytes_AS_STRING(tmp);
         fprintf(stderr, "pyxpregelworker: %s\n", str);
+
+        PyObject* module_name = PyUnicode_FromString("traceback");
+        PyObject* pyth_module = PyImport_Import(module_name);
+        Py_DECREF(module_name);
+
+        if (pyth_module == NULL) {
+            fprintf(stderr, "Failed to import traceback\n");
+            exit(1);
+        }
+
+        PyObject* pyth_func = PyObject_GetAttrString(pyth_module, "format_exception");
+
+        if (pyth_func && PyCallable_Check(pyth_func)) {
+            PyObject *pyth_val;
+
+            pyth_val = PyObject_CallFunctionObjArgs(pyth_func, type, value, traceback, NULL);
+
+            if (pyth_val && PyList_Check(pyth_val)) {
+                for (Py_ssize_t i = 0; i < PyList_Size(pyth_val); i++) {
+                    PyObject* pyline = PyList_GetItem(pyth_val, i);
+                    pystr = PyObject_Str(pyline);
+                    if (pystr && PyUnicode_Check(pystr)) {
+                        PyObject* tmp = PyUnicode_AsEncodedString(pystr, "ASCII", "strict");
+                        if (tmp != NULL) {
+                            str = PyBytes_AS_STRING(tmp);
+                            fprintf(stderr, "%s\n", str);
+                            Py_DECREF(tmp);
+                        } else {
+                            fprintf(stderr, "somthing happend\n");
+                        }
+                        Py_DECREF(pystr);
+                    }
+                }
+            } else {
+                fprintf(stderr, "Something happend\n");
+            }
+            Py_XDECREF(pyth_val);
+        } else {
+            fprintf(stderr, "no traceback\n");
+        }
+        
+        exit(1);
     }
     exit(0);
     

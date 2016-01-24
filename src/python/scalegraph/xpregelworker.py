@@ -120,15 +120,51 @@ class XPregelContext():
         x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_message_outEdges_values)
         x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcids", self.send_message_outEdges_src_ids)
 
+    def resetThreadLocalAggregateValues(self):
+        self.threadLocalAggregateValues = []
+        
+    def threadLocalAggregate(self, value):
+        self.threadLocalAggregateValues.append(value)
+
 
 class VertexContext():
 
-    def __init__(self, xpregelContext, vertexId):
+    def __init__(self, superstepId, xpregelContext, vertexId):
+        self.superstepId = superstepId
         self.xpregelContext = xpregelContext
         self.vertexId = vertexId
         self.numVertices = xpregelContext.numVertices
+        
+    def numVertices(self):
+        return self.numVerties
 
+    def superstep(self):
+        return superstepId;
 
+    def aggregate(self, value):
+        pass
+
+    def sendMessage(self, dst_vertexId, message):
+        self.xpregelContext.sendMessage(self.vertexId, dst_vertexId, message)
+
+    def sendMessageToAllNeighbors(self, message):
+        self.xpregelContext.sendMessageToAllNeighbors(self.vertexId, message)
+
+    def getVertexValue(self):
+        return self.xpregelContext.vertexValue[self.vertexId]
+
+    def setVertexValue(self, value):
+        self.xpregelContext.vertexValue[self.vertexId] = value
+
+    def aggregate(self, value):
+        self.xpregelContext.threadLocalAggregate(value)
+
+    def outEdges(self):
+        return self.xpregelContext.outEdges(self.vertexId)
+
+    def inEdges(self):
+        return self.xpregelContext.inEdges(self.vertexId)
+        
         
 def test_context(ctx):
     for value in ctx.outEdge_offsets:
@@ -193,34 +229,43 @@ def loadClosureFromFile(ctx):
     terminator=pickle.loads(pickled_terminator)
     return (compute, aggregator, terminator)
 
+def superstep(superstepId, xpregelContext, compute):
+    for vertexId in xpregelContext.rangeThreadLocalVertices:
+        vertexContext = VertexContext(superstepId, xpregelContext, vertexId)
+        compute(vertexContext, xpregelContext.receivedMessages(vertexId))
+    
 def run():
     print("start", file=sys.stderr)
-    ctx = XPregelContext()
-#    (compute, aggregator, terminator) = loadClosureFromFile(ctx)
-    (compute, aggregator, terminator) = loadClosureFromShmem(ctx)
+    xpctx = XPregelContext()
+#    (compute, aggregator, terminator) = loadClosureFromFile(xpctx)
+    (compute, aggregator, terminator) = loadClosureFromShmem(xpctx)
     
-    test_outEdges(ctx)
-    test_inEdges(ctx)
-    test_receivedMessages(ctx)
-    test_write_buffer(ctx)
+#    test_outEdges(xpctx)
+#    test_inEdges(xpctx)
+#    test_receivedMessages(xpctx)
+#    test_write_buffer(xpctx)
             
-    while 0:
+    while 1:
         line = sys.stdin.readline()
         if line == '':
             break
         args = line.split()
         if len(args) == 0:
             continue
-        if args[0] == 'compute':
-            compute(ctx, [])
+        if args[0] == 'superstep':
+            xpctx.resetThreadLocalAggregateValues()
+            superstep(int(args[1]), xpctx, compute)
+            threadLocalAggregatedValue = aggregator(xpctx.threadLocalAggregateValues)
+            xpctx.log("aggregated value =", threadLocalAggregatedValue)
+        elif args[0] == 'compute':
+            compute(xpctx, [])
         elif args[0] == 'test':
-            test_outEdges(ctx)
-            test_inEdges(ctx)
-            test_receivedMessages(ctx)
-            test_write_buffer(ctx)
+            test_outEdges(xpctx)
+            test_inEdges(xpctx)
+            test_receivedMessages(xpctx)
+            test_write_buffer(xpctx)
         else:
-            ctx.log("input:", args)
+            xpctx.log("input:", args)
 
-#    compute(ctx, [])
     sys.stderr.flush()
     
