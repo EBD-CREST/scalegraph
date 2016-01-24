@@ -127,13 +127,18 @@ class XPregelContext():
     def threadLocalAggregate(self, value):
         self.threadLocalAggregateValues.append(value)
 
+    def returnValue(self, format, value):
+        arraybuf = array.array(format)
+        arraybuf.append(value)
+        x10xpregeladapter.write_buffer_to_stdout(arraybuf)
+        
     def beforeSuperstep(self):
         self.threadLocalAggregateValues = []
         self.numMessageToAllNeighbors = 0;
 
     def afterSuperstep(self):
         pass
-    
+
 
 class VertexContext():
 
@@ -234,10 +239,17 @@ def loadClosureFromFile(ctx):
     terminator=pickle.loads(pickled_terminator)
     return (compute, aggregator, terminator)
 
-def superstep(superstepId, xpregelContext, compute):
+def superstep(superstepId, xpregelContext, compute, aggregator):
+    xpregelContext.beforeSuperstep()
     for vertexId in xpregelContext.rangeThreadLocalVertices:
         vertexContext = VertexContext(superstepId, xpregelContext, vertexId)
         compute(vertexContext, xpregelContext.receivedMessages(vertexId))
+    xpregelContext.afterSuperstep()
+    threadLocalAggregatedValue = aggregator(xpregelContext.threadLocalAggregateValues)
+    xpregelContext.log("aggregated value =", threadLocalAggregatedValue)
+    xpregelContext.returnValue('d', float(threadLocalAggregatedValue))
+    xpregelContext.returnValue('q', int(xpregelContext.numMessageToAllNeighbors))
+    
     
 def run():
     print("start", file=sys.stderr)
@@ -258,11 +270,7 @@ def run():
         if len(args) == 0:
             continue
         if args[0] == 'superstep':
-            xpctx.beforeSuperstep()
-            superstep(int(args[1]), xpctx, compute)
-            xpctx.afterSuperstep()
-            threadLocalAggregatedValue = aggregator(xpctx.threadLocalAggregateValues)
-            xpctx.log("aggregated value =", threadLocalAggregatedValue)
+            superstep(int(args[1]), xpctx, compute, aggregator)
         elif args[0] == 'compute':
             compute(xpctx, [])
         elif args[0] == 'test':

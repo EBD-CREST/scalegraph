@@ -384,6 +384,30 @@ static PyObject* x10xpregeladapter_bitmap_set(PyObject* self, PyObject* args) {
 }
 
 
+static PyObject* x10xpregeladapter_write_buffer_to_stdout(PyObject* self, PyObject* args) {
+
+    PyObject* obj;
+    
+    if (!PyArg_ParseTuple(args, "O:write_buffer_to_stdout", &obj)) {
+        return NULL;
+    }
+
+    Py_buffer view;
+    PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE);
+    if (view.obj == NULL) {
+        return NULL;
+    }
+
+    long long size = view.len;
+
+    write(STDOUT_FILENO, &size, sizeof(size));
+    write(STDOUT_FILENO, view.buf, size);
+    
+    PyBuffer_Release(&view);
+    Py_RETURN_NONE;
+}
+
+
 static PyMethodDef X10XPregelAdapterMethods[] = {
     {"place_id", x10xpregeladapter_place_id, METH_VARARGS,
      "Return the place id of the X10 process."},
@@ -431,6 +455,7 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     {"get_format", x10xpregeladapter_get_format, METH_VARARGS, NULL},
     {"bitmap_get", x10xpregeladapter_bitmap_get, METH_VARARGS, NULL},
     {"bitmap_set", x10xpregeladapter_bitmap_set, METH_VARARGS, NULL},
+    {"write_buffer_to_stdout", x10xpregeladapter_write_buffer_to_stdout, METH_VARARGS, NULL},
     
     {NULL, NULL, 0, NULL}
 };

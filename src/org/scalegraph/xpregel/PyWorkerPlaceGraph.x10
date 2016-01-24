@@ -602,6 +602,12 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		for (ss in 0..10000n) {
 			//compute
 
+			val command = SString(String.format("superstep %lld\n", [ss as Any]));
+			for (i in 0..(numThreads - 1)) {
+				async mPythonWorkers(i).stdout.write(command.bytes());
+			}
+
+
 			exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
 			NativePyXPregelAdapter.updateShmemProperty();
 		}
