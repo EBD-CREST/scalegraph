@@ -40,11 +40,7 @@ import org.scalegraph.api.PyXPregelPipe;
 
 	public native def this();
 	public native def initialize() :void;
-	public native def fork(place_id :Long, thread_id :Long, 
-						   idx :Long, i_range :LongRange) throws PyXPregelException :PyXPregelPipe;
-	public native def fork(place_id :Long, thread_id :Long, 
-						   idx :Long, i_range :LongRange,
-						   func :(Long, LongRange)=>void) throws PyXPregelException :PyXPregelPipe;
+	public static native def fork(place_id :Long, thread_id :Long, num_threads :Long) throws PyXPregelException :PyXPregelPipe;
 	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 
 	public static native def setProperty_outEdge_offsets_size(value :Long) :void;

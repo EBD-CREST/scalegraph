@@ -40,6 +40,8 @@ import org.scalegraph.io.FileAccess;
 import org.scalegraph.io.FileMode;
 import org.scalegraph.io.GenericFile;
 import org.scalegraph.api.NativePyXPregelAdapter;
+import org.scalegraph.api.PyXPregelPipe;
+import org.scalegraph.api.PyXPregel;
 import org.scalegraph.id.Type;
 
 import org.scalegraph.xpregel.VertexContext;
@@ -52,6 +54,7 @@ import org.scalegraph.test.STest;
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
 
 final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
+
 	static val MAX_OUTPUT_NUMBER = 8;
 	private static type XP = org.scalegraph.id.ProfilingID.XPregel;
 	
@@ -81,6 +84,9 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	var mEnableStatistics :Boolean = true;
 	//not using
 	var mNeedsAllUpdateInEdge :Boolean = true;
+
+	//Python Process
+	var mPythonWorkers :MemoryChunk[PyXPregelPipe];
 	
 	public def this(team :Team, ids :IdStruct) {
 		val rank_r = team.role()(0);
@@ -527,14 +533,20 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	}
 
 	public def run[M, A]() { M haszero, A haszero } {
+
 		val ectx :MessageCommunicator[M] =
 			new MessageCommunicator[M](mTeam, mInEdge, mIds, numThreads);
 
 		val numLocalVertexes = mIds.numberOfLocalVertexes();
-		val localSrcids = MemoryChunk.make[Long](numThreads,0n,true);
-		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
-			localSrcids(tid) = r.min;
-		});
+//		val localSrcids = MemoryChunk.make[Long](numThreads,0n,true);
+//		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
+//			localSrcids(tid) = r.min;
+//		});
+
+		// Copy closure to shmem
+		val closure = PyXPregel.closures();
+		val shmemClosure = createShmemMemoryChunk("closure", closure);
+		shmemClosure.copyToShmem(closure, closure.size());
 
 		// initialize halt flag
 		val vertexActvieBitmap = mVertexActive.raw();
@@ -560,6 +572,20 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 		NativePyXPregelAdapter.createShmemProperty(here.id);
 		NativePyXPregelAdapter.updateShmemProperty();
+
+		// Fork Python workers
+		mPythonWorkers = MemoryChunk.make[PyXPregelPipe](numThreads);
+		try {
+			for (i in 0..(numThreads - 1)) {
+				mPythonWorkers(i) = NativePyXPregelAdapter.fork(here.id, i, numThreads);
+			}
+		} catch (exception :CheckedThrowable) {
+			exception.printStackTrace();
+			return;
+		}
+		for (i in 0..(numThreads - 1)) {
+			async redirectStderr(mPythonWorkers(i).stderr);
+		}
 
 /*
 		exportInEdgeToShmem();
@@ -944,5 +970,22 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	public def updateShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
 		shmem.copyToShmem(mc, mc.size() * Type.sizeOf[T]());
 //		shmem.close();
+	}
+
+	public def redirectStderr(file: GenericFile) {
+
+		val stderr = new GenericFile(GenericFile.STDERR_FILENO);
+
+		val buffSize = 32;
+		val buff = MemoryChunk.make[Byte](buffSize);
+		for (;;) {
+			val sizeRead = file.read(buff);
+			if (sizeRead == 0) {
+				break;
+			} else {
+				stderr.write(buff, sizeRead);
+				stderr.flush();
+			}
+		}
 	}
 }

@@ -164,7 +164,7 @@ def test_write_buffer(ctx):
     
         
 def run():
-    print("start")
+    print("start", file=sys.stderr)
     f = open(config.work_dir + '_xpregel_closure.bin', 'rb')
 #    (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())
     (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.load(f)
@@ -174,7 +174,9 @@ def run():
     terminator=pickle.loads(pickled_terminator)
     ctx = XPregelContext()
     compute(ctx, [])
-#    test_outEdges(ctx)
+    test_outEdges(ctx)
 #    test_inEdges(ctx)
 #    test_receivedMessages(ctx)
     test_write_buffer(ctx)
+    sys.stderr.flush()
+    

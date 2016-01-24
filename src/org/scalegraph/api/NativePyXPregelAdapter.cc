@@ -77,8 +77,7 @@ void NativePyXPregelAdapter::initialize() {
  */
 ::org::scalegraph::api::PyXPregelPipe NativePyXPregelAdapter::fork(x10_long place_id,
                                                                    x10_long thread_id,
-                                                                   x10_long idx,
-                                                                   ::x10::lang::LongRange i_range) {
+                                                                   x10_long num_threads) {
 
     int pipe_stdin[2];
     int pipe_stdout[2];
@@ -99,6 +98,7 @@ void NativePyXPregelAdapter::initialize() {
         return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
 
+#if 0
     sigset_t block, oblock, oblock2;
     struct sigaction sa_sigpwr, sa_sigxcpu;
 
@@ -107,14 +107,6 @@ void NativePyXPregelAdapter::initialize() {
     int sigsuspend = SIGUSR1;
     int sigrestart = SIGUSR2;
 
-#if 0
-    ::sigaction(sigsuspend, 0, &sa_sigpwr);
-    ::sigaction(sigrestart, 0, &sa_sigxcpu);
-    sa_sigpwr.sa_flags |= SA_RESTART;
-    sa_sigxcpu.sa_flags |= SA_RESTART;
-    ::sigaction(sigsuspend, &sa_sigpwr, 0);
-    ::sigaction(sigrestart, &sa_sigxcpu, 0);
-#endif
     sigemptyset(&block);
     sigaddset(&block, sigsuspend);
     sigaddset(&block, sigrestart);
@@ -125,12 +117,15 @@ void NativePyXPregelAdapter::initialize() {
     ::sigprocmask(SIG_BLOCK, &block, &oblock2);
 
     fprintf(stderr, "mask signal = %d %d", sigsuspend, sigrestart);
+#endif
     
     pid_t pid = ::fork();
     if (pid < 0) {
 
+#if 0        
         ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
         ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+#endif
         
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("fork call failed"))));
         return ::org::scalegraph::api::PyXPregelPipe::_make();
@@ -160,11 +155,13 @@ void NativePyXPregelAdapter::initialize() {
         char* arg0 = new char[arglen];
         char* arg1 = new char[arglen];
         char* arg2 = new char[arglen];
+        char* arg3 = new char[arglen];
         snprintf(arg0, arglen, "pyxpregelworker");
         snprintf(arg1, arglen, "%lld", (long long)place_id);
         snprintf(arg2, arglen, "%lld", (long long)thread_id);
+        snprintf(arg3, arglen, "%lld", (long long)num_threads);
         execl("/Users/tosiyuki/EBD/scalegraph-dev/src/cpp/pyxpregelworker/pyxpregelworker",
-              arg0, arg1, arg2, 0);
+              arg0, arg1, arg2, arg3, 0);
         perror("pyxpregelworker");
 
         ::_exit(1);
@@ -173,8 +170,10 @@ void NativePyXPregelAdapter::initialize() {
     } else {
         // Parent process
 
+#if 0
         ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
         ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+#endif
         fprintf(stderr, "%d forked %d\n", getpid(), pid);
 
         ::kill(pid, SIGCONT);
@@ -196,7 +195,7 @@ void NativePyXPregelAdapter::initialize() {
 
 }
 
-
+#if 0
 /*
  * call closure after fork
  */
@@ -324,6 +323,7 @@ void NativePyXPregelAdapter::initialize() {
     }
 
 }
+#endif
 
 
 NativePyXPregelAdapterProperty NativePyXPregelAdapter::property;

@@ -60,11 +60,9 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     static long long placeId;
     
     void initialize();
-    ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,
-                                               x10_long idx,  ::x10::lang::LongRange i_range);
-    ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id, x10_long thread_id,
-                                               x10_long idx,  ::x10::lang::LongRange i_range,
-                                               ::x10::lang::VoidFun_0_2<x10_long,  ::x10::lang::LongRange>* func);
+    static ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id,
+                                                      x10_long thread_id,
+                                                      x10_long num_threads);
     template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
 
     static void setProperty_outEdge_offsets_size(x10_long value) {

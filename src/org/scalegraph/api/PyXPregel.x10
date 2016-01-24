@@ -39,7 +39,7 @@ final public class PyXPregel {
 
 	private static val adapter = new NativePyXPregelAdapter();
 	private static val python = new NativePython();
-	private static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
+	public static val closures :Cell[MemoryChunk[Byte]] = new Cell[MemoryChunk[Byte]](MemoryChunk.getNull[Byte]());
 
 	public def this() {}
 
@@ -167,6 +167,7 @@ final public class PyXPregel {
 
 	}
 
+/*
 	public def test_forkprocess() {
 
 		adapter.initialize();
@@ -477,7 +478,8 @@ final public class PyXPregel {
 			}
 		});
 	}
-
+*/
+ 
 	private def makeGraphFromRmat() {
 
 		val valueInputDataRmatScale		:Int = 10n;
@@ -502,6 +504,9 @@ final public class PyXPregel {
 	}
 
 	public def test_xpregel() {
+
+		val loadedClosures = loadClosures();
+		shareClosures(loadedClosures);
 
 		val graph = makeGraphFromRmat();
     	val matrix = graph.createDistSparseMatrix[Double](
