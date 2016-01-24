@@ -185,10 +185,23 @@ def run():
     ctx = XPregelContext()
 #    (compute, aggregator, terminator) = loadClosureFromFile(ctx)
     (compute, aggregator, terminator) = loadClosureFromShmem(ctx)
-    compute(ctx, [])
-    test_outEdges(ctx)
-#    test_inEdges(ctx)
-    test_receivedMessages(ctx)
-    test_write_buffer(ctx)
+    while 1:
+        line = sys.stdin.readline()
+        if line == '':
+            break
+        args = line.split()
+        if len(args) == 0:
+            continue
+        if args[0] == 'compute':
+            compute(ctx, [])
+        elif args[0] == 'test':
+            test_outEdges(ctx)
+            test_inEdges(ctx)
+            test_receivedMessages(ctx)
+            test_write_buffer(ctx)
+        else:
+            ctx.log("input:", args)
+
+#    compute(ctx, [])
     sys.stderr.flush()
     
