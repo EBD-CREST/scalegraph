@@ -62,8 +62,8 @@ final class MessageCommunicator[M] { M haszero } {
 	
 	var mUCCMessages :MemoryChunk[MessageBuffer[M]];
 	
-	var mBCCHasMessage :Bitmap;
-	var mBCCMessages :MemoryChunk[M];
+	public var mBCCHasMessage :Bitmap;
+	public var mBCCMessages :MemoryChunk[M];
 	
 	var mUCSRawMessageCount :Long;
 	var mUCSCount :MemoryChunk[Int];

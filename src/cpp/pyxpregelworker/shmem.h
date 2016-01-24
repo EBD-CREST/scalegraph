@@ -45,6 +45,8 @@ public:
         MapInfo vertexShouldBeActive;
         MapInfo message_values;
         MapInfo message_offsets;
+        MapInfo sendMsgN_values;
+        MapInfo sendMsgN_flags;
     };
 
     static NativePyXPregelAdapterProperty* shmemProperty;

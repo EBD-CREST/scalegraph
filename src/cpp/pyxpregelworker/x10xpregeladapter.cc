@@ -215,6 +215,36 @@ static PyObject* x10xpregeladapter_message_offsets(PyObject* self, PyObject* arg
 }
 
 
+static PyObject* x10xpregeladapter_sendMsgN_values(PyObject* self, PyObject* args) {
+
+    if (!PyArg_ParseTuple(args, ":sendMsgN_values")) {
+        return NULL;
+    }
+
+    size_t size = Shmem::shmemProperty->numLocalVertices *
+            Type::SizeOf(Shmem::shmemProperty->message_value_type);
+    void* shmem = Shmem::MMapShmem("sendMsgN_values", size,
+                                   &Shmem::pyXPregelMapInfo.sendMsgN_values);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
+    return obj;
+}
+
+
+static PyObject* x10xpregeladapter_sendMsgN_flags(PyObject* self, PyObject* args) {
+
+    if (!PyArg_ParseTuple(args, ":sendMsgN_flags")) {
+        return NULL;
+    }
+
+    size_t size = Shmem::shmemProperty->vertexActive_mc_size *
+            sizeof(unsigned long long);
+    void* shmem = Shmem::MMapShmem("sendMsgN_values", size,
+                                   &Shmem::pyXPregelMapInfo.sendMsgN_values);
+    PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
+    return obj;
+}
+
+
 static PyObject* x10xpregeladapter_write_buffer_to_shmem(PyObject* self, PyObject* args) {
 
     const char* mc_name;
@@ -282,6 +312,78 @@ static PyObject* x10xpregeladapter_get_format(PyObject* self, PyObject* args) {
 }
 
 
+static PyObject* x10xpregeladapter_bitmap_get(PyObject* self, PyObject* args) {
+
+    const int BitsPerWord = 64;
+    PyObject* obj;
+    unsigned long long index;
+    int flag;
+    
+    if (!PyArg_ParseTuple(args, "OK:bitmap_get", &obj, &index)) {
+        return NULL;
+    }
+
+    Py_buffer view;
+    PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE);
+    if (view.obj == NULL) {
+        return NULL;
+    }
+
+    unsigned long long *bitmap_buf = (unsigned long long*) view.buf;
+    size_t bitmap_bufsize = view.len;
+
+    if (index > bitmap_bufsize * BitsPerWord) {
+        return NULL;
+    }
+    
+    size_t wordOffset = index / BitsPerWord;
+    unsigned long long mask = (unsigned long long)1 << (index % BitsPerWord);
+
+    flag = ((bitmap_buf[wordOffset] & mask) != (unsigned long long)0) ;
+    
+    PyBuffer_Release(&view);
+    return PyLong_FromLong(flag);
+}
+
+
+static PyObject* x10xpregeladapter_bitmap_set(PyObject* self, PyObject* args) {
+
+    const int BitsPerWord = 64;
+    PyObject* obj;
+    unsigned long long index;
+    int flag;
+    
+    if (!PyArg_ParseTuple(args, "OKi:bitmap_set", &obj, &index, &flag)) {
+        return NULL;
+    }
+
+    Py_buffer view;
+    PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE);
+    if (view.obj == NULL) {
+        return NULL;
+    }
+
+    unsigned long long *bitmap_buf = (unsigned long long*) view.buf;
+    size_t bitmap_bufsize = view.len;
+    
+    if (index > bitmap_bufsize * BitsPerWord) {
+        return NULL;
+    }
+    
+    size_t wordOffset = index / BitsPerWord;
+    unsigned long long mask = (unsigned long long)1 << (index % BitsPerWord);
+
+    if (flag) {
+        bitmap_buf[wordOffset] |= mask;
+    } else {
+        bitmap_buf[wordOffset] &= ~mask;
+    }
+    
+    PyBuffer_Release(&view);
+    Py_RETURN_NONE;
+}
+
+
 static PyMethodDef X10XPregelAdapterMethods[] = {
     {"place_id", x10xpregeladapter_place_id, METH_VARARGS,
      "Return the place id of the X10 process."},
@@ -320,11 +422,15 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     {"vertexShouldBeActive", x10xpregeladapter_vertexShouldBeActive, METH_VARARGS, NULL},
     {"message_values", x10xpregeladapter_message_values, METH_VARARGS, NULL},
     {"message_offsets", x10xpregeladapter_message_offsets, METH_VARARGS, NULL},
-
+    {"sendMsgN_flags", x10xpregeladapter_sendMsgN_flags, METH_VARARGS, NULL},
+    {"sendMsgN_values", x10xpregeladapter_sendMsgN_values, METH_VARARGS, NULL},
+    
     {"write_buffer_to_shmem", x10xpregeladapter_write_buffer_to_shmem, METH_VARARGS, NULL},
     {"new_memoryview_from_shmem_buffer", x10xpregeladapter_new_memoryview_from_shmem_buffer, METH_VARARGS, NULL},
     {"new_memoryview_from_shmem", x10xpregeladapter_new_memoryview_from_shmem, METH_VARARGS, NULL},
     {"get_format", x10xpregeladapter_get_format, METH_VARARGS, NULL},
+    {"bitmap_get", x10xpregeladapter_bitmap_get, METH_VARARGS, NULL},
+    {"bitmap_set", x10xpregeladapter_bitmap_set, METH_VARARGS, NULL},
     
     {NULL, NULL, 0, NULL}
 };

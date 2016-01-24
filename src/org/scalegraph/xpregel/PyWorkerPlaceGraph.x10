@@ -557,7 +557,6 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		MemoryChunk.copy(mVertexShouldBeActive.raw(), 0L,
 				vertexActvieBitmap, 0L, vertexActvieBitmap.size());
 
-
 		val shmemOutEdge = createShmemOutEdge();
 		val shmemInEdge = createShmemInEdge();
 		updateShmemGraphEdge(shmemOutEdge, mOutEdge);
@@ -571,6 +570,13 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 		val shmemVertexShouldBeActive = createShmemVertexShouldBeActive();
 		updateShmemBitmap(shmemVertexShouldBeActive, mVertexShouldBeActive);
+
+		val shmemSendMessageToAllNeighborsFlag = createShmemMemoryChunk("sendMsgN_flags", ectx.mBCCHasMessage.mc);
+		updateShmemMemoryChunk(shmemSendMessageToAllNeighborsFlag, ectx.mBCCHasMessage.mc);
+
+		val shmemSendMessageToAllNeighborsValue = createShmemMemoryChunk("sendMsgN_values", ectx.mBCCMessages);
+		updateShmemMemoryChunk(shmemSendMessageToAllNeighborsValue, ectx.mBCCMessages);
+		
 
 		exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
 
@@ -589,6 +595,19 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		}
 		for (i in 0..(numThreads - 1)) {
 			async redirectStderr(mPythonWorkers(i).stderr);
+		}
+
+		
+		// Do Superstep
+		for (ss in 0..10000n) {
+			//compute
+
+			exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
+			NativePyXPregelAdapter.updateShmemProperty();
+		}
+
+		for (i in 0..(numThreads - 1)) {
+			mPythonWorkers(i).stdout.close();
 		}
 
 /*

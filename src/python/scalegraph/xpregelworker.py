@@ -78,7 +78,14 @@ class XPregelContext():
         # get messages
         self.message_values = x10xpregeladapter.message_values().cast(self.message_value_format)
         self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
+        
+        # get message buffer for MessageToAllNeighbors
+        self.sendMsgN_flags = x10xpregeladapter.sendMsgN_flags().cast('Q')
+        self.sendMsgN_values = x10xpregeladapter.sendMsgN_values().cast(self.message_value_format)
 
+        self.log("len sendMsgN_flags =", len(self.sendMsgN_flags))
+        self.log("len sendMsgN_values =", len(self.sendMsgN_values))
+        
         # reserve send message buffer
         self.newSendMessageBuffer()
 
@@ -101,8 +108,6 @@ class XPregelContext():
         self.send_message_values = array.array(self.message_value_format)
         self.send_message_srcIds = array.array('q')
         self.send_message_dstIds = array.array('q')
-        self.send_messageToAllNeighbors_values = array.array(self.message_value_format)
-        self.send_messageToAllNeighbors_srcIds = array.array('q')
         
     def sendMessage(self, src_vertex_id, dst_vertex_id, message):
         self.send_message_values.append(message)
@@ -110,22 +115,25 @@ class XPregelContext():
         self.send_message_dstIds.append(dst_vertex_id)
 
     def sendMessageToAllNeighbors(self, src_vertex_id, message):
-        self.send_messageToAllNeighbors_values.append(message)
-        self.send_messageToAllNeighbors_srcIds.append(src_vertex_id)
+        x10xpregeladapter.bitmap_set(self.sendMsgN_flags, src_vertex_id, 1)
+        self.sendMsgN_values[src_vertex_id] = message
+        self.numMessageToAllNeighbors += 1;
 
     def writeSendMessageBuffer(self):
         x10xpregeladapter.write_buffer_to_shmem("sendMsg_values", self.send_message_values)
         x10xpregeladapter.write_buffer_to_shmem("sendMsg_srcIds", self.send_message_srcIds)
         x10xpregeladapter.write_buffer_to_shmem("sendMsg_dstIds", self.send_message_dstIds)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_messageToAllNeighbors_values)
-        x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcIds", self.send_messageToAllNeighbors_srcIds)
 
-    def resetThreadLocalAggregateValues(self):
-        self.threadLocalAggregateValues = []
-        
     def threadLocalAggregate(self, value):
         self.threadLocalAggregateValues.append(value)
 
+    def beforeSuperstep(self):
+        self.threadLocalAggregateValues = []
+        self.numMessageToAllNeighbors = 0;
+
+    def afterSuperstep(self):
+        pass
+    
 
 class VertexContext():
 
@@ -140,9 +148,6 @@ class VertexContext():
 
     def superstep(self):
         return superstepId;
-
-    def aggregate(self, value):
-        pass
 
     def sendMessage(self, dst_vertexId, message):
         self.xpregelContext.sendMessage(self.vertexId, dst_vertexId, message)
@@ -253,8 +258,9 @@ def run():
         if len(args) == 0:
             continue
         if args[0] == 'superstep':
-            xpctx.resetThreadLocalAggregateValues()
+            xpctx.beforeSuperstep()
             superstep(int(args[1]), xpctx, compute)
+            xpctx.afterSuperstep()
             threadLocalAggregatedValue = aggregator(xpctx.threadLocalAggregateValues)
             xpctx.log("aggregated value =", threadLocalAggregatedValue)
         elif args[0] == 'compute':
