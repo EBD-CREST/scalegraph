@@ -131,6 +131,10 @@ Shmem::MMapShmem(const char* mc_name, size_t size, MapInfo* oldMap) {
     fstat(shmfd, &fs);
     assert (fs.st_size >= size);
 
+    if (size == 0) {
+        size = fs.st_size;
+    }
+    
     void* shmem = mmap(NULL, size, PROT_READ, MAP_SHARED, shmfd, 0);
     close(shmfd);
 
@@ -181,10 +185,14 @@ Shmem::CreateShmemBuffer(const char* mc_name, size_t size)  {
 }
 
 void*
-Shmem::MMapShmemBuffer(const char* mc_name, size_t size) {
+Shmem::MMapShmemBuffer(const char* mc_name, size_t size, MapInfo* oldMap) {
 
     size_t namelen = 128;
     char* name = new char[namelen];
+
+    if (oldMap->addr != NULL) {
+        munmap(oldMap->addr, oldMap->size);
+    }
 
     snprintf(name, namelen, "/pyxpregel.%s.%lld.%lld", mc_name, placeId, threadId);
     int shmfd = shm_open(name, O_RDONLY, 0);
@@ -196,9 +204,16 @@ Shmem::MMapShmemBuffer(const char* mc_name, size_t size) {
     struct stat fs;
     fstat(shmfd, &fs);
     assert (fs.st_size >= size);
+
+    if (size == 0) {
+        size = fs.st_size;
+    }
     
     void* shmem = mmap(NULL, fs.st_size, PROT_READ, MAP_SHARED, shmfd, 0);
     close(shmfd);
+
+    oldMap->addr = shmem;
+    oldMap->size = size;
 
     return shmem;
 }

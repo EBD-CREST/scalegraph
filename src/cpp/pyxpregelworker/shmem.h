@@ -14,6 +14,7 @@
 
 class Shmem {
 
+public:
     struct NativePyXPregelAdapterProperty {
         long long outEdge_offsets_size;
         long long outEdge_vertexes_size;
@@ -45,7 +46,6 @@ class Shmem {
         MapInfo message_offsets;
     };
 
-public:
     static NativePyXPregelAdapterProperty* shmemProperty;
     static long long placeId;
     static long long threadId;
@@ -61,7 +61,7 @@ public:
     static PyObject* NewMemoryViewFromShmem(void*, size_t);
 
     static void* CreateShmemBuffer(const char*, size_t);
-    static void* MMapShmemBuffer(const char*, size_t);
+    static void* MMapShmemBuffer(const char*, size_t, MapInfo*);
     static void MUnMapShmem(void*, size_t);
     
     //    static void ReadShmemOutEdge(PyObject*);

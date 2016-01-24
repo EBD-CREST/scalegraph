@@ -158,25 +158,37 @@ def test_write_buffer(ctx):
     ctx.sendMessage(0, 7, 3.1415 * 2)
     ctx.sendMessage(0, 6, 3.1415 * 3)
     ctx.writeSendMessageBuffer();
-    send_messages = x10xpregeladapter.new_memoryview_from_shmem("sendMsg_values", 24).cast('d')
+    send_messages = x10xpregeladapter.new_memoryview_from_shmem_buffer("sendMsg_values", 24).cast('d')
     for i in range(0, len(send_messages)):
         ctx.log(i, send_messages[i])
-    
-        
-def run():
-    print("start", file=sys.stderr)
+
+def loadClosureFromShmem(ctx):
+    closures = x10xpregeladapter.new_memoryview_from_shmem("closure", 0).cast('b')
+#    ctx.log("closure size =", len(closures))
+    (pickled_compute, pickled_aggregator, pickled_terminator) = pickle.loads(closures)
+    compute = pickle.loads(pickled_compute)
+    aggregator = pickle.loads(pickled_aggregator)
+    terminator = pickle.loads(pickled_terminator)
+    return (compute, aggregator, terminator)
+
+def loadClosureFromFile(ctx):
     f = open(config.work_dir + '_xpregel_closure.bin', 'rb')
-#    (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())
     (pickled_compute, pickled_aggregator, pickled_terminator)=pickle.load(f)
     f.close()
     compute=pickle.loads(pickled_compute)
     aggregator=pickle.loads(pickled_aggregator)
     terminator=pickle.loads(pickled_terminator)
+    return (compute, aggregator, terminator)
+
+def run():
+    print("start", file=sys.stderr)
     ctx = XPregelContext()
+#    (compute, aggregator, terminator) = loadClosureFromFile(ctx)
+    (compute, aggregator, terminator) = loadClosureFromShmem(ctx)
     compute(ctx, [])
     test_outEdges(ctx)
 #    test_inEdges(ctx)
-#    test_receivedMessages(ctx)
+    test_receivedMessages(ctx)
     test_write_buffer(ctx)
     sys.stderr.flush()
     
