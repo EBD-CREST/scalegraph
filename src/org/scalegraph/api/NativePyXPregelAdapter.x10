@@ -43,19 +43,18 @@ import org.scalegraph.api.PyXPregelPipe;
 	public static native def fork(place_id :Long, thread_id :Long, num_threads :Long) throws PyXPregelException :PyXPregelPipe;
 	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 
+	public static native def setProperty_numGlobalVertices(value :Long) :void;
+	public static native def setProperty_numLocalVertices(value :Long) :void;
 	public static native def setProperty_outEdge_offsets_size(value :Long) :void;
-	public static native def setProperty_outEdge_vertexes_size(value :Long) :void;
+	public static native def setProperty_outEdge_vertices_size(value :Long) :void;
 	public static native def setProperty_inEdge_offsets_size(value :Long) :void;
-	public static native def setProperty_inEdge_vertexes_size(value :Long) :void;
-	public static native def setProperty_vertexValue_size(value :Long) :void;
+	public static native def setProperty_inEdge_vertices_size(value :Long) :void;
 	public static native def setProperty_vertexValue_type(value :Int) :void;
 	public static native def setProperty_vertexActive_mc_size(value :Long) :void;
 	public static native def setProperty_vertexShouldBeActive_mc_size(value :Long) :void;
 	public static native def setProperty_message_values_size(value :Long) :void;
 	public static native def setProperty_message_offsets_size(value :Long) :void;
 	public static native def setProperty_message_value_type(value :Int) :void;
-	public static native def setProperty_vertex_range_min(value :Long) :void;
-	public static native def setProperty_vertex_range_max(value :Long) :void;
 
 	public static native def createShmemProperty(place_id :Long) :void;
 	public static native def updateShmemProperty() :void;

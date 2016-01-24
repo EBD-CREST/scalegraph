@@ -71,11 +71,12 @@ static PyObject* x10xpregeladapter_##ID(PyObject* self, PyObject* args) {\
 }
 
 
+DEFMEMBERPROPLL(numGlobalVertices)
+DEFMEMBERPROPLL(numLocalVertices)
 DEFMEMBERPROPLL(outEdge_offsets_size)
-DEFMEMBERPROPLL(outEdge_vertexes_size)
+DEFMEMBERPROPLL(outEdge_vertices_size)
 DEFMEMBERPROPLL(inEdge_offsets_size)
-DEFMEMBERPROPLL(inEdge_vertexes_size)
-DEFMEMBERPROPLL(vertexValue_size)
+DEFMEMBERPROPLL(inEdge_vertices_size)
 DEFMEMBERPROPI(vertexValue_type)
 DEFMEMBERPROPLL(vertexActive_mc_size)
 DEFMEMBERPROPLL(vertexShouldBeActive_mc_size)
@@ -97,15 +98,15 @@ static PyObject* x10xpregeladapter_outEdge_offsets(PyObject* self, PyObject* arg
     return obj;
 }
 
-static PyObject* x10xpregeladapter_outEdge_vertexes(PyObject* self, PyObject* args) {
+static PyObject* x10xpregeladapter_outEdge_vertices(PyObject* self, PyObject* args) {
 
-    if (!PyArg_ParseTuple(args, ":outEdge_vertexes")) {
+    if (!PyArg_ParseTuple(args, ":outEdge_vertices")) {
         return NULL;
     }
 
-    size_t size = Shmem::shmemProperty->outEdge_vertexes_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmem("outEdge.vertexes", size,
-                                   &Shmem::pyXPregelMapInfo.outEdge_vertexes);
+    size_t size = Shmem::shmemProperty->outEdge_vertices_size * sizeof(long long);
+    void* shmem = Shmem::MMapShmem("outEdge.vertices", size,
+                                   &Shmem::pyXPregelMapInfo.outEdge_vertices);
     PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
@@ -125,15 +126,15 @@ static PyObject* x10xpregeladapter_inEdge_offsets(PyObject* self, PyObject* args
 }
 
 
-static PyObject* x10xpregeladapter_inEdge_vertexes(PyObject* self, PyObject* args) {
+static PyObject* x10xpregeladapter_inEdge_vertices(PyObject* self, PyObject* args) {
 
-    if (!PyArg_ParseTuple(args, ":inEdge_vertexes")) {
+    if (!PyArg_ParseTuple(args, ":inEdge_vertices")) {
         return NULL;
     }
 
-    size_t size = Shmem::shmemProperty->inEdge_vertexes_size * sizeof(long long);
-    void* shmem = Shmem::MMapShmem("inEdge.vertexes", size,
-                                   &Shmem::pyXPregelMapInfo.inEdge_vertexes);
+    size_t size = Shmem::shmemProperty->inEdge_vertices_size * sizeof(long long);
+    void* shmem = Shmem::MMapShmem("inEdge.vertices", size,
+                                   &Shmem::pyXPregelMapInfo.inEdge_vertices);
     PyObject* obj = Shmem::NewMemoryViewFromShmem(shmem, size);
     return obj;
 }
@@ -145,7 +146,7 @@ static PyObject* x10xpregeladapter_vertexValue(PyObject* self, PyObject* args) {
         return NULL;
     }
 
-    size_t size = Shmem::shmemProperty->vertexValue_size *
+    size_t size = Shmem::shmemProperty->numLocalVertices *
             Type::SizeOf(Shmem::shmemProperty->vertexValue_type);
     void* shmem = Shmem::MMapShmem("vertexValue", size,
                                    &Shmem::pyXPregelMapInfo.vertexValue);
@@ -297,11 +298,12 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     {#ID, x10xpregeladapter_##ID, METH_VARARGS, \
      "Return the " #ID " of the runnning process."},
 
+    ITEMPROPLL(numGlobalVertices)
+    ITEMPROPLL(numLocalVertices)
     ITEMPROPLL(outEdge_offsets_size)
-    ITEMPROPLL(outEdge_vertexes_size)
+    ITEMPROPLL(outEdge_vertices_size)
     ITEMPROPLL(inEdge_offsets_size)
-    ITEMPROPLL(inEdge_vertexes_size)
-    ITEMPROPLL(vertexValue_size)
+    ITEMPROPLL(inEdge_vertices_size)
     ITEMPROPI(vertexValue_type)
     ITEMPROPLL(vertexActive_mc_size)
     ITEMPROPLL(vertexShouldBeActive_mc_size)
@@ -310,9 +312,9 @@ static PyMethodDef X10XPregelAdapterMethods[] = {
     ITEMPROPI(message_value_type)
 
     {"outEdge_offsets", x10xpregeladapter_outEdge_offsets, METH_VARARGS, NULL},
-    {"outEdge_vertexes", x10xpregeladapter_outEdge_vertexes, METH_VARARGS, NULL},
+    {"outEdge_vertices", x10xpregeladapter_outEdge_vertices, METH_VARARGS, NULL},
     {"inEdge_offsets", x10xpregeladapter_inEdge_offsets, METH_VARARGS, NULL},
-    {"inEdge_vertexes", x10xpregeladapter_inEdge_vertexes, METH_VARARGS, NULL},
+    {"inEdge_vertices", x10xpregeladapter_inEdge_vertices, METH_VARARGS, NULL},
     {"vertexValue", x10xpregeladapter_vertexValue, METH_VARARGS, NULL},
     {"vertexActive", x10xpregeladapter_vertexActive, METH_VARARGS, NULL},
     {"vertexShouldBeActive", x10xpregeladapter_vertexShouldBeActive, METH_VARARGS, NULL},

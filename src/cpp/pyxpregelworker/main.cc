@@ -40,7 +40,7 @@ main(int argc, char** argv) {
     
     Shmem::MMapShmemProperty();
     Shmem::DisplayShmemProperty();
-    Shmem::ReadShmemProperty(locals);
+    //    Shmem::ReadShmemProperty(locals);
 
     PyObject* result = PyRun_String("import xpregelworker\n"
                                     "xpregelworker.run()\n",

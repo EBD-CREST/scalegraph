@@ -16,11 +16,12 @@ class Shmem {
 
 public:
     struct NativePyXPregelAdapterProperty {
+        long long numGlobalVertices;
+        long long numLocalVertices;
         long long outEdge_offsets_size;
-        long long outEdge_vertexes_size;
+        long long outEdge_vertices_size;
         long long inEdge_offsets_size;
-        long long inEdge_vertexes_size;
-        long long vertexValue_size;
+        long long inEdge_vertices_size;
         int vertexValue_type;
         long long vertexActive_mc_size;
         long long vertexShouldBeActive_mc_size;
@@ -36,9 +37,9 @@ public:
 
     struct PyXPregelMapInfo {
         MapInfo outEdge_offsets;
-        MapInfo outEdge_vertexes;
+        MapInfo outEdge_vertices;
         MapInfo inEdge_offsets;
-        MapInfo inEdge_vertexes;
+        MapInfo inEdge_vertices;
         MapInfo vertexValue;
         MapInfo vertexActive;
         MapInfo vertexShouldBeActive;
@@ -54,7 +55,7 @@ public:
     static PyXPregelMapInfo pyXPregelMapInfo;
     
     static void MMapShmemProperty();
-    static void ReadShmemProperty(PyObject*);
+    //    static void ReadShmemProperty(PyObject*);
     static void DisplayShmemProperty();
 
     static void* MMapShmem(const char*, size_t, MapInfo*);

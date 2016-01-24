@@ -65,11 +65,12 @@ Shmem::DisplayShmemProperty() {
 #define DISPLAYPROPI(ID) \
     fprintf(stderr, "[%lld] " #ID " = %d\n", placeId, shmemProperty->ID);
 
+    DISPLAYPROPLL(numGlobalVertices);
+    DISPLAYPROPLL(numLocalVertices);
     DISPLAYPROPLL(outEdge_offsets_size);
-    DISPLAYPROPLL(outEdge_vertexes_size);
+    DISPLAYPROPLL(outEdge_vertices_size);
     DISPLAYPROPLL(inEdge_offsets_size);
-    DISPLAYPROPLL(inEdge_vertexes_size);
-    DISPLAYPROPLL(vertexValue_size);
+    DISPLAYPROPLL(inEdge_vertices_size);
     DISPLAYPROPI(vertexValue_type);
     DISPLAYPROPLL(vertexActive_mc_size);
     DISPLAYPROPLL(vertexShouldBeActive_mc_size);
@@ -78,6 +79,8 @@ Shmem::DisplayShmemProperty() {
     DISPLAYPROPI(message_value_type);
 }
 
+
+#if 0
 void
 Shmem::ReadShmemProperty(PyObject* dict) {
 
@@ -95,11 +98,12 @@ Shmem::ReadShmemProperty(PyObject* dict) {
     obj = PyLong_FromLong((long) shmemProperty->ID); \
     PyDict_SetItemString(dict, #ID, obj);
     
+    READPROPLL(numGlobalVertices);
+    READPROPLL(numLocalVertices);
     READPROPLL(outEdge_offsets_size);
-    READPROPLL(outEdge_vertexes_size);
+    READPROPLL(outEdge_vertices_size);
     READPROPLL(inEdge_offsets_size);
-    READPROPLL(inEdge_vertexes_size);
-    READPROPLL(vertexValue_size);
+    READPROPLL(inEdge_vertices_size);
     READPROPI(vertexValue_type);
     READPROPLL(vertexActive_mc_size);
     READPROPLL(vertexShouldBeActive_mc_size);
@@ -107,7 +111,7 @@ Shmem::ReadShmemProperty(PyObject* dict) {
     READPROPLL(message_offsets_size);
     READPROPI(message_value_type);
 }
-
+#endif
 
 
 void*

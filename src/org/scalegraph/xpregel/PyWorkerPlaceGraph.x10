@@ -537,7 +537,11 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		val ectx :MessageCommunicator[M] =
 			new MessageCommunicator[M](mTeam, mInEdge, mIds, numThreads);
 
+		val numGlobalVertexes = mIds.numberOfGlobalVertexes();
 		val numLocalVertexes = mIds.numberOfLocalVertexes();
+		NativePyXPregelAdapter.setProperty_numGlobalVertices(numGlobalVertexes);
+		NativePyXPregelAdapter.setProperty_numLocalVertices(numLocalVertexes);
+
 //		val localSrcids = MemoryChunk.make[Long](numThreads,0n,true);
 //		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
 //			localSrcids(tid) = r.min;
@@ -835,53 +839,52 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 	public static struct ShmemObjectEdge {
 		public val offsets :GenericFile;
-		public val vertexes :GenericFile;
-		public def this(_offsets :GenericFile, _vertexes :GenericFile) {
+		public val vertices :GenericFile;
+		public def this(_offsets :GenericFile, _vertices :GenericFile) {
 			offsets = _offsets;
-			vertexes = _vertexes;
+			vertices = _vertices;
 		}
 	}
 
 	public def createShmemOutEdge() :ShmemObjectEdge {
 		NativePyXPregelAdapter.setProperty_outEdge_offsets_size(mOutEdge.offsets.size());
-		NativePyXPregelAdapter.setProperty_outEdge_vertexes_size(mOutEdge.vertexes.size());
+		NativePyXPregelAdapter.setProperty_outEdge_vertices_size(mOutEdge.vertexes.size());
 		return createShmemGraphEdge("outEdge", mOutEdge);
 	}
 
 	public def createShmemInEdge() :ShmemObjectEdge {
 		NativePyXPregelAdapter.setProperty_inEdge_offsets_size(mInEdge.offsets.size());
-		NativePyXPregelAdapter.setProperty_inEdge_vertexes_size(mInEdge.vertexes.size());
+		NativePyXPregelAdapter.setProperty_inEdge_vertices_size(mInEdge.vertexes.size());
 		return createShmemGraphEdge("inEdge", mInEdge);
 	}
 
 	public def createShmemGraphEdge[E](name: String, graphEdge :GraphEdge[E]) : ShmemObjectEdge {
 		val here_id = here.id.toString();
 		val name_shmem_offsets = "/pyxpregel." + name + ".offsets." + here_id;
-		val name_shmem_vertexes = "/pyxpregel." + name + ".vertexes." + here_id;
+		val name_shmem_vertices = "/pyxpregel." + name + ".vertices." + here_id;
 		val size_shmem_offsets = graphEdge.offsets.size() * Type.sizeOf[Long]();
-		val size_shmem_vertexes = graphEdge.vertexes.size() * Type.sizeOf[Long]();
+		val size_shmem_vertices = graphEdge.vertexes.size() * Type.sizeOf[Long]();
 		GenericFile.unlink(name_shmem_offsets);
-		GenericFile.unlink(name_shmem_vertexes);
+		GenericFile.unlink(name_shmem_vertices);
 		val file_shmem_offsets = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
 														  name_shmem_offsets),
 												 FileMode.Create, FileAccess.ReadWrite);
-		val file_shmem_vertexes = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
-														   name_shmem_vertexes),
+		val file_shmem_vertices = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
+														   name_shmem_vertices),
 												  FileMode.Create, FileAccess.ReadWrite);
 		file_shmem_offsets.ftruncate(size_shmem_offsets);
-		file_shmem_vertexes.ftruncate(size_shmem_vertexes);
-		return ShmemObjectEdge(file_shmem_offsets, file_shmem_vertexes);
+		file_shmem_vertices.ftruncate(size_shmem_vertices);
+		return ShmemObjectEdge(file_shmem_offsets, file_shmem_vertices);
 	}
 
 	public def updateShmemGraphEdge[E](shmem: ShmemObjectEdge, graphEdge :GraphEdge[E]) {
 		shmem.offsets.copyToShmem(graphEdge.offsets, graphEdge.offsets.size() * Type.sizeOf[Long]());
-		shmem.vertexes.copyToShmem(graphEdge.vertexes, graphEdge.vertexes.size() * Type.sizeOf[Long]());
+		shmem.vertices.copyToShmem(graphEdge.vertexes, graphEdge.vertexes.size() * Type.sizeOf[Long]());
 //		shmem.offsets.close();
 //		shmem.vertexes.close();
 	}
 
 	public def createShmemVertexValue[V]() :GenericFile {
-		NativePyXPregelAdapter.setProperty_vertexValue_size(mVertexValue.size());
 		NativePyXPregelAdapter.setProperty_vertexValue_type(Type.typeId[V]());
 		return createShmemMemoryChunk("vertexValue", mVertexValue);
 	}

@@ -364,11 +364,12 @@ void NativePyXPregelAdapter::updateShmemProperty() {
 #define DISPLAYPROPI(ID) \
     fprintf(stderr, "#%lld  " #ID " = %d\n", placeId, property.ID);
 
+    DISPLAYPROPLL(numGlobalVertices);
+    DISPLAYPROPLL(numLocalVertices);
     DISPLAYPROPLL(outEdge_offsets_size);
-    DISPLAYPROPLL(outEdge_vertexes_size);
+    DISPLAYPROPLL(outEdge_vertices_size);
     DISPLAYPROPLL(inEdge_offsets_size);
-    DISPLAYPROPLL(inEdge_vertexes_size);
-    DISPLAYPROPLL(vertexValue_size);
+    DISPLAYPROPLL(inEdge_vertices_size);
     DISPLAYPROPI(vertexValue_type);
     DISPLAYPROPLL(vertexActive_mc_size);
     DISPLAYPROPLL(vertexShouldBeActive_mc_size);

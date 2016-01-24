@@ -34,6 +34,11 @@ class XPregelContext():
         self.thread_id = x10xpregeladapter.thread_id()
         self.num_threads = x10xpregeladapter.num_threads()
 
+        # get number of vertices
+        self.numGlobalVertices = x10xpregeladapter.numGlobalVertices()
+        self.numLocalVertices = x10xpregeladapter.numLocalVertices()
+        self.numVertices = self.numGlobalVertices
+
         # prepare prefix for log output
         self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) + "]"
 
@@ -45,27 +50,26 @@ class XPregelContext():
         
         # get graph
         self.outEdge_offsets = x10xpregeladapter.outEdge_offsets().cast('q')
-        self.outEdge_vertexes = x10xpregeladapter.outEdge_vertexes().cast('q')
+        self.outEdge_vertices = x10xpregeladapter.outEdge_vertices().cast('q')
         self.inEdge_offsets = x10xpregeladapter.inEdge_offsets().cast('q')
-        self.inEdge_vertexes = x10xpregeladapter.inEdge_vertexes().cast('q')
+        self.inEdge_vertices = x10xpregeladapter.inEdge_vertices().cast('q')
 
         # get vertex values
         self.vertexValue = x10xpregeladapter.vertexValue().cast(self.vertexValue_format)
 
-        # setup place local range of vertexes 
-        self.num_place_local_vertexes = len(self.vertexValue)
-        self.range_place_local_vertexes = range(0, self.num_place_local_vertexes)
-        self.log("range_place_local_vertexes", self.range_place_local_vertexes)
+        # setup place local range of vertices 
+        self.rangePlaceLocalVertices = range(0, self.numLocalVertices)
+        self.log("rangePlaceLocalVertices", self.rangePlaceLocalVertices)
         
-        # setup thread local range of vertexes
-        numWords = Bitmap(self.num_place_local_vertexes).numWords
+        # setup thread local range of vertices
+        numWords = Bitmap(self.numLocalVertices).numWords
         chunkWords = max(round((numWords + self.num_threads - 1) / self.num_threads - 0.5), 1)
         rangeWords_min = min(numWords, self.thread_id * chunkWords)
         rangeWords_max = min(numWords, rangeWords_min + chunkWords)
-        rangeThreadLocalVertexes_min = min(self.num_place_local_vertexes, rangeWords_min * Bitmap.bitsPerWord)
-        rangeThreadLocalVertexes_max = min(self.num_place_local_vertexes, rangeWords_max * Bitmap.bitsPerWord)
-        self.range_thread_local_vertexes = range(rangeThreadLocalVertexes_min, rangeThreadLocalVertexes_max)
-        self.log("range_thread_local_vertexes", self.range_thread_local_vertexes)
+        rangeThreadLocalVertices_min = min(self.numLocalVertices, rangeWords_min * Bitmap.bitsPerWord)
+        rangeThreadLocalVertices_max = min(self.numLocalVertices, rangeWords_max * Bitmap.bitsPerWord)
+        self.rangeThreadLocalVertices = range(rangeThreadLocalVertices_min, rangeThreadLocalVertices_max)
+        self.log("rangeThreadLocalVertices", self.rangeThreadLocalVertices)
         
         # get acitve flags
         self.vertexActive = x10xpregeladapter.vertexActive().cast('Q')
@@ -82,11 +86,11 @@ class XPregelContext():
         print(self.log_prefix, *objs, file=sys.stderr)
 
     def outEdges(self, vertex_id):
-        return self.outEdge_vertexes[self.outEdge_offsets[vertex_id]:
+        return self.outEdge_vertices[self.outEdge_offsets[vertex_id]:
                                      self.outEdge_offsets[vertex_id + 1]]
 
     def inEdges(self, vertex_id):
-        return self.inEdge_vertexes[self.inEdge_offsets[vertex_id]:
+        return self.inEdge_vertices[self.inEdge_offsets[vertex_id]:
                                     self.inEdge_offsets[vertex_id + 1]]
 
     def receivedMessages(self, vertex_id):
@@ -116,6 +120,15 @@ class XPregelContext():
         x10xpregeladapter.write_buffer_to_shmem("sendMsgN_values", self.send_message_outEdges_values)
         x10xpregeladapter.write_buffer_to_shmem("sendMsgN_srcids", self.send_message_outEdges_src_ids)
 
+
+class VertexContext():
+
+    def __init__(self, xpregelContext, vertexId):
+        self.xpregelContext = xpregelContext
+        self.vertexId = vertexId
+        self.numVertices = xpregelContext.numVertices
+
+
         
 def test_context(ctx):
     for value in ctx.outEdge_offsets:
@@ -127,27 +140,27 @@ def test_context(ctx):
 def test_outEdges(ctx):
     size_total_edges = 0
     size_max_edges = 0
-    for vid in ctx.range_place_local_vertexes:
+    for vid in ctx.rangePlaceLocalVertices:
         size = len(ctx.outEdges(vid))
         size_total_edges += size
         size_max_edges = max(size_max_edges, size)
-    ctx.log("outEdges", len(ctx.outEdge_vertexes), size_total_edges, size_max_edges)
+    ctx.log("outEdges", len(ctx.outEdge_vertices), size_total_edges, size_max_edges)
 
     
 def test_inEdges(ctx):
     size_total_edges = 0
     size_max_edges = 0
-    for vid in ctx.range_place_local_vertexes:
+    for vid in ctx.rangePlaceLocalVertices:
         size = len(ctx.inEdges(vid))
         size_total_edges += size
         size_max_edges = max(size_max_edges, size)
-    ctx.log("inEdges", len(ctx.inEdge_vertexes), size_total_edges, size_max_edges)
+    ctx.log("inEdges", len(ctx.inEdge_vertices), size_total_edges, size_max_edges)
 
     
 def test_receivedMessages(ctx):
     size_total_msgs = 0
     size_max_msgs = 0
-    for vid in ctx.range_place_local_vertexes:
+    for vid in ctx.rangePlaceLocalVertices:
         size = len(ctx.receivedMessages(vid))
         size_total_msgs += size
         size_max_msgs = max(size_max_msgs, size)
@@ -185,7 +198,13 @@ def run():
     ctx = XPregelContext()
 #    (compute, aggregator, terminator) = loadClosureFromFile(ctx)
     (compute, aggregator, terminator) = loadClosureFromShmem(ctx)
-    while 1:
+    
+    test_outEdges(ctx)
+    test_inEdges(ctx)
+    test_receivedMessages(ctx)
+    test_write_buffer(ctx)
+            
+    while 0:
         line = sys.stdin.readline()
         if line == '':
             break

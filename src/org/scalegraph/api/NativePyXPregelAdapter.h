@@ -38,11 +38,12 @@ template<class TPMGL(Z1), class TPMGL(Z2)> class VoidFun_0_2;
 namespace org { namespace scalegraph { namespace api {
 
 struct NativePyXPregelAdapterProperty {
+    long long numGlobalVertices;
+    long long numLocalVertices;
     long long outEdge_offsets_size;
-    long long outEdge_vertexes_size;
+    long long outEdge_vertices_size;
     long long inEdge_offsets_size;
-    long long inEdge_vertexes_size;
-    long long vertexValue_size;
+    long long inEdge_vertices_size;
     int vertexValue_type;
     long long vertexActive_mc_size;
     long long vertexShouldBeActive_mc_size;
@@ -65,24 +66,28 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
                                                       x10_long num_threads);
     template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
 
+    static void setProperty_numGlobalVertices(x10_long value) {
+        property.numGlobalVertices = value;
+    }
+
+    static void setProperty_numLocalVertices(x10_long value) {
+        property.numLocalVertices = value;
+    }
+    
     static void setProperty_outEdge_offsets_size(x10_long value) {
         property.outEdge_offsets_size = value;
     }
 
-    static void setProperty_outEdge_vertexes_size(x10_long value) {
-        property.outEdge_vertexes_size = value;
+    static void setProperty_outEdge_vertices_size(x10_long value) {
+        property.outEdge_vertices_size = value;
     }
 
     static void setProperty_inEdge_offsets_size(x10_long value) {
         property.inEdge_offsets_size = value;
     }
 
-    static void setProperty_inEdge_vertexes_size(x10_long value) {
-        property.inEdge_vertexes_size = value;
-    }
-
-    static void setProperty_vertexValue_size(x10_long value) {
-        property.vertexValue_size = value;
+    static void setProperty_inEdge_vertices_size(x10_long value) {
+        property.inEdge_vertices_size = value;
     }
 
     static void setProperty_vertexValue_type(x10_int value) {
