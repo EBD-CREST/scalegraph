@@ -506,6 +506,8 @@ NativePyObject NativePython::objectCallObject(NativePyObject callable, ::x10::la
 }
 
 
+#if 0  // changed to template declaration
+
 // Return value: New reference of memoryview object (pointed to memorychunk argument)
 NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_byte> mc) {
     void* mcptr = mc.pointer();
@@ -559,6 +561,7 @@ NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::
     return pObj;
 }
 
+#endif // changed to template declaration
 
 
 void NativePython::test() {

@@ -55,9 +55,13 @@ import org.scalegraph.util.MemoryChunk;
 	public native def objectStr(obj: NativePyObject) :String;
 
 	public native def bytesAsMemoryChunk(obj: NativePyObject) throws NativePyException :MemoryChunk[Byte];
+/*
 	public native def memoryViewFromMemoryChunk(mc: MemoryChunk[Byte]) throws NativePyException :NativePyObject;
 	public native def memoryViewFromMemoryChunk(mc: MemoryChunk[Long]) throws NativePyException :NativePyObject;
 	public native def memoryViewFromMemoryChunk(mc: MemoryChunk[Double]) throws NativePyException :NativePyObject;
+*/
+	public native def memoryViewFromMemoryChunk[T](mc: MemoryChunk[T]) throws NativePyException :NativePyObject;
+	public native def memoryViewAsMemoryChunk[T](obj: NativePyObject) throws NativePyException :MemoryChunk[T];
 
 //
 	public native def test(): void;

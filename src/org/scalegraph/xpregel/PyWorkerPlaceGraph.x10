@@ -95,8 +95,9 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	// Python Process
 	var mPythonWorkers :MemoryChunk[PyXPregelPipe];
 	// Integrated Python runtime (in this process)
-	val python = new NativePython();
-
+	val mPythonIntegrated = new NativePython();
+	var mPythonDictGlobals :NativePyObject;
+	var mPythonDictLocals :NativePyObject;
 
 	public def this(team :Team, ids :IdStruct) {
 		val rank_r = team.role()(0);
@@ -132,24 +133,26 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		
 		val SCALEGRAPHPYTHONLIB :String = "/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph";
 
-		python.initialize();
-		python.sysPathAppend(SCALEGRAPHPYTHONLIB);
+		mPythonIntegrated.initialize();
+		mPythonIntegrated.sysPathAppend(SCALEGRAPHPYTHONLIB);
 
 		val loadedClosures = PyXPregel.closures();
 
 		try {
-			val main = python.importAddModule("__main__");
-			val globals = python.moduleGetDict(main);
-			val locals = python.dictNew();
-			val pobj = python.memoryViewFromMemoryChunk(loadedClosures);
-			python.dictSetItemString(locals, "closures", pobj);
-			python.runString("import pickle\n" +
-							 "import xpregel\n" +
-							 "(pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())\n" +
-							 "compute=pickle.loads(pickled_compute)\n" +
-							 "aggregator=pickle.loads(pickled_aggregator)\n" +
-							 "terminator=pickle.loads(pickled_terminator)\n",
-							 globals, locals);
+			val main = mPythonIntegrated.importAddModule("__main__");
+			mPythonDictGlobals = mPythonIntegrated.moduleGetDict(main);
+			mPythonDictLocals = mPythonIntegrated.dictNew();
+			val pobj = mPythonIntegrated.memoryViewFromMemoryChunk(loadedClosures);
+			mPythonIntegrated.dictSetItemString(mPythonDictLocals, "closures", pobj);
+			mPythonIntegrated.runString(
+				"import array\n" +
+				"import pickle\n" +
+				"import xpregel\n" +
+				"(pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())\n" +
+				"compute=pickle.loads(pickled_compute)\n" +
+				"aggregator=pickle.loads(pickled_aggregator)\n" +
+				"terminator=pickle.loads(pickled_terminator)\n",
+				mPythonDictGlobals, mPythonDictLocals);
 		} catch (exception :NativePyException) {
 			exception.extractExcInfo();
 			Console.OUT.println("catched exception");
@@ -479,7 +482,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	}
 	
 	
-	
+#if 0	
 	// src will be destroyed
 	private static def computeAggregate[A](team :Team2, src :MemoryChunk[A], buffer :MemoryChunk[A],
 			aggregator :(MemoryChunk[A])=>A) :A
@@ -495,6 +498,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_AGGREGATE_COMM); }
 		return src(0);
 	}
+#endif
 	
 	private static val STT_END_COUNT = 0;
 	private static val STT_ACTIVE_VERTEX = 1;
@@ -663,8 +667,12 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		}
 
 
-		val railAggregatedValue = new Rail[A](numThreads);
-		val railBCSInputCount = new Rail[Long](numThreads);
+		val numPlaces = mTeam.size();
+		val mcAggregatedValueOnThread = MemoryChunk.make[A](numThreads);
+		val mcAggregatedValueOnPlace = MemoryChunk.make[A](numPlaces);
+		val mcAggregatedValueIntermediate = MemoryChunk.make[A](1);
+		val mcBCSInputCount = MemoryChunk.make[Long](numThreads);
+
 		
 		// Do Superstep
 		for (ss in 0..10000n) {
@@ -676,7 +684,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			}
 
 			finish for (i in 0..(numThreads - 1)) {
-				async waitSuperStepOnThread[A](i, railAggregatedValue, railBCSInputCount);
+				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcBCSInputCount);
 			}
 
 			// delete existing (old) messages.
@@ -692,7 +700,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			//-----directionOptimization
 			var BCSInputCountOnPlace :Long = 0;
 			for (i in 0..(numThreads - 1)) {
-				BCSInputCountOnPlace += railBCSInputCount(i);
+				BCSInputCountOnPlace += mcBCSInputCount(i);
 			}
 			val numAllBCSCount = mTeam.allreduce[Long](BCSInputCountOnPlace, Team.ADD);
 			if(0L < numAllBCSCount && numAllBCSCount  < (mIds.numberOfGlobalVertexes()/50)){	//TODO: modify /20
@@ -718,7 +726,13 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 			// aggregation
 
-			val aggVal = Zero.get[A]();
+			mcAggregatedValueIntermediate(0) = aggregate(mcAggregatedValueOnTherad);
+			team.gather(0n, mcAggregatedValueIntermediate, mcAggregatedValueOnPlace);
+			if (root) {
+				mcAggregatedValueIntermediate(0) = aggregate(mcAggregatedValueOnPlace);
+			}
+			team.bcast(0n, mcAggregatedValueInterMediate, mcAggregatedValueInterMediate);
+			val aggVal = mcAggregatedValueInterMediate(0);
 
 /////////////////////
 
@@ -729,6 +743,9 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 				mLastAggVal = aggVal;
 				mInEdgesMask = ectx.mInEdgesMask;
 				ectx.del();
+
+				mcAggregatedValue.del();
+				mcBCSInputCount.del();
 
 				// Child Python process ends when closing STDIN
 				for (i in 0..(numThreads - 1)) {
@@ -758,6 +775,35 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		exportReceivedMessagesToShmem(ectx, 0..(numLocalVertexes - 1));
 */
 	}
+
+
+	def aggregate[A](valuesToAggregate :MemoryChunk[A]) :A { A haszero } {
+
+		try {
+			val avalues = mPythonIntegrated.memoryViewFromMemoryChunk(valuesToAggregate);
+			mPythonIntegrated.dictSetItemString(mPythonDictLocals,
+												"avalues", avalues);
+			mPythonIntegrated.runString(
+				"alist = avalues.cast('d')\n" +
+				"val = aggregator(alist)\n" +
+				"retval = array.array('d')\n" +
+				"retval.append(val)",
+				mPythonDictGlobals, mPythonDictLocals);
+			val retval = mPythonIntegrated.dictGetItemString(mPythonDictLocals,
+															 "retval");
+			mca = mPythonIntegrated.bufferAsMemoryChunk[A](retval);
+			return mca(0);
+
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
+		return Zero.get[A]();
+	}
+
 
 /*
 	public def run[M, A](
@@ -997,8 +1043,8 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	////////
 
 	public def waitSuperStepOnThread[A](threadId :Long,
-										railAggregatedValue :Rail[A],
-										railBCSInputCount :Rail[Long]) {
+										mcAggregatedValue :MemoryChunk[A],
+										mcBCSInputCount :MemoryChunk[Long]) {
 
 		// Receive Aggregated Value
 		val sizeBuff = MemoryChunk.make[Byte](Type.sizeOf[Long]());
@@ -1010,7 +1056,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		mPythonWorkers(threadId).stdout.read(valueBuff);
 		val value = MemoryChunk.make[A](1);
 		NativePyXPregelAdapter.copyFromBuffer(valueBuff, 0, size(0), value);
-		railAggregatedValue(threadId) = value(0);
+		mcAggregatedValue(threadId) = value(0);
 		
 
 		// Receive BCSInputCount on each thread
@@ -1021,7 +1067,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		mPythonWorkers(threadId).stdout.read(countBuff);
 		val count = MemoryChunk.make[Long](1);
 		NativePyXPregelAdapter.copyFromBuffer(countBuff, 0, size(0), count);
-		railBCSInputCount(threadId) = count(0);
+		mcBCSInputCount(threadId) = count(0);
 
 		// Delete buffer
 		sizeBuff.del();
