@@ -170,7 +170,12 @@ class VertexContext():
         self.xpregelContext.threadLocalAggregate(value)
 
     def outEdges(self):
-        return self.xpregelContext.outEdges(self.vertexId)
+        self.xpregelContext.log("VertexContext", self.vertexId, ".outEdges");
+        sys.stderr.flush()
+        out = self.xpregelContext.outEdges(self.vertexId)
+        self.xpregelContext.log("len outedges:", len(out))
+        sys.stderr.flush()
+        return out
 
     def inEdges(self):
         return self.xpregelContext.inEdges(self.vertexId)
@@ -243,6 +248,8 @@ def loadClosureFromFile(ctx):
     return (compute, aggregator, terminator)
 
 def superstep(superstepId, xpregelContext, compute, aggregator):
+    xpregelContext.log("superstep:", superstepId)
+    sys.stderr.flush()
     xpregelContext.beforeSuperstep()
     for vertexId in xpregelContext.rangeThreadLocalVertices:
         vertexContext = VertexContext(superstepId, xpregelContext, vertexId)
@@ -265,6 +272,11 @@ def run():
 #    test_write_buffer(xpctx)
 
     xpctx.log("START")
+
+    for vid in xpctx.rangeThreadLocalVertices:
+        xpctx.log("vid:", vid, "offsets", xpctx.outEdge_offsets[vid], xpctx.outEdge_offsets[vid + 1]) 
+        sys.stderr.flush()
+        
     sys.stderr.flush()
     while 1:
         line = sys.stdin.readline()

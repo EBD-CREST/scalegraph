@@ -56,6 +56,7 @@ import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
 import org.scalegraph.python.NativePyException;
 
+import org.scalegraph.util.Logger;
 
 // "haszero" cause x10compiler to type incomprehensibility.
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
@@ -630,6 +631,14 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		val shmemInEdge = createShmemInEdge();
 		updateShmemGraphEdge(shmemOutEdge, mOutEdge);
 		updateShmemGraphEdge(shmemInEdge, mInEdge);
+
+		Logger.print("Check mOutEdge");
+		for (i in 0..(numLocalVertexes - 1)) {
+			if (mOutEdge.offsets(i + 1) - mOutEdge.offsets(i) <= 0) {
+				Logger.print("NO EDGES");
+			}
+		}
+		Logger.print("Check Done");
 
 		val shmemVertexValue = createShmemVertexValue[V]();
 		updateShmemMemoryChunk(shmemVertexValue, mVertexValue);

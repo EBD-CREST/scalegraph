@@ -519,8 +519,8 @@ final public class PyXPregel {
 		graph.del();
 
 		val xp = this;
-//		val result = xp.execute(matrix);
-		val result = xp.execute_x10xpregel(matrix);
+		val result = xp.execute(matrix);
+//		val result = xp.execute_x10xpregel(matrix);
 
 //		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
