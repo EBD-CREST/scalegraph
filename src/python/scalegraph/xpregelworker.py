@@ -174,6 +174,9 @@ class VertexContext():
 
     def inEdges(self):
         return self.xpregelContext.inEdges(self.vertexId)
+
+    def log(self, *objs):
+        self.xpregelContext.log(*objs)
         
         
 def test_context(ctx):

@@ -27,7 +27,7 @@ class PageRank(xpregel.XPregelBase):
         return sum(outputs)
 
     def terminator(self, superstep, aggregatedValue):
-        print("PageRank at superstep " + superstep + " = " + aggValue + "\n")
+        ctx.log("PageRank at superstep " + superstep + " = " + aggValue + "\n")
         return superstep == 30
 
 

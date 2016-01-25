@@ -30,6 +30,15 @@
 #include <org/scalegraph/python/NativePyObject.h>
 #undef ORG_SCALEGRAPH_PYTHON_NATIVEPYOBJECT_H_NODEPS
 
+#define ORG_SCALEGRAPH_PYTHON_NATIVEPYEXCEPTION_H_NODEPS
+#include <org/scalegraph/python/NativePyException.h>
+#undef ORG_SCALEGRAPH_PYTHON_NATIVEPYEXCEPTION_H_NODEPS
+
+#define ORG_SCALEGRAPH_ID_TYPEHELPER_H_NODEPS
+#include <org/scalegraph/id/TypeHelper.h>
+#undef ORG_SCALEGRAPH_ID_TYPEHELPER_H_NODEPS
+
+
 namespace org { namespace scalegraph { namespace util { 
 template<class TPMGL(T)> class MemoryChunk;
 } } } 
@@ -73,8 +82,8 @@ class NativePython : public ::x10::lang::X10Class {
     NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_long> mc);
     NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<x10_double> mc);
     */
-    template<class TMPGL(T)> NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<TMPGL(T)> mc);
-    template<class TMPGL(T)> ::org::scalegraph::util::MemoryChunk<TMPGL(T)> bufferAsMemoryChunk(NativePyObject obj);
+    template<class TPMGL(T)> NativePyObject memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<TPMGL(T)> mc);
+    template<class TPMGL(T)> ::org::scalegraph::util::MemoryChunk<TPMGL(T)> bufferAsMemoryChunk(NativePyObject obj);
     
     void test();
     void calltest(NativePyObject module);
@@ -101,15 +110,15 @@ class NativePython : public ::x10::lang::X10Class {
 
 
 // Return value: New reference of memoryview object (pointed to memorychunk argument)
-template <class TMPGL(T)>
-        NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<TMPGL(T)> mc) {
+template <class TPMGL(T)>
+        NativePyObject NativePython::memoryViewFromMemoryChunk(::org::scalegraph::util::MemoryChunk<TPMGL(T)> mc) {
 
     void* mcptr = mc.pointer();
     if (mcptr == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::memoryviewFromMemoryChunk, bad MemoryChunk")));
         return NULL;
     }
-    long size = mc.size() * org::scalegraph::id::SizeOf<TMPGL(T)>::value;
+    long size = mc.size() * org::scalegraph::id::SizeOf<TPMGL(T)>::value;
     if (size < 0) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::memoryviewFromMemoryChunk, unsupported content type of MemoryChunk")));
         return NULL;
@@ -125,11 +134,11 @@ template <class TMPGL(T)>
 
 
 // Return value: New MemoryChunk (memory is allocated)
-template <class TMPGL(T)>
-        ::org::scalegraph::util::MemoryChunk<TMPGL(T)> NativePython::bufferAsMemoryChunk(NativePyObject obj) {
+template <class TPMGL(T)>
+        ::org::scalegraph::util::MemoryChunk<TPMGL(T)> NativePython::bufferAsMemoryChunk(NativePyObject obj) {
     if (obj == NULL) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bufferAsMemoryChunk, bad NativePyObject")));
-        return ::org::scalegraph::util::MemoryChunk<x10_byte>::_make();
+        return ::org::scalegraph::util::MemoryChunk<TPMGL(T)>::_make();
     }
 
     PyObject* pObj = obj->getPyObject();
@@ -137,22 +146,22 @@ template <class TMPGL(T)>
     int ret = PyObject_GetBuffer(pObj, &pBuff, PyBUF_SIMPLE);
     if (ret != 0) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make()));
-        return ::org::scalegraph::util::MemoryChunk<x10_byte>::_make();
+        return ::org::scalegraph::util::MemoryChunk<TPMGL(T)>::_make();
     }
 
-    long long itemSize = ::org::scalegraph::id::SizeOf<TMPGL(T)>::value;
+    long long itemSize = ::org::scalegraph::id::SizeOf<TPMGL(T)>::value;
     if (itemSize < 0) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bufferAsMemoryChunk, unsupported content type of MemoryChunk")));
-        return NULL;
+        return ::org::scalegraph::util::MemoryChunk<TPMGL(T)>::_make();
     }
 
     size_t numItem = pBuff.len / (size_t) itemSize;
     if (pBuff.len != numItem * (size_t) itemSize) {
         ::x10aux::throwException(::x10aux::nullCheck(NativePyException::_make("Error in NativePython::bufferAsMemoryChunk, content type mismatch of MemoryChunk")));
-        return NULL;
+        return ::org::scalegraph::util::MemoryChunk<TPMGL(T)>::_make();
     }
 
-    ::org::scalegraph::util::MemoryChunk<TMPGL(T)> mc = ::org::scalegraph::util::MemoryChunk<TMPGL(T)>::_make(::org::scalegraph::util::MakeStruct<TMPGL(T) >::make(numItem, 0, false, (char*)(void*)__FILE__, __LINE__));
+    ::org::scalegraph::util::MemoryChunk<TPMGL(T)> mc = ::org::scalegraph::util::MemoryChunk<TPMGL(T)>::_make(::org::scalegraph::util::MakeStruct<TPMGL(T) >::make(numItem, 0, false, (char*)(void*)__FILE__, __LINE__));
     void* mcptr = mc.pointer();
     
     if (mcptr != NULL) {
