@@ -41,7 +41,7 @@ import org.scalegraph.api.PyXPregelPipe;
 	public native def this();
 	public native def initialize() :void;
 	public static native def fork(place_id :Long, thread_id :Long, num_threads :Long) throws PyXPregelException :PyXPregelPipe;
-	public native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
+	public static native def copyFromBuffer[T](buffer :MemoryChunk[Byte], offset :Long, size_to_copy :Long, object :T) :void;
 
 	public static native def setProperty_numGlobalVertices(value :Long) :void;
 	public static native def setProperty_numLocalVertices(value :Long) :void;

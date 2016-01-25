@@ -64,7 +64,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
     static ::org::scalegraph::api::PyXPregelPipe fork(x10_long place_id,
                                                       x10_long thread_id,
                                                       x10_long num_threads);
-    template<class TPMGL(T)> void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
+    template<class TPMGL(T)> static void copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object);
 
     static void setProperty_numGlobalVertices(x10_long value) {
         property.numGlobalVertices = value;
@@ -139,7 +139,7 @@ class NativePyXPregelAdapter : public ::x10::lang::X10Class {
 
 
 template<class TPMGL(T)>
-        void NativePyXPregelAdapter::copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object) {
+void NativePyXPregelAdapter::copyFromBuffer(::org::scalegraph::util::MemoryChunk< x10_byte> buffer, x10_long offset, x10_long size_to_copy, TPMGL(T) object) {
 
     ::memmove(object->pointer() + offset, buffer->pointer(), (size_t) size_to_copy);
 }

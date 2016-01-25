@@ -47,8 +47,10 @@ import org.scalegraph.id.Type;
 import org.scalegraph.xpregel.VertexContext;
 import org.scalegraph.util.DistMemoryChunk;
 import x10.compiler.Native;
-import x10.io.Printer;
-import org.scalegraph.test.STest;
+//import x10.io.Printer;
+//import org.scalegraph.test.STest;
+import org.scalegraph.id.Type;
+import org.scalegraph.util.SString;
 
 // "haszero" cause x10compiler to type incomprehensibility.
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
@@ -597,16 +599,32 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			async redirectStderr(mPythonWorkers(i).stderr);
 		}
 
+
+		val railAggregatedValue = new Rail[A](numThreads);
+		val railBCSInputCount = new Rail[Long](numThreads);
 		
 		// Do Superstep
 		for (ss in 0..10000n) {
 			//compute
 
-			val command = SString(String.format("superstep %lld\n", [ss as Any]));
+			val command = SString(String.format("superstep %lld\n", [ss as Any])).bytes();
 			for (i in 0..(numThreads - 1)) {
-				async mPythonWorkers(i).stdout.write(command.bytes());
+				async mPythonWorkers(i).stdout.write(command);
 			}
 
+			
+			finish for (i in 0..(numThreads - 1)) {
+				async waitSuperStepOnThread[A](i, railAggregatedValue, railBCSInputCount);
+			}
+
+			// aggregation
+
+			var BCSInputCountOnPlace :Long = 0;
+			for (i in 0..(numThreads - 1)) {
+				BCSInputCountOnPlace += railBCSInputCount(i);
+			}
+			
+			// distribute messages
 
 			exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
 			NativePyXPregelAdapter.updateShmemProperty();
@@ -861,6 +879,42 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 
 	////////
+
+	public def waitSuperStepOnThread[A](threadId :Long,
+										railAggregatedValue :Rail[A],
+										railBCSInputCount :Rail[Long]) {
+
+		// Receive Aggregated Value
+		val sizeBuff = MemoryChunk.make[Byte](Type.sizeOf[Long]());
+		mPythonWorkers(threadId).stdin.read(sizeBuff);
+		val size = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[A]()  as Long)); // Size is received for future extension
+		val valueBuff = MemoryChunk.make[Byte](size(0));
+		mPythonWorkers(threadId).stdin.read(valueBuff);
+		val value = MemoryChunk.make[A](1);
+		NativePyXPregelAdapter.copyFromBuffer(valueBuff, 0, size(0), value);
+		railAggregatedValue(threadId) = value(0);
+		
+
+		// Receive BCSInputCount on each thread
+		mPythonWorkers(threadId).stdin.read(sizeBuff);
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
+		val countBuff = MemoryChunk.make[Byte](size(0));
+		mPythonWorkers(threadId).stdin.read(countBuff);
+		val count = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(countBuff, 0, size(0), count);
+		railBCSInputCount(threadId) = count(0);
+
+		// Delete buffer
+		sizeBuff.del();
+		size.del();
+		valueBuff.del();
+		value.del();
+		countBuff.del();
+		count.del();
+	}
 
 	public static struct ShmemObjectEdge {
 		public val offsets :GenericFile;
