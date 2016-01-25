@@ -52,6 +52,11 @@ import x10.compiler.Native;
 import org.scalegraph.id.Type;
 import org.scalegraph.util.SString;
 
+import org.scalegraph.python.NativePython;
+import org.scalegraph.python.NativePyObject;
+import org.scalegraph.python.NativePyException;
+
+
 // "haszero" cause x10compiler to type incomprehensibility.
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
 
@@ -87,9 +92,12 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 	//not using
 	var mNeedsAllUpdateInEdge :Boolean = true;
 
-	//Python Process
+	// Python Process
 	var mPythonWorkers :MemoryChunk[PyXPregelPipe];
-	
+	// Integrated Python runtime (in this process)
+	val python = new NativePython();
+
+
 	public def this(team :Team, ids :IdStruct) {
 		val rank_r = team.role()(0);
 		mTeam = new Team2(team);
@@ -116,6 +124,39 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		///	Console.OUT.println("lgc = " + mIds.lgc);
 		///	Console.OUT.println("lgr = " + mIds.lgr);	
 		/// }
+
+		integratePython();
+	}
+
+	def integratePython() {
+		
+		val SCALEGRAPHPYTHONLIB :String = "/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph";
+
+		python.initialize();
+		python.sysPathAppend(SCALEGRAPHPYTHONLIB);
+
+		val loadedClosures = PyXPregel.closures();
+
+		try {
+			val main = python.importAddModule("__main__");
+			val globals = python.moduleGetDict(main);
+			val locals = python.dictNew();
+			val pobj = python.memoryViewFromMemoryChunk(loadedClosures);
+			python.dictSetItemString(locals, "closures", pobj);
+			python.runString("import pickle\n" +
+							 "import xpregel\n" +
+							 "(pickled_compute, pickled_aggregator, pickled_terminator)=pickle.loads(closures.tobytes())\n" +
+							 "compute=pickle.loads(pickled_compute)\n" +
+							 "aggregator=pickle.loads(pickled_aggregator)\n" +
+							 "terminator=pickle.loads(pickled_terminator)\n",
+							 globals, locals);
+		} catch (exception :NativePyException) {
+			exception.extractExcInfo();
+			Console.OUT.println("catched exception");
+			Console.OUT.println(exception.strValue);
+			Console.OUT.println(exception.strTraceback);
+			exception.DECREF();
+		}
 	}
 	
 	public def setOutEdge(edgeIndexMatrix :DistSparseMatrix[Long]) {
