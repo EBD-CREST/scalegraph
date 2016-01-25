@@ -255,7 +255,6 @@ def superstep(superstepId, xpregelContext, compute, aggregator):
     
     
 def run():
-    print("start", file=sys.stderr)
     xpctx = XPregelContext()
 #    (compute, aggregator, terminator) = loadClosureFromFile(xpctx)
     (compute, aggregator, terminator) = loadClosureFromShmem(xpctx)
@@ -264,7 +263,9 @@ def run():
 #    test_inEdges(xpctx)
 #    test_receivedMessages(xpctx)
 #    test_write_buffer(xpctx)
-            
+
+    xpctx.log("START")
+    sys.stderr.flush()
     while 1:
         line = sys.stdin.readline()
         if line == '':

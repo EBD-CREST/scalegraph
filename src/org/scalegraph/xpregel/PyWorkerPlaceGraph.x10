@@ -680,7 +680,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			// Compute on child Python worker process
 			val command = SString(String.format("superstep %lld\n", [ss as Any])).bytes();
 			for (i in 0..(numThreads - 1)) {
-				async mPythonWorkers(i).stdin.write(command);
+				mPythonWorkers(i).stdin.write(command);
 			}
 
 			finish for (i in 0..(numThreads - 1)) {

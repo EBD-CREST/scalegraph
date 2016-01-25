@@ -11,6 +11,8 @@
 
 package org.scalegraph.api;
 
+import x10.compiler.Ifdef;
+
 import x10.xrx.Runtime;
 import x10.util.ArrayList;
 import x10.util.Team;
@@ -23,8 +25,11 @@ import org.scalegraph.util.Logger;
 import org.scalegraph.util.MemoryChunk;
 import org.scalegraph.util.SString;
 import org.scalegraph.util.Team2;
+import org.scalegraph.util.MathAppend;
 import org.scalegraph.graph.Graph;
 import org.scalegraph.xpregel.PyXPregelGraph;
+import org.scalegraph.xpregel.XPregelGraph;
+import org.scalegraph.xpregel.VertexContext;
 import org.scalegraph.blas.DistSparseMatrix;
 import org.scalegraph.python.NativePython;
 import org.scalegraph.python.NativePyObject;
@@ -514,7 +519,9 @@ final public class PyXPregel {
 		graph.del();
 
 		val xp = this;
-		val result = xp.execute(matrix);
+//		val result = xp.execute(matrix);
+		val result = xp.execute_x10xpregel(matrix);
+
 //		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
 
@@ -562,6 +569,7 @@ final public class PyXPregel {
 	 * @param matrix 1D row distributed adjacency matrix with edge weights.
 	 */
 	public def execute(matrix :DistSparseMatrix[Double]) = execute(this, matrix);
+	public def execute_x10xpregel(matrix :DistSparseMatrix[Double]) = execute_x10xpregel(this, matrix);
 
 	// Algorithm implementations are defined as static methods to avoid
 	// unexpected deep copy of 'this' object.
@@ -608,6 +616,54 @@ final public class PyXPregel {
 //		sw.lap("Retrieve output");
 //		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Retrieve Output:"); }
 //		sw.flush();
+		
+		return result;
+	}
+
+
+	private static def execute_x10xpregel(param :PyXPregel, matrix :DistSparseMatrix[Double]) {
+
+		// define parameters as local values
+		val damping :Double = 0.85;
+		val eps :Double = 0.001;
+		val niter :Int = 30n;
+		val sw = Config.get().stopWatch();
+
+		// compute PageRank
+		val xpgraph = XPregelGraph.make[Double, Double](matrix);
+		xpgraph.updateInEdge();
+		
+		sw.lap("UpdateInEdge");
+		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("Update In Edge:"); }
+		
+		xpgraph.iterate[Double,Double]((ctx :VertexContext[Double, Double, Double, Double], messages :MemoryChunk[Double]) => {
+			val value :Double;
+			if(ctx.superstep() == 0n)
+				value = 1.0 / ctx.numberOfVertices();
+			else
+				value = (1.0-damping) / ctx.numberOfVertices() + damping * MathAppend.sum(messages);
+
+			ctx.aggregate(Math.abs(value - ctx.value()));
+			ctx.setValue(value);
+			ctx.sendMessageToAllNeighbors(value / ctx.numberOfOutEdges());
+		},
+		(values :MemoryChunk[Double]) => MathAppend.sum(values),
+		(superstep :Int, aggVal :Double) => {
+			if (here.id == 0) {
+				sw.lap("PageRank at superstep " + superstep + " = " + aggVal + " ");
+			}
+			return (superstep >= niter || aggVal < eps);
+		});
+		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Main Iterate:"); }
+
+		xpgraph.once((ctx :VertexContext[Double, Double, Byte, Byte]) => {
+			ctx.output(ctx.value());
+		});
+		val result = xpgraph.stealOutput[Double]();
+		
+		sw.lap("Retrieve output");
+		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Retrieve Output:"); }
+		sw.flush();
 		
 		return result;
 	}
