@@ -44,7 +44,7 @@ import org.scalegraph.api.PyXPregelPipe;
 import org.scalegraph.api.PyXPregel;
 import org.scalegraph.id.Type;
 
-import org.scalegraph.xpregel.VertexContext;
+import org.scalegraph.xpregel.PyVertexContext;
 import org.scalegraph.util.DistMemoryChunk;
 import x10.compiler.Native;
 //import x10.io.Printer;
@@ -544,10 +544,32 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		NativePyXPregelAdapter.setProperty_numGlobalVertices(numGlobalVertexes);
 		NativePyXPregelAdapter.setProperty_numLocalVertices(numLocalVertexes);
 
-//		val localSrcids = MemoryChunk.make[Long](numThreads,0n,true);
-//		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
-//			localSrcids(tid) = r.min;
-//		});
+		// This is required to construct PyVertexContext
+		val localSrcids = MemoryChunk.make[Long](numThreads,0n,true);
+		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
+			localSrcids(tid) = r.min;
+		});
+
+		// debugging <-- but it is required for creating PyVertexContext
+		val mOutEdgeModifyReqOffsets = MemoryChunk.make[MemoryChunk[Long]](numThreads);
+
+		foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
+			mOutEdgeModifyReqOffsets(tid) = MemoryChunk.make[Long]((r.max - r.min +1L) +1L, 0n, true);
+		});
+
+		// This is also required to construct PyVertexContext
+		val mOutEdgeModifyReqsWithAR = MemoryChunk.make[GrowableMemory[Tuple2[Long,E]]](
+				numThreads, (i :Long) => new GrowableMemory[Tuple2[Long,E]](0L));
+		// new PyVertexContext
+		val vctxs = MemoryChunk.make[PyVertexContext[V, E, M, A]](numThreads,
+				(i : Long)=>new PyVertexContext[V, E, M, A](
+				this, ectx, i, 
+				mOutEdgeModifyReqOffsets(i), mOutEdgeModifyReqsWithAR(i), 
+				localSrcids(i)));
+
+		val statistics = MemoryChunk.make[Long](STT_MAX*2);
+		val recvStatistics = statistics.subpart(STT_MAX, STT_MAX);
+
 
 		// Copy closure to shmem
 		val closure = PyXPregel.closures();
@@ -605,34 +627,87 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		
 		// Do Superstep
 		for (ss in 0..10000n) {
-			//compute
 
+			// Compute on child Python worker process
 			val command = SString(String.format("superstep %lld\n", [ss as Any])).bytes();
 			for (i in 0..(numThreads - 1)) {
-				async mPythonWorkers(i).stdout.write(command);
+				async mPythonWorkers(i).stdin.write(command);
 			}
 
-			
 			finish for (i in 0..(numThreads - 1)) {
 				async waitSuperStepOnThread[A](i, railAggregatedValue, railBCSInputCount);
 			}
 
-			// aggregation
+			// delete existing (old) messages.
+			ectx.deleteMessages();
 
+			// gather statistics
+//			for(th in 0..(numThreads-1)) {
+//				//first message process is here 
+//				ectx.sqweezeMessage(vctxs(th));
+//			}
+//			@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_SQWEEZMES as Int); }
+
+			//-----directionOptimization
 			var BCSInputCountOnPlace :Long = 0;
 			for (i in 0..(numThreads - 1)) {
 				BCSInputCountOnPlace += railBCSInputCount(i);
 			}
+			val numAllBCSCount = mTeam.allreduce[Long](BCSInputCountOnPlace, Team.ADD);
+			if(0L < numAllBCSCount && numAllBCSCount  < (mIds.numberOfGlobalVertexes()/50)){	//TODO: modify /20
+				val BCbmp=ectx.mBCCHasMessage;
+				foreachVertexes(numLocalVertexes, (tid :Long, r :LongRange) => {
+					val vc = vctxs(tid);
+					for (dosrcid in r){
+						if(BCbmp(dosrcid)){
+							vc.mSrcid = dosrcid;
+							val tempmes=ectx.mBCCMessages(dosrcid);
+							for (edgeId in vc) {
+								vc.sendMessage(edgeId, tempmes);
+							}
+						}
+					}
+				});
+				ectx.mBCCHasMessage.clear(false);
+				ectx.mBCCMessages.del();
+				ectx.mBCCMessages = MemoryChunk.make[M](mIds.numberOfLocalVertexes());
+				ectx.mBCSInputCount=0L;
+			}
+			//-----
+
+			// aggregation
+
+			val aggVal = Zero.get[A]();
+
+/////////////////////
+
+			val terminate = gatherInformation(mTeam, ectx, statistics, mEnableStatistics, null);
+
+			if (terminate) {
+
+				mLastAggVal = aggVal;
+				mInEdgesMask = ectx.mInEdgesMask;
+				ectx.del();
+
+				// Child Python process ends when closing STDIN
+				for (i in 0..(numThreads - 1)) {
+					mPythonWorkers(i).stdin.close();
+				}
+
+				return ;
+			}
+
+			// Exchange messages
+			ectx.exchangeMessages(
+					recvStatistics(STT_COMBINED_MESSAGE) > 0L,
+					recvStatistics(STT_VERTEX_MESSAGE) > 0L);
 			
-			// distribute messages
+			// Copy message to shared memory
 
 			exportShmemReceivedMessages(ectx, 0..(numLocalVertexes - 1));
 			NativePyXPregelAdapter.updateShmemProperty();
 		}
 
-		for (i in 0..(numThreads - 1)) {
-			mPythonWorkers(i).stdout.close();
-		}
 
 /*
 		exportInEdgeToShmem();
@@ -795,7 +870,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 				ectx.mBCSInputCount=0L;
 			}
 			//-----
-			
+1w			
 			// aggregate
 			if(here.id == 0) sw.lap("aggregate...");
 			val aggVal = (aggregator != null)
@@ -886,23 +961,23 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 		// Receive Aggregated Value
 		val sizeBuff = MemoryChunk.make[Byte](Type.sizeOf[Long]());
-		mPythonWorkers(threadId).stdin.read(sizeBuff);
+		mPythonWorkers(threadId).stdout.read(sizeBuff);
 		val size = MemoryChunk.make[Long](1);
 		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
 		assert(size(0) == (Type.sizeOf[A]()  as Long)); // Size is received for future extension
 		val valueBuff = MemoryChunk.make[Byte](size(0));
-		mPythonWorkers(threadId).stdin.read(valueBuff);
+		mPythonWorkers(threadId).stdout.read(valueBuff);
 		val value = MemoryChunk.make[A](1);
 		NativePyXPregelAdapter.copyFromBuffer(valueBuff, 0, size(0), value);
 		railAggregatedValue(threadId) = value(0);
 		
 
 		// Receive BCSInputCount on each thread
-		mPythonWorkers(threadId).stdin.read(sizeBuff);
+		mPythonWorkers(threadId).stdout.read(sizeBuff);
 		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
 		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
 		val countBuff = MemoryChunk.make[Byte](size(0));
-		mPythonWorkers(threadId).stdin.read(countBuff);
+		mPythonWorkers(threadId).stdout.read(countBuff);
 		val count = MemoryChunk.make[Long](1);
 		NativePyXPregelAdapter.copyFromBuffer(countBuff, 0, size(0), count);
 		railBCSInputCount(threadId) = count(0);
