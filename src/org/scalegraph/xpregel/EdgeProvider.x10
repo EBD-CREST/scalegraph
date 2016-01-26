@@ -27,6 +27,8 @@ import org.scalegraph.Config;
 
 import x10.compiler.Inline;
 
+import org.scalegraph.util.Logger;
+
 /** method parameter "srcid" is always raw srcid. */
 
 class EdgeProvider [E] /*{ E haszero }*/{
@@ -430,9 +432,19 @@ class EdgeProvider [E] /*{ E haszero }*/{
 					srcid);
 			return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](mGetEdgeBuf.raw(),mGetValBuf.raw());
 		} else {
-			return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](
+
+			// Debug code
+			if (len == 0) {
+				val vertices = mOutEdge.vertexes.subpart(mOutEdge.offsets(srcid), len);
+				val values = mOutEdge.values.subpart(mOutEdge.offsets(srcid), len);
+				Logger.print(String.format("NO EDGE %lld %lld %lld", [len as Any, vertices.size(), values.size()]));
+				return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](vertices, values);
+			} else {
+				return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](
 					mOutEdge.vertexes.subpart(mOutEdge.offsets(srcid), len),
 					mOutEdge.values.subpart(mOutEdge.offsets(srcid), len));
+			}
+
 		}
 	}
 	

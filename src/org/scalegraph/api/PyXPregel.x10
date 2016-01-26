@@ -519,8 +519,8 @@ final public class PyXPregel {
 		graph.del();
 
 		val xp = this;
-		val result = xp.execute(matrix);
-//		val result = xp.execute_x10xpregel(matrix);
+//		val result = xp.execute(matrix);
+		val result = xp.execute_x10xpregel(matrix);
 
 //		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
@@ -645,7 +645,12 @@ final public class PyXPregel {
 
 			ctx.aggregate(Math.abs(value - ctx.value()));
 			ctx.setValue(value);
-			ctx.sendMessageToAllNeighbors(value / ctx.numberOfOutEdges());
+			val numOutEdges = ctx.numberOfOutEdges();
+			if (numOutEdges == 0) {
+				Logger.print("divide by zero");
+				Logger.print((value / numOutEdges).toString());
+			}			
+			ctx.sendMessageToAllNeighbors(value / numOutEdges);
 		},
 		(values :MemoryChunk[Double]) => MathAppend.sum(values),
 		(superstep :Int, aggVal :Double) => {

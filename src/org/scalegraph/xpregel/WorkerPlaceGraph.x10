@@ -41,6 +41,9 @@ import x10.compiler.Native;
 import x10.io.Printer;
 import org.scalegraph.test.STest;
 
+import org.scalegraph.util.Logger;
+
+
 // "haszero" cause x10compiler to type incomprehensibility.
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
 
@@ -636,6 +639,15 @@ final class WorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		MemoryChunk.copy(mVertexShouldBeActive.raw(), 0L,
 				vertexActvieBitmap, 0L, vertexActvieBitmap.size());
 		
+		// Debug code
+		Logger.print("Check mOutEdge");
+		for (i in 0..(numLocalVertexes - 1)) {
+			if (mOutEdge.offsets(i + 1) - mOutEdge.offsets(i) <= 0) {
+				Logger.print("NO EDGES");
+			}
+		}
+		Logger.print("Check Done");
+
 		@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_INIT as Int); }
 		
 		for(ss in 0n..10000n) {
