@@ -25,6 +25,8 @@ import org.scalegraph.util.Team2;
 import org.scalegraph.graph.id.IdStruct;
 import org.scalegraph.graph.id.OnedR;
 
+import org.scalegraph.util.Logger;
+
 final struct MessageBuffer[M] { M haszero } {
 	val messages :GrowableMemory[M] = new GrowableMemory[M](128);
 	val dstIds :GrowableMemory[Long] = new GrowableMemory[Long](128);
@@ -124,6 +126,7 @@ final class MessageCommunicator[M] { M haszero } {
 	def message(srcid :Long, buffer :GrowableMemory[M]) {
 		if(mUCREnabled) {
 			// unicast messages
+//			Logger.print("UNICAST MESSAGE");
 			if(mUCROffset.size() == 0L)
 				return MemoryChunk.make[M](0);
 			
@@ -132,6 +135,7 @@ final class MessageCommunicator[M] { M haszero } {
 			return mUCRMessages.subpart(start, length);
 		} else if(mBCREnabled) {
 			// broadcast messages
+//			Logger.print("BROADCAST MESSAGE");
 			val bmp = mBCRHasMessage;
 			val offset = mBCROffset;
 			val mes = mBCRMessages;
@@ -151,13 +155,19 @@ final class MessageCommunicator[M] { M haszero } {
 					buffer.add(mes(mesOffset));
 				}
 			}
-			
+
+//			Logger.print("size: " + buffer.raw().size().toString());
 			return buffer.raw();
 		}
 		return MemoryChunk.make[M]();
 	}
 	
 	def sqweezeMessage[V, E, A](ctx :VertexContext[V, E, M, A]) { /*V haszero, E haszero,*/ M haszero, A haszero } {
+		mNumActiveVertexes += ctx.mNumActiveVertexes; ctx.mNumActiveVertexes = 0L;
+		mBCSInputCount += ctx.mBCSInputCount; ctx.mBCSInputCount = 0L;
+	}
+
+	def sqweezeMessage[V, E, A](ctx :PyVertexContext[V, E, M, A]) { /*V haszero, E haszero,*/ M haszero, A haszero } {
 		mNumActiveVertexes += ctx.mNumActiveVertexes; ctx.mNumActiveVertexes = 0L;
 		mBCSInputCount += ctx.mBCSInputCount; ctx.mBCSInputCount = 0L;
 	}
@@ -374,6 +384,19 @@ final class MessageCommunicator[M] { M haszero } {
 			val placeHasMessage = mBCSMask.raw().subpart(startWordOffset, lengthInWords);
 			val placeInEdgeMask = mInEdgesMask.raw().subpart(startWordOffset, lengthInWords);
 			val rawHasMessage = mBCCHasMessage.raw();
+
+			var flagHasMessage :Boolean = false;
+			for (i in 0..(rawHasMessage.size()-1)) {
+				if (rawHasMessage(i) != 0UL) {
+					flagHasMessage = true;
+					break;
+				}
+			}
+			if (flagHasMessage) {
+				Logger.print("Place " + p.toString() + " has messages !!!!");
+			} else {
+				Logger.print("Place " + p.toString() + " has NO message !!!!");
+			}
 			
 			var placeNumMessage :Int = 0n;
 			// The size of mBCCHasMessage is the actual number of vertexes (NumberOfLocalVertexes).
@@ -386,6 +409,7 @@ final class MessageCommunicator[M] { M haszero } {
 				placeHasMessage(i) = 0n;
 			}
 			mBCSCount(p) = placeNumMessage;
+			Logger.print("mBCSCount(" + p.toString() + ") = " + placeNumMessage.toString());
 		});
 		
 		Parallel.iter(mBCCHasMessage.raw().range(), (tid :Long, r :LongRange) => {

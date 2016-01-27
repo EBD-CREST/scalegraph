@@ -80,10 +80,6 @@ class XPregelContext():
         self.vertexActive = x10xpregeladapter.vertexActive().cast('Q')
         self.vertexShouldBeActive = x10xpregeladapter.vertexShouldBeActive().cast('Q')
 
-        # get messages
-        self.message_values = x10xpregeladapter.message_values().cast(self.message_value_format)
-        self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
-        
         # get message buffer for MessageToAllNeighbors
         self.sendMsgN_flags = x10xpregeladapter.sendMsgN_flags().cast('Q')
         self.sendMsgN_values = x10xpregeladapter.sendMsgN_values().cast(self.message_value_format)
@@ -91,9 +87,6 @@ class XPregelContext():
         self.log("len sendMsgN_flags =", len(self.sendMsgN_flags))
         self.log("len sendMsgN_values =", len(self.sendMsgN_values))
         
-        # reserve send message buffer
-        self.newSendMessageBuffer()
-
     def log(self, *objs):
         print(self.log_prefix, *objs, file=self.logfile)
 
@@ -108,6 +101,10 @@ class XPregelContext():
     def receivedMessages(self, vertex_id):
         return self.message_values[self.message_offsets[vertex_id]:
                                    self.message_offsets[vertex_id + 1]]
+
+    def newReceiveMessageBuffer(self):
+        self.message_values = x10xpregeladapter.message_values().cast(self.message_value_format)
+        self.message_offsets = x10xpregeladapter.message_offsets().cast('q')
 
     def newSendMessageBuffer(self):
         self.send_message_values = array.array(self.message_value_format)
@@ -140,6 +137,8 @@ class XPregelContext():
     def beforeSuperstep(self):
         self.threadLocalAggregateValues = []
         self.numMessageToAllNeighbors = 0;
+        self.newReceiveMessageBuffer()
+        self.newSendMessageBuffer()
 
     def afterSuperstep(self):
         pass
@@ -244,12 +243,24 @@ def superstep(superstepId, xpregelContext, compute, aggregator):
     xpregelContext.log("numVertives:", xpregelContext.numVertices)
     xpregelContext.log(xpregelContext.vertexValue.tolist())
     numProcessed = 0
+    rmsgs = []
     for vertexId in xpregelContext.rangeThreadLocalVertices:
         vertexContext = VertexContext(superstepId, xpregelContext, vertexId)
-        compute(vertexContext, xpregelContext.receivedMessages(vertexId))
+        messages = xpregelContext.receivedMessages(vertexId)
+        compute(vertexContext, messages)
         numProcessed += 1
+        rmsgs.append(len(messages))
     xpregelContext.afterSuperstep()
+
+    flagVertexMessage = []
+    for i in xpregelContext.rangeThreadLocalVertices:
+        flag = x10xpregeladapter.bitmap_get(xpregelContext.sendMsgN_flags, i)
+        flagVertexMessage.append(flag)
+    xpregelContext.log("sendMsgN_flags:", flagVertexMessage)
+    
+    xpregelContext.log("num received messages:", rmsgs);
     xpregelContext.log("len aggregated value:", len(xpregelContext.threadLocalAggregateValues))
+
     xpregelContext.log(xpregelContext.threadLocalAggregateValues)
     threadLocalAggregatedValue = aggregator(xpregelContext.threadLocalAggregateValues)
     xpregelContext.log("aggregated value =", threadLocalAggregatedValue)

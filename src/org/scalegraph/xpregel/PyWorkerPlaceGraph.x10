@@ -705,6 +705,7 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 				Logger.printStackTrace(exception);
 			}
 
+			// Wait child process and get result
 			finish for (i in 0..(numThreads - 1)) {
 				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcBCSInputCount, mcNumProcessed);
 			}
@@ -712,17 +713,42 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 			for (i in 0..(numThreads - 1)) {
 				val vc = vctxs(i);
 				vc.mNumActiveVertexes = mcNumProcessed(i);
+				vc.mBCSInputCount = mcBCSInputCount(i);
 			}
+
+			// Writeback (Copy data from shmem to MemoryChunk)
+			writebackShmemMemoryChunk(shmemVertexValue, mVertexValue);
+			writebackShmemBitmap(shmemVertexActive, mVertexActive);
+			writebackShmemBitmap(shmemVertexShouldBeActive, mVertexShouldBeActive);
+			writebackShmemMemoryChunk(shmemSendMessageToAllNeighborsFlag, ectx.mBCCHasMessage.mc);
+			writebackShmemMemoryChunk(shmemSendMessageToAllNeighborsValue, ectx.mBCCMessages);			
+
+
+			var flagHasMessage :Boolean = false;
+			val rawHasMessage = ectx.mBCCHasMessage.mc;
+			for (i in 0..(rawHasMessage.size()-1)) {
+				if (rawHasMessage(i) != 0UL) {
+					flagHasMessage = true;
+					break;
+				}
+			}
+			if (flagHasMessage) {
+				Logger.print("BCCHasMessage has messages !!!!");
+			} else {
+				Logger.print("BCCHasMessage has NO message !!!!");
+			}
+
+
 
 			// delete existing (old) messages.
 			ectx.deleteMessages();
 
 			// gather statistics
-//			for(th in 0..(numThreads-1)) {
-//				//first message process is here 
-//				ectx.sqweezeMessage(vctxs(th));
-//			}
-//			@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_SQWEEZMES as Int); }
+			for(th in 0..(numThreads-1)) {
+				//first message process is here 
+				ectx.sqweezeMessage(vctxs(th));
+			}
+			//@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_SQWEEZMES as Int); }
 
 			Logger.print("Dispatch BCC Messages");
 			//-----directionOptimization
@@ -751,6 +777,7 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 				ectx.mBCCMessages.del();
 				ectx.mBCCMessages = MemoryChunk.make[M](mIds.numberOfLocalVertexes());
 				ectx.mBCSInputCount=0L;
+				updateShmemMemoryChunk(shmemSendMessageToAllNeighborsFlag, ectx.mBCCHasMessage.mc);
 			}
 			//-----
 
@@ -778,6 +805,9 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 			Logger.print("Call gatherInformation");
 			val terminate = gatherInformation(mTeam, ectx, statistics, mEnableStatistics, null);
 			Logger.print("returns " + terminate.toString());
+
+			// update BCCHasMessage here because it is cleared inside gatherInformation
+			updateShmemMemoryChunk(shmemSendMessageToAllNeighborsFlag, ectx.mBCCHasMessage.mc);
 
 			if (here.id() == 0) {
 				Logger.print("STT_END_COUNT: " + recvStatistics(STT_END_COUNT));
@@ -1375,6 +1405,10 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		updateShmemMemoryChunk(shmem, bitmap.mc);
 	}
 
+	public def writebackShmemBitmap(shmem :GenericFile, bitmap :Bitmap) {
+		writebackShmemMemoryChunk(shmem, bitmap.mc);
+	}
+
 	public def createShmemMemoryChunk[T](name: String, mc :MemoryChunk[T]) :GenericFile {
 		val here_id = here.id.toString();
 		val name_shmem = "/pyxpregel." + name + "." + here_id;
@@ -1388,6 +1422,11 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 	public def updateShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
 		shmem.copyToShmem(mc, mc.size() * Type.sizeOf[T]());
+//		shmem.close();
+	}
+
+	public def writebackShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
+		shmem.copyFromShmem(mc, mc.size() * Type.sizeOf[T]());
 //		shmem.close();
 	}
 
