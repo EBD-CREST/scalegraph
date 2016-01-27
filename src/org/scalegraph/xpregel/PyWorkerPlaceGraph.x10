@@ -61,7 +61,7 @@ import org.scalegraph.util.Logger;
 // "haszero" cause x10compiler to type incomprehensibility.
 // when you want to get DUMMY value(may not be default), use Utils.getDummyZeroValue[T]();.
 
-final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
+final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 	static val MAX_OUTPUT_NUMBER = 8;
 	private static type XP = org.scalegraph.id.ProfilingID.XPregel;
@@ -683,6 +683,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		val mcAggregatedValueIntermediate = MemoryChunk.make[A](1);
 		val mcAggregatedValue = MemoryChunk.make[A](1);
 		val mcBCSInputCount = MemoryChunk.make[Long](numThreads);
+		val mcNumProcessed = MemoryChunk.make[Long](numThreads);
 
 		
 		// Do Superstep
@@ -697,7 +698,7 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 			try {
 				for (i in 0..(numThreads - 1)) {
-					Logger.print("FD(" + i.toString() + ") = " + mPythonWorkers(i).stdin.getFd().toString() + " write " + command_buff.bytes().size().toString() + " bytes");
+//					Logger.print("FD(" + i.toString() + ") = " + mPythonWorkers(i).stdin.getFd().toString() + " write " + command_buff.bytes().size().toString() + " bytes");
 					mPythonWorkers(i).stdin.write(command_buff.bytes(), len_command as Long);
 				}
 			} catch (exception :CheckedThrowable) {
@@ -705,7 +706,12 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			}
 
 			finish for (i in 0..(numThreads - 1)) {
-				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcBCSInputCount);
+				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcBCSInputCount, mcNumProcessed);
+			}
+
+			for (i in 0..(numThreads - 1)) {
+				val vc = vctxs(i);
+				vc.mNumActiveVertexes = mcNumProcessed(i);
 			}
 
 			// delete existing (old) messages.
@@ -751,7 +757,6 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			// aggregation of aggregated values
 			Logger.print("Call aggregator");
 
-/*
 			val root = (mTeam.base.role()(0) == 0n);
 			mcAggregatedValueIntermediate(0) = callAggregator(mcAggregatedValueOnThread);
 			Logger.print("Call gather");
@@ -761,14 +766,13 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			}
 			mTeam.bcast(0n, mcAggregatedValueIntermediate, mcAggregatedValue);
 			val aggVal = mcAggregatedValue(0);
-*/
-			val aggVal = 0 as A;
+//			val aggVal = 0 as A;
 
 			// call terminator on each place
 
 			Logger.print("Call terminator");
 			statistics(STT_END_COUNT) = callTerminator[A](ss as Int, aggVal) ? 1L : 0L;
-
+			Logger.print("==> " + statistics(STT_END_COUNT).toString());
 			// terminate when one of callTerminator returns true
 			
 			Logger.print("Call gatherInformation");
@@ -799,23 +803,22 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 				mcAggregatedValueIntermediate.del();
 				mcAggregatedValue.del();
 				mcBCSInputCount.del();
+				mcNumProcessed.del();
 
 				Logger.print("KILL CHILD");
 
-				finish {
 				// Child Python process ends when closing STDIN
 				val endcmd = SString("end\n");
 				try {
 				for (i in 0..(numThreads - 1)) {
-					Logger.print(String.format("Send command %s to %lld", [endcmd.toString() as Any, i]));
-					Logger.print("FD(" + i.toString() + ") = " + mPythonWorkers(i).stdin.getFd().toString() + " write " + endcmd.bytes().size().toString() + " bytes");
-					mPythonWorkers(i).stdin.write(endcmd.bytes());
-//					mPythonWorkers(i).stdin.close();
-//					mPythonWorkers(i).stdout.close();
+//					Logger.print(String.format("Send command %s to %lld", [endcmd.toString() as Any, i]));
+//					Logger.print("FD(" + i.toString() + ") = " + mPythonWorkers(i).stdin.getFd().toString() + " write " + endcmd.bytes().size().toString() + " bytes");
+//					mPythonWorkers(i).stdin.write(endcmd.bytes());
+					mPythonWorkers(i).stdin.close();
+					mPythonWorkers(i).stdout.close();
 				}
 				} catch (exception :CheckedThrowable) {
 					Logger.printStackTrace(exception);
-				}
 				}
 
 				Logger.print("Exit");
@@ -898,9 +901,9 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 			mPythonIntegrated.runString(
 				"aggVal = tmpAggVal.cast('d')[0]\n" +
 				"if terminator(ss, aggVal):\n" +
-				"\tretval=1\n" +
+				"    retval=1\n" +
 				"else:\n" +
-				"\tretval=0\n",
+				"    retval=0\n",
 				mPythonDictGlobals, mPythonDictLocals);
 			val pObjRetval = mPythonIntegrated.dictGetItemString(mPythonDictLocals,
 																 "retval");
@@ -1165,7 +1168,8 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 
 	public def waitSuperStepOnThread[A](threadId :Long,
 										mcAggregatedValue :MemoryChunk[A],
-										mcBCSInputCount :MemoryChunk[Long]) {
+										mcBCSInputCount :MemoryChunk[Long],
+										mcNumProcessed :MemoryChunk[Long]) {
 
 		Logger.print(String.format("Wait Aggregated Value from Thread:%lld", [threadId as Any]));
 
@@ -1215,6 +1219,27 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		mcBCSInputCount(threadId) = count(0);
 		Logger.print(String.format("Reveived BCSInputCount from Thread:%lld = %s", [threadId as Any, count(0).toString()]));
 
+		// Receive numProcessed on each thread
+		try {
+			mPythonWorkers(threadId).stdout.read(sizeBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read sizeBuff for numBuff");
+			Logger.printStackTrace(e);
+		}
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
+		val numBuff = MemoryChunk.make[Byte](size(0));
+		try {
+			mPythonWorkers(threadId).stdout.read(numBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read numBuff");
+			Logger.printStackTrace(e);
+		}
+		val numProcessed = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(numBuff, 0, size(0), numProcessed);
+		mcNumProcessed(threadId) = numProcessed(0);
+		Logger.print(String.format("Reveived numProcessed from Thread:%lld = %s", [threadId as Any, numProcessed(0).toString()]));
+
 		// Delete buffer
 		sizeBuff.del();
 		size.del();
@@ -1222,6 +1247,8 @@ final class PyWorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 		value.del();
 		countBuff.del();
 		count.del();
+		numBuff.del();
+		numProcessed.del();
 
 		Logger.print(String.format("Wait OK Thread:%lld", [threadId as Any]));
 	}

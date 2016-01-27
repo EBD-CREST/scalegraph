@@ -581,7 +581,7 @@ final public class PyXPregel {
 	
 	private static def execute(param :PyXPregel, matrix :DistSparseMatrix[Double]) {
 
-		val xpgraph = PyXPregelGraph.make[Double, Double](matrix);
+		val xpgraph = PyXPregelGraph.make[Double, Double](matrix, 0);
 		xpgraph.updateInEdge();
 		xpgraph.iterate[Double, Double]();
 		
@@ -600,7 +600,7 @@ final public class PyXPregel {
 		val sw = Config.get().stopWatch();
 
 		// compute PageRank
-		val xpgraph = XPregelGraph.make[Double, Double](matrix);
+		val xpgraph = XPregelGraph.make[Double, Double](matrix, 0);
 		xpgraph.updateInEdge();
 		
 		sw.lap("UpdateInEdge");

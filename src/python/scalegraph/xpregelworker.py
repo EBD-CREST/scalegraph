@@ -148,17 +148,13 @@ class XPregelContext():
 class VertexContext():
 
     def __init__(self, superstepId, xpregelContext, vertexId):
-        self.superstepId = superstepId
+        self.superstep = superstepId
         self.xpregelContext = xpregelContext
         self.vertexId = vertexId
         self.numVertices = xpregelContext.numVertices
+        self.outEdges = xpregelContext.outEdges(vertexId)
+        self.inEdges = xpregelContext.inEdges(vertexId)
         
-    def numVertices(self):
-        return self.numVerties
-
-    def superstep(self):
-        return superstepId;
-
     def sendMessage(self, dst_vertexId, message):
         self.xpregelContext.sendMessage(self.vertexId, dst_vertexId, message)
 
@@ -173,12 +169,6 @@ class VertexContext():
 
     def aggregate(self, value):
         self.xpregelContext.threadLocalAggregate(value)
-
-    def outEdges(self):
-        return self.xpregelContext.outEdges(self.vertexId)
-
-    def inEdges(self):
-        return self.xpregelContext.inEdges(self.vertexId)
 
     def log(self, *objs):
         self.xpregelContext.log(*objs)
@@ -251,15 +241,22 @@ def superstep(superstepId, xpregelContext, compute, aggregator):
     xpregelContext.log("superstep:", superstepId)
     sys.stderr.flush()
     xpregelContext.beforeSuperstep()
+    xpregelContext.log("numVertives:", xpregelContext.numVertices)
+    xpregelContext.log(xpregelContext.vertexValue.tolist())
+    numProcessed = 0
     for vertexId in xpregelContext.rangeThreadLocalVertices:
         vertexContext = VertexContext(superstepId, xpregelContext, vertexId)
         compute(vertexContext, xpregelContext.receivedMessages(vertexId))
+        numProcessed += 1
     xpregelContext.afterSuperstep()
+    xpregelContext.log("len aggregated value:", len(xpregelContext.threadLocalAggregateValues))
+    xpregelContext.log(xpregelContext.threadLocalAggregateValues)
     threadLocalAggregatedValue = aggregator(xpregelContext.threadLocalAggregateValues)
     xpregelContext.log("aggregated value =", threadLocalAggregatedValue)
     xpregelContext.returnValue('d', float(threadLocalAggregatedValue))
     xpregelContext.returnValue('q', int(xpregelContext.numMessageToAllNeighbors))
-    sys.stderr.flush()
+    xpregelContext.returnValue('q', int(numProcessed))
+    #sys.stderr.flush()
     
     
 def run():
