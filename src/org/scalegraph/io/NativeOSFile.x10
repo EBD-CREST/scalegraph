@@ -43,10 +43,11 @@ import org.scalegraph.util.SString;
 	public native def this(fd: Int);
 	public native def this(name: SString, fileMode :Int, fileAccess :Int);
 	public native def close(): void;
-	public native def read[T](buffer: T): Long;
-	public native def write[T](buffer: T): void;
-	public native def write[T](buffer: T, size_to_write: Long): void;
+	public native def read[T](buffer: T) throws CheckedThrowable :Long;
+	public native def write[T](buffer: T) throws CheckedThrowable :void;
+	public native def write[T](buffer: T, size_to_write: Long) throws CheckedThrowable :void;
 	public native def seek(offset: Long, origin: Int): void;
 	public native def getpos(): Long;
 	public native def flush(): void;
+	public native def getFd(): Int;
 }

@@ -640,13 +640,13 @@ final class WorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 				vertexActvieBitmap, 0L, vertexActvieBitmap.size());
 		
 		// Debug code
-		Logger.print("Check mOutEdge");
-		for (i in 0..(numLocalVertexes - 1)) {
-			if (mOutEdge.offsets(i + 1) - mOutEdge.offsets(i) <= 0) {
-				Logger.print("NO EDGES");
-			}
-		}
-		Logger.print("Check Done");
+		// Logger.print("Check mOutEdge");
+		// for (i in 0..(numLocalVertexes - 1)) {
+		// 	if (mOutEdge.offsets(i + 1) - mOutEdge.offsets(i) <= 0) {
+		// 		Logger.print("NO EDGES");
+		// 	}
+		// }
+		// Logger.print("Check Done");
 
 		@Ifdef("PROF_XP") { mtimer.lap(XP.MAIN_INIT as Int); }
 		

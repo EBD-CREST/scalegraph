@@ -90,7 +90,12 @@ final public class PyXPregel {
 
 		for (;;) {
 			val buff = MemoryChunk.make[Byte](buffSize);
-			val sizeRead = file.read(buff);
+			var sizeRead :Long = 0;
+			try {
+				sizeRead = file.read(buff);
+			} catch (exception :CheckedThrowable) {
+				Logger.printStackTrace(exception);
+			}
 			if (sizeRead == 0) {
 				buff.del();
 				break;
@@ -519,8 +524,8 @@ final public class PyXPregel {
 		graph.del();
 
 		val xp = this;
-//		val result = xp.execute(matrix);
-		val result = xp.execute_x10xpregel(matrix);
+		val result = xp.execute(matrix);
+//		val result = xp.execute_x10xpregel(matrix);
 
 //		CSV.write(getFilePathOutput(), new NamedDistData(["pagerank" as String], [result as Any]), true);
 	}
@@ -580,42 +585,7 @@ final public class PyXPregel {
 		xpgraph.updateInEdge();
 		xpgraph.iterate[Double, Double]();
 		
-		// compute PageRank
-//		val xpgraph = XPregelGraph.make[Double, Double](matrix);
-//		xpgraph.updateInEdge();
-		
-//		sw.lap("UpdateInEdge");
-//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("Update In Edge:"); }
-		
-//		xpgraph.iterate[Double,Double]((ctx :VertexContext[Double, Double, Double, Double], messages :MemoryChunk[Double]) => {
-//			val value :Double;
-//			if(ctx.superstep() == 0n)
-//				value = 1.0 / ctx.numberOfVertices();
-//			else
-//				value = (1.0-damping) / ctx.numberOfVertices() + damping * MathAppend.sum(messages);
-
-//			ctx.aggregate(Math.abs(value - ctx.value()));
-//			ctx.setValue(value);
-//			ctx.sendMessageToAllNeighbors(value / ctx.numberOfOutEdges());
-//		},
-//		(values :MemoryChunk[Double]) => MathAppend.sum(values),
-//		(superstep :Int, aggVal :Double) => {
-//			if (here.id == 0) {
-//				sw.lap("PageRank at superstep " + superstep + " = " + aggVal + " ");
-//			}
-//			return (superstep >= niter || aggVal < eps);
-//		});
-
-//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Main Iterate:"); }
-		
-//		xpgraph.once((ctx :VertexContext[Double, Double, Byte, Byte]) => {
-//			ctx.output(ctx.value());
-//		});
 		val result = xpgraph.stealOutput[Double]();
-		
-//		sw.lap("Retrieve output");
-//		@Ifdef("PROF_XP") { Config.get().dumpProfXPregel("PageRank Retrieve Output:"); }
-//		sw.flush();
 		
 		return result;
 	}
@@ -646,11 +616,9 @@ final public class PyXPregel {
 			ctx.aggregate(Math.abs(value - ctx.value()));
 			ctx.setValue(value);
 			val numOutEdges = ctx.numberOfOutEdges();
-			if (numOutEdges == 0) {
-				Logger.print("divide by zero");
-				Logger.print((value / numOutEdges).toString());
+			if (numOutEdges != 0) {
+				ctx.sendMessageToAllNeighbors(value / numOutEdges);
 			}			
-			ctx.sendMessageToAllNeighbors(value / numOutEdges);
 		},
 		(values :MemoryChunk[Double]) => MathAppend.sum(values),
 		(superstep :Int, aggVal :Double) => {

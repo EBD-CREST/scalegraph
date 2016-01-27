@@ -437,7 +437,7 @@ class EdgeProvider [E] /*{ E haszero }*/{
 			if (len == 0) {
 				val vertices = mOutEdge.vertexes.subpart(mOutEdge.offsets(srcid), len);
 				val values = mOutEdge.values.subpart(mOutEdge.offsets(srcid), len);
-				Logger.print(String.format("NO EDGE %lld %lld %lld", [len as Any, vertices.size(), values.size()]));
+//				Logger.print(String.format("NO EDGE %lld %lld %lld", [len as Any, vertices.size(), values.size()]));
 				return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](vertices, values);
 			} else {
 				return new Tuple2[MemoryChunk[Long],MemoryChunk[E]](

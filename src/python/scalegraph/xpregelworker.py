@@ -10,6 +10,8 @@
 #
 
 import sys
+import io
+import os
 import array
 import pickle
 import config
@@ -27,8 +29,11 @@ class Bitmap():
 
 class XPregelContext():
 
-    def __init__(self):
+    def __init__(self, logfile):
 
+        # setup logfile
+        self.logfile = logfile
+        
         # get runtime information
         self.place_id = x10xpregeladapter.place_id()
         self.thread_id = x10xpregeladapter.thread_id()
@@ -40,7 +45,7 @@ class XPregelContext():
         self.numVertices = self.numGlobalVertices
 
         # prepare prefix for log output
-        self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) + "]"
+        self.log_prefix = "[" + str(self.place_id) + ":" + str(self.thread_id) +":" + str(os.getpid()) + "]"
 
         # get type information
         self.vertexValue_type = x10xpregeladapter.vertexValue_type()
@@ -90,7 +95,7 @@ class XPregelContext():
         self.newSendMessageBuffer()
 
     def log(self, *objs):
-        print(self.log_prefix, *objs, file=sys.stderr)
+        print(self.log_prefix, *objs, file=self.logfile)
 
     def outEdges(self, vertex_id):
         return self.outEdge_vertices[self.outEdge_offsets[vertex_id]:
@@ -170,12 +175,7 @@ class VertexContext():
         self.xpregelContext.threadLocalAggregate(value)
 
     def outEdges(self):
-        self.xpregelContext.log("VertexContext", self.vertexId, ".outEdges");
-        sys.stderr.flush()
-        out = self.xpregelContext.outEdges(self.vertexId)
-        self.xpregelContext.log("len outedges:", len(out))
-        sys.stderr.flush()
-        return out
+        return self.xpregelContext.outEdges(self.vertexId)
 
     def inEdges(self):
         return self.xpregelContext.inEdges(self.vertexId)
@@ -259,29 +259,26 @@ def superstep(superstepId, xpregelContext, compute, aggregator):
     xpregelContext.log("aggregated value =", threadLocalAggregatedValue)
     xpregelContext.returnValue('d', float(threadLocalAggregatedValue))
     xpregelContext.returnValue('q', int(xpregelContext.numMessageToAllNeighbors))
+    sys.stderr.flush()
     
     
 def run():
-    xpctx = XPregelContext()
+#    logfile = sys.stderr
+    logfile = open(config.work_dir + 'log_' + str(os.getpid()) + '.txt', 'w')
+    xpctx = XPregelContext(logfile)
 #    (compute, aggregator, terminator) = loadClosureFromFile(xpctx)
     (compute, aggregator, terminator) = loadClosureFromShmem(xpctx)
-    
 #    test_outEdges(xpctx)
 #    test_inEdges(xpctx)
 #    test_receivedMessages(xpctx)
 #    test_write_buffer(xpctx)
-
     xpctx.log("START")
-
-    for vid in xpctx.rangeThreadLocalVertices:
-        xpctx.log("vid:", vid, "offsets", xpctx.outEdge_offsets[vid], xpctx.outEdge_offsets[vid + 1]) 
-        sys.stderr.flush()
-        
-    sys.stderr.flush()
+    input_stream = io.TextIOWrapper(sys.stdin.buffer)
     while 1:
-        line = sys.stdin.readline()
+        line = input_stream.readline()
         if line == '':
             break
+        xpctx.log("command: ", line)
         args = line.split()
         if len(args) == 0:
             continue
@@ -294,8 +291,10 @@ def run():
             test_inEdges(xpctx)
             test_receivedMessages(xpctx)
             test_write_buffer(xpctx)
+        elif args[0] == 'end':
+            break
         else:
-            xpctx.log("input:", args)
-
+            xpctx.log("ERROR:", args)
+    xpctx.log("END")
     sys.stderr.flush()
     

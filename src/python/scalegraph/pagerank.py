@@ -20,14 +20,15 @@ class PageRank(xpregel.XPregelBase):
             value = 0.15 / ctx.numVertices + 0.85 * sum(messages)
         ctx.aggregate(abs(value - ctx.getVertexValue()))
         ctx.setVertexValue(value)
-        next = value / len(ctx.outEdges())
-        ctx.sendMessageToAllNeighbors(next)
+        numOutEdges = len(ctx.outEdges())
+        if numOutEdges > 0:
+            ctx.sendMessageToAllNeighbors(value / numOutEdges)
 
     def aggregator(self, outputs):
         return sum(outputs)
 
     def terminator(self, superstep, aggregatedValue):
-        ctx.log("PageRank at superstep " + superstep + " = " + aggValue + "\n")
+#        ctx.log("PageRank at superstep " + superstep + " = " + aggValue + "\n")
         return superstep == 30
 
 

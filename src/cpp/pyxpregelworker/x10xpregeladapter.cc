@@ -400,9 +400,11 @@ static PyObject* x10xpregeladapter_write_buffer_to_stdout(PyObject* self, PyObje
 
     long long size = view.len;
 
+    Py_BEGIN_ALLOW_THREADS
     write(STDOUT_FILENO, &size, sizeof(size));
     write(STDOUT_FILENO, view.buf, size);
-    
+    Py_END_ALLOW_THREADS
+            
     PyBuffer_Release(&view);
     Py_RETURN_NONE;
 }

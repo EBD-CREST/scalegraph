@@ -242,16 +242,16 @@ public final class VertexContext[V, E, M, A] { /*V haszero, E haszero,*/ M hasze
 		return getOutEdgesIterator();
 	}
 	
-//	public def numberOfOutEdges() = mEdgeProvider.outEdges(mSrcid).get1().size();
+	public def numberOfOutEdges() = mEdgeProvider.outEdges(mSrcid).get1().size();
 
 	// Debug code
-	public def numberOfOutEdges() {
-		val ret = mEdgeProvider.outEdges(mSrcid).get1().size();
-		if (ret == 0) {
-			Logger.print(String.format("NO EDGE %lld", [mSrcid as Any]));
-		}
-		return ret;
-	}
+	// public def numberOfOutEdges() {
+	// 	val ret = mEdgeProvider.outEdges(mSrcid).get1().size();
+	// 	if (ret == 0) {
+	// 		Logger.print(String.format("NO EDGE %lld", [mSrcid as Any]));
+	// 	}
+	// 	return ret;
+	// }
 
 	// /**
 	//  * get in edges for the current vertex

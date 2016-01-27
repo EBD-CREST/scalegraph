@@ -98,7 +98,6 @@ void NativePyXPregelAdapter::initialize() {
         return ::org::scalegraph::api::PyXPregelPipe::_make();
     }
 
-#if 0
     sigset_t block, oblock, oblock2;
     struct sigaction sa_sigpwr, sa_sigxcpu;
 
@@ -110,22 +109,19 @@ void NativePyXPregelAdapter::initialize() {
     sigemptyset(&block);
     sigaddset(&block, sigsuspend);
     sigaddset(&block, sigrestart);
-        for (int k = 21; k < 32; k++) {
+        for (int k = 18; k < 32; k++) {
             sigaddset(&block, k);
         }
     ::pthread_sigmask(SIG_BLOCK, &block, &oblock);
-    ::sigprocmask(SIG_BLOCK, &block, &oblock2);
+        //    ::sigprocmask(SIG_BLOCK, &block, &oblock2);
 
     fprintf(stderr, "mask signal = %d %d", sigsuspend, sigrestart);
-#endif
     
     pid_t pid = ::fork();
     if (pid < 0) {
 
-#if 0        
         ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
-        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
-#endif
+        //        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
         
         ::x10aux::throwException(::x10aux::nullCheck( ::org::scalegraph::exception::PyXPregelException::_make(::x10::lang::String::Lit("fork call failed"))));
         return ::org::scalegraph::api::PyXPregelPipe::_make();
@@ -170,10 +166,9 @@ void NativePyXPregelAdapter::initialize() {
     } else {
         // Parent process
 
-#if 0
         ::pthread_sigmask(SIG_SETMASK, &oblock, 0);
-        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
-#endif
+        //        ::sigprocmask(SIG_SETMASK, &oblock2, 0);
+
         fprintf(stderr, "%d forked %d\n", getpid(), pid);
 
         ::kill(pid, SIGCONT);

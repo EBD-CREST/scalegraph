@@ -92,7 +92,7 @@ public class GenericFile {
 		}
 	}
 
-	public def read[T](buffer: T): Long {
+	public def read[T](buffer: T) throws CheckedThrowable :Long {
 		switch (fileSystem) {
 			case OS:
 				return osFile.read[T](buffer);
@@ -104,7 +104,7 @@ public class GenericFile {
 		return 0n;
 	}
 
-	public def write[T](buffer: T): void {
+	public def write[T](buffer: T) throws CheckedThrowable :void {
 		switch (fileSystem) {
 			case OS:
 				osFile.write[T](buffer);
@@ -117,7 +117,7 @@ public class GenericFile {
 		}
 	}
 
-	public def write[T](buffer: T, size_to_write: Long): void {
+	public def write[T](buffer: T, size_to_write: Long) throws CheckedThrowable :void {
 		switch (fileSystem) {
 			case OS:
 				osFile.write[T](buffer, size_to_write);
@@ -228,6 +228,15 @@ public class GenericFile {
 	public static def unlinkAll() {
 		for (name in sharedNames()) {
 			NativeSHMFile.unlink(name);
+		}
+	}
+
+	public def getFd(): Int {
+		switch (fileSystem) {
+			case OS:
+				return osFile.getFd();
+			default:
+				return -1N;
 		}
 	}
  }

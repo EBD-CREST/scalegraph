@@ -222,9 +222,14 @@ public class Logger {
 				val hour :Long = (timeinsec / 60 / 60) % 24;
 				val sstr = SString(String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
 								  line.msg);
-				config().placeLocalLogFile.write(sstr.bytes());
-				if (!line.msg.endsWith(linebreak)) {
-					config().placeLocalLogFile.write(sstrLinebreak.bytes());
+				try {
+					config().placeLocalLogFile.write(sstr.bytes());
+					if (!line.msg.endsWith(linebreak)) {
+						config().placeLocalLogFile.write(sstrLinebreak.bytes());
+					
+					}
+				} catch (e :CheckedThrowable) {
+//					Logger.printStackTrace(e);
 				}
 			}
 			config().placeLocalLogFile.flush();
@@ -241,11 +246,15 @@ public class Logger {
 			val sstr = SString("[" + line.placeId + "] " +
 							   String.format("%02ld:%02ld:%02ld ", [hour as Any, min, sec]) +
 							   line.msg);
-			if (config().enableGlobalLogFile) {
-				config().globalLogFile.write(sstr.bytes());
-				if (!line.msg.endsWith(linebreak)) {
-					config().globalLogFile.write(sstrLinebreak.bytes());
+			try {
+				if (config().enableGlobalLogFile) {
+					config().globalLogFile.write(sstr.bytes());
+					if (!line.msg.endsWith(linebreak)) {
+						config().globalLogFile.write(sstrLinebreak.bytes());
+					}
 				}
+			} catch (e: CheckedThrowable) {
+				// do nothing
 			}
 			if (config().enableGlobalLogPrinter) {
 				config().globalLogPrinter.print(sstr.toString());

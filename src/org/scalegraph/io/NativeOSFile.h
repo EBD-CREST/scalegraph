@@ -13,6 +13,8 @@
 #define __ORG_SCALEGRAPH_IO_NATIVEOSFILE_H
 
 #include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 #include <x10rt.h>
 
 #define X10_LANG_STRING_H_NODEPS
@@ -59,6 +61,7 @@ public:
 	void seek(x10_long offset, int origin);
 	x10_long getpos();
     void flush();
+    x10_int getFd() { return (x10_int) FMGL(fd); }
     
 	// Serialization
 	static void _serialize(NativeOSFile this_, x10aux::serialization_buffer& buf) {
@@ -73,7 +76,7 @@ public:
 template<class TPMGL(T)>
 x10_long NativeOSFile::read(TPMGL(T) b) {
 	int readBytes = ::read(FMGL(fd), b.pointer(), b.size());
-	if(readBytes == -1)
+	if((x10_long) readBytes < 0)
 		x10aux::throwException(::x10::io::IOException::_make(::x10::lang::String::Lit("read error")));
 	return readBytes;
 }
@@ -81,9 +84,21 @@ x10_long NativeOSFile::read(TPMGL(T) b) {
 
 template<class TPMGL(T)>
 void NativeOSFile::write(TPMGL(T) b) {
-	int writeBytes = ::write(FMGL(fd), b.pointer(), b.size());
+
+    /* char* msgbuf = new char[128]; */
+    /* if (FMGL(fd) > 2) { */
+    /*     snprintf(msgbuf, sizeof(msgbuf), ">>> try to write %lld bytes\n", (long long)b.size()); */
+    /*     ::write(2, msgbuf, strlen(msgbuf)); */
+    /* } */
+        
+    int writeBytes = ::write(FMGL(fd), b.pointer(), b.size());
 	if((x10_long) writeBytes != (x10_long) b.size())
 		x10aux::throwException(::x10::io::IOException::_make(::x10::lang::String::Lit("write error")));
+
+    /* if (FMGL(fd) > 2) { */
+    /*     snprintf(msgbuf, sizeof(msgbuf), ">>> write ok %lld bytes\n", (long long)b.size()); */
+    /*     ::write(2, msgbuf, strlen(msgbuf)); */
+    /* } */
 }
 
 
