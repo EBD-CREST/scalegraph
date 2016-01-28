@@ -549,3 +549,56 @@ class MaxFlow(GraphAlgorithm):
         args.append("--mf-source-id=" + str(source_id))
         args.append("--mf-sink-id=" + str(sink_id))
         return args
+
+
+class SpectralClustering(GraphAlgorithm):
+
+    def __init__(self):
+
+        super(SpectralClustering, self).__init__()
+        self.algorithmName = 'sc'
+
+    def run(self,
+            input=None,
+            input_path=None, input_fs=OS,
+            input_rmat_scale=8,
+            output_path=None, output_fs=OS,
+            extra_options=[]):
+
+        args = []
+        args += self.checkInputArgument(input,
+                                        input_path, input_fs,
+                                        input_rmat_scale)
+        args += self.checkOutputArgument(output_path, output_fs)
+        args += self.checkExtraArgument(extra_options)
+
+        self.cleanOutput(output_path, output_fs)
+        self.callApiDriver(args)
+        self.outputSummary = self.checkOutputFile(output_path, output_fs)
+        (self.outputNumFiles, self.outputNumLines, self.outputHeader) = self.outputSummary   
+
+
+def pagerank(**kwargs):
+    PageRank().run(**kwargs)
+
+def degreedistribution(**kwargs):
+    DegreeDistribution().run(**kwargs)
+
+def betweennessentrality(**kwargs):
+    BetweennessCentrality().run(**kwargs)
+
+def hyperanf(**kwargs):
+    HyperANF().run(**kwargs)
+
+def stronglyconnectedcomponent(**kwargs):
+    StronglyConnectedComponent().run(**kwargs)
+
+def minimumspanningtree(**kwargs):
+    MinimumSpanningTree().run(**kwargs)
+
+def maxflow(**kwargs):
+    MaxFlow().run(**kwargs)
+
+def spectralclustering(**kwargs):
+    SpectralClustering().run(**kwargs)
+
