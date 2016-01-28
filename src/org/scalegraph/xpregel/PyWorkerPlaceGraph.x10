@@ -682,9 +682,9 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		val mcAggregatedValueOnPlace = MemoryChunk.make[A](numPlaces);
 		val mcAggregatedValueIntermediate = MemoryChunk.make[A](1);
 		val mcAggregatedValue = MemoryChunk.make[A](1);
-		val mcBCSInputCount = MemoryChunk.make[Long](numThreads);
 		val mcNumProcessed = MemoryChunk.make[Long](numThreads);
-
+		val mcNumSentMessage = MemoryChunk.make[Long](numThreads);
+		val mcNumSentMessageN = MemoryChunk.make[Long](numThreads);
 		
 		// Do Superstep
 		for (ss in 0..10000n) {
@@ -707,22 +707,15 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 			// Wait child process and get result
 			finish for (i in 0..(numThreads - 1)) {
-				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcBCSInputCount, mcNumProcessed);
+				async waitSuperStepOnThread[A](i, mcAggregatedValueOnThread, mcNumProcessed,
+											   mcNumSentMessage, mcNumSentMessageN);
 			}
 
 			for (i in 0..(numThreads - 1)) {
 				val vc = vctxs(i);
 				vc.mNumActiveVertexes = mcNumProcessed(i);
-				vc.mBCSInputCount = mcBCSInputCount(i);
+				importSentMessagesOnShmem(i, vc, mcNumSentMessage(i), mcNumSentMessageN(i));
 			}
-
-			// Writeback (Copy data from shmem to MemoryChunk)
-			writebackShmemMemoryChunk(shmemVertexValue, mVertexValue);
-			writebackShmemBitmap(shmemVertexActive, mVertexActive);
-			writebackShmemBitmap(shmemVertexShouldBeActive, mVertexShouldBeActive);
-			writebackShmemMemoryChunk(shmemSendMessageToAllNeighborsFlag, ectx.mBCCHasMessage.mc);
-			writebackShmemMemoryChunk(shmemSendMessageToAllNeighborsValue, ectx.mBCCMessages);			
-
 
 			var flagHasMessage :Boolean = false;
 			val rawHasMessage = ectx.mBCCHasMessage.mc;
@@ -752,12 +745,8 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 			Logger.print("Dispatch BCC Messages");
 			//-----directionOptimization
-			var BCSInputCountOnPlace :Long = 0;
-			for (i in 0..(numThreads - 1)) {
-				BCSInputCountOnPlace += mcBCSInputCount(i);
-			}
 			Logger.print("call allreduce");
-			val numAllBCSCount = mTeam.allreduce[Long](BCSInputCountOnPlace, Team.ADD);
+			val numAllBCSCount = mTeam.allreduce[Long](ectx.mBCSInputCount, Team.ADD);
 			Logger.print("numAllBCSCount: " + numAllBCSCount.toString());
 			if(0L < numAllBCSCount && numAllBCSCount  < (mIds.numberOfGlobalVertexes()/50)){	//TODO: modify /20
 				val BCbmp=ectx.mBCCHasMessage;
@@ -832,8 +821,9 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 				mcAggregatedValueOnPlace.del();
 				mcAggregatedValueIntermediate.del();
 				mcAggregatedValue.del();
-				mcBCSInputCount.del();
 				mcNumProcessed.del();
+				mcNumSentMessage.del();
+				mcNumSentMessageN.del();
 
 				Logger.print("KILL CHILD");
 
@@ -1198,8 +1188,9 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 	public def waitSuperStepOnThread[A](threadId :Long,
 										mcAggregatedValue :MemoryChunk[A],
-										mcBCSInputCount :MemoryChunk[Long],
-										mcNumProcessed :MemoryChunk[Long]) {
+										mcNumProcessed :MemoryChunk[Long],
+										mcNumSentMessage :MemoryChunk[Long],
+										mcNumSentMessageN :MemoryChunk[Long]) {
 
 		Logger.print(String.format("Wait Aggregated Value from Thread:%lld", [threadId as Any]));
 
@@ -1226,28 +1217,7 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		mcAggregatedValue(threadId) = value(0);
 		Logger.print(String.format("Reveived Aggregated Value from Thread:%lld = %s", [threadId as Any, value(0).toString()]));
 
-		Logger.print(String.format("Wait BCSInputCount from Thread:%lld", [threadId as Any]));
-
-		// Receive BCSInputCount on each thread
-		try {
-			mPythonWorkers(threadId).stdout.read(sizeBuff);
-		} catch (e :CheckedThrowable) {
-			Logger.print("Error: waitSuperStepOnThread: read sizeBuff for countBuff");
-			Logger.printStackTrace(e);
-		}
-		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
-		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
-		val countBuff = MemoryChunk.make[Byte](size(0));
-		try {
-			mPythonWorkers(threadId).stdout.read(countBuff);
-		} catch (e :CheckedThrowable) {
-			Logger.print("Error: waitSuperStepOnThread: read countBuff");
-			Logger.printStackTrace(e);
-		}
-		val count = MemoryChunk.make[Long](1);
-		NativePyXPregelAdapter.copyFromBuffer(countBuff, 0, size(0), count);
-		mcBCSInputCount(threadId) = count(0);
-		Logger.print(String.format("Reveived BCSInputCount from Thread:%lld = %s", [threadId as Any, count(0).toString()]));
+		Logger.print(String.format("Wait numProcessed from Thread:%lld", [threadId as Any]));
 
 		// Receive numProcessed on each thread
 		try {
@@ -1270,17 +1240,132 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		mcNumProcessed(threadId) = numProcessed(0);
 		Logger.print(String.format("Reveived numProcessed from Thread:%lld = %s", [threadId as Any, numProcessed(0).toString()]));
 
+		// Receive number of unicast messages from the thread(worker)
+		try {
+			mPythonWorkers(threadId).stdout.read(sizeBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read sizeBuff for numMsgBuff");
+			Logger.printStackTrace(e);
+		}
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
+		val numMsgBuff = MemoryChunk.make[Byte](size(0));
+		try {
+			mPythonWorkers(threadId).stdout.read(numMsgBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read numMsgBuff");
+			Logger.printStackTrace(e);
+		}
+		val numMsg = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(numMsgBuff, 0, size(0), numMsg);
+		mcNumSentMessage(threadId) = numMsg(0);
+		Logger.print(String.format("Reveived NumMessage from Thread:%lld = %s", [threadId as Any, numMsg(0).toString()]));
+
+		// Receive number of broadcast messages from the thread(worker)
+		try {
+			mPythonWorkers(threadId).stdout.read(sizeBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read sizeBuff for numMsgNBuff");
+			Logger.printStackTrace(e);
+		}
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
+		val numMsgNBuff = MemoryChunk.make[Byte](size(0));
+		try {
+			mPythonWorkers(threadId).stdout.read(numMsgNBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read numMsgBuff");
+			Logger.printStackTrace(e);
+		}
+		val numMsgN = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(numMsgNBuff, 0, size(0), numMsgN);
+		mcNumSentMessageN(threadId) = numMsgN(0);
+		Logger.print(String.format("Reveived NumMessageN from Thread:%lld = %s", [threadId as Any, numMsgN(0).toString()]));
+
+		// Receive BCSInputCount on each thread
+/*
+		try {
+			mPythonWorkers(threadId).stdout.read(sizeBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read sizeBuff for countBuff");
+			Logger.printStackTrace(e);
+		}
+		NativePyXPregelAdapter.copyFromBuffer(sizeBuff, 0, (Type.sizeOf[Long]() as Long), size);
+		assert(size(0) == (Type.sizeOf[Long]() as Long)); // Size is received for future extension
+		val countBuff = MemoryChunk.make[Byte](size(0));
+		try {
+			mPythonWorkers(threadId).stdout.read(countBuff);
+		} catch (e :CheckedThrowable) {
+			Logger.print("Error: waitSuperStepOnThread: read countBuff");
+			Logger.printStackTrace(e);
+		}
+		val count = MemoryChunk.make[Long](1);
+		NativePyXPregelAdapter.copyFromBuffer(countBuff, 0, size(0), count);
+		mcBCSInputCount(threadId) = count(0);
+		Logger.print(String.format("Reveived BCSInputCount from Thread:%lld = %s", [threadId as Any, count(0).toString()]));
+*/
+
 		// Delete buffer
 		sizeBuff.del();
 		size.del();
 		valueBuff.del();
 		value.del();
-		countBuff.del();
-		count.del();
-		numBuff.del();
-		numProcessed.del();
+		numMsgBuff.del();
+		numMsg.del();
+		numMsgNBuff.del();
+		numMsgN.del();
 
 		Logger.print(String.format("Wait OK Thread:%lld", [threadId as Any]));
+	}
+
+	public def importSentMessagesOnShmem[V, E, M, A](threadId :Long, vc: PyVertexContext[V, E, M, A],
+													 numSentMessage: Long, numSentMessageN: Long) { M haszero, A haszero } {
+
+		Logger.print("numSentMessage: " + numSentMessage.toString());
+		Logger.print("numSentMessageN: " + numSentMessageN.toString());
+
+		if (numSentMessage > 0) {
+
+			val mcSentMessageValues = MemoryChunk.make[M](numSentMessage);
+			val shmemSentMessageValues = openShmemMemoryChunk(threadId, "sendMsg_values",
+															  mcSentMessageValues);
+			readShmemMemoryChunk(shmemSentMessageValues, mcSentMessageValues);
+			shmemSentMessageValues.close();
+			
+			val mcSentMessageDstIds = MemoryChunk.make[Long](numSentMessage);
+			val shmemSentMessageDstIds = openShmemMemoryChunk(threadId, "sendMsg_dstIds",
+															  mcSentMessageDstIds);
+			readShmemMemoryChunk(shmemSentMessageDstIds, mcSentMessageDstIds);
+			shmemSentMessageDstIds.close();
+			
+			vc.sendMessage(mcSentMessageDstIds, mcSentMessageValues);
+
+			mcSentMessageValues.del();
+			mcSentMessageDstIds.del();
+		}
+
+		if (numSentMessageN > 0) {
+
+			val mcSentMessageNValues = MemoryChunk.make[M](numSentMessageN);
+			val shmemSentMessageNValues = openShmemMemoryChunk(threadId, "sendMsgN_values",
+														   mcSentMessageNValues);
+			readShmemMemoryChunk(shmemSentMessageNValues, mcSentMessageNValues);
+			shmemSentMessageNValues.close();
+			
+			val mcSentMessageNSrcIds = MemoryChunk.make[Long](numSentMessageN);
+			val shmemSentMessageNSrcIds = openShmemMemoryChunk(threadId, "sendMsgN_srcIds",
+															   mcSentMessageNSrcIds);
+			readShmemMemoryChunk(shmemSentMessageNSrcIds, mcSentMessageNSrcIds);
+			shmemSentMessageNSrcIds.close();
+			
+			for (i in (0..(numSentMessageN - 1))) {
+				vc.mSrcid = i;
+				vc.sendMessageToAllNeighbors(mcSentMessageNValues(i));
+			} 
+
+			mcSentMessageNValues.del();
+			mcSentMessageNSrcIds.del();
+		}
 	}
 
 	public static struct ShmemObjectEdge {
@@ -1405,11 +1490,11 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		updateShmemMemoryChunk(shmem, bitmap.mc);
 	}
 
-	public def writebackShmemBitmap(shmem :GenericFile, bitmap :Bitmap) {
-		writebackShmemMemoryChunk(shmem, bitmap.mc);
-	}
+//	public def writebackShmemBitmap(shmem :GenericFile, bitmap :Bitmap) {
+//		writebackShmemMemoryChunk(shmem, bitmap.mc);
+//	}
 
-	public def createShmemMemoryChunk[T](name: String, mc :MemoryChunk[T]) :GenericFile {
+	public def createShmemMemoryChunk[T](name :String, mc :MemoryChunk[T]) :GenericFile {
 		val here_id = here.id.toString();
 		val name_shmem = "/pyxpregel." + name + "." + here_id;
 		GenericFile.unlink(name_shmem);
@@ -1420,12 +1505,23 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 		return file_shmem;
 	}
 
+	public def openShmemMemoryChunk[T](threadId :Long, name :String, mc :MemoryChunk[T]) :GenericFile {
+		val here_id = here.id.toString();
+		val name_shmem = "/pyxpregel." + name + "." + here_id + "." + threadId.toString();
+//		GenericFile.unlink(name_shmem);
+		val file_shmem = new GenericFile(FilePath(FilePath.FILEPATH_FS_SHM,
+												  name_shmem),
+										 FileMode.Open, FileAccess.ReadWrite);
+//		file_shmem.ftruncate(mc.size() * Type.sizeOf[T]());
+		return file_shmem;
+	}
+
 	public def updateShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
 		shmem.copyToShmem(mc, mc.size() * Type.sizeOf[T]());
 //		shmem.close();
 	}
 
-	public def writebackShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
+	public def readShmemMemoryChunk[T](shmem: GenericFile, mc :MemoryChunk[T]) {
 		shmem.copyFromShmem(mc, mc.size() * Type.sizeOf[T]());
 //		shmem.close();
 	}

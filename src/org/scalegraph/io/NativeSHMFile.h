@@ -107,6 +107,7 @@ void NativeSHMFile::copyFromShmem(TPMGL(T) b) {
     void* copy_to = b.pointer();
     //ftruncate(FMGL(fd), len);
     void* shared_memory = ::mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, FMGL(fd), 0);
+    fprintf(stderr, "shared_memory = %p, copy_to = %p, len = %lld\n", shared_memory, copy_to, len);
     ::memcpy(copy_to, shared_memory, len);
     //msync(shared_memory, len, MS_SYNC);
     ::munmap(shared_memory, len);
@@ -119,6 +120,7 @@ void NativeSHMFile::copyFromShmem(TPMGL(T) b, x10_long size_to_write) {
     void* copy_to = b.pointer();
     //ftruncate(FMGL(fd), len);
     void* shared_memory = ::mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED, FMGL(fd), 0);
+    fprintf(stderr, "shared_memory = %p, copy_to = %p, len = %lld\n", shared_memory, copy_to, len);
     ::memcpy(copy_to, shared_memory, len);
     //msync(shared_memory, len, MS_SYNC);
     ::munmap(shared_memory, len);
