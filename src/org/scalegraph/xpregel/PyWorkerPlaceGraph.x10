@@ -845,6 +845,8 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 //				mPythonWorkers.del();
 
+				Logger.print("Last Aggregated Value: " + mLastAggVal.toString());
+
 				return ;
 			}
 

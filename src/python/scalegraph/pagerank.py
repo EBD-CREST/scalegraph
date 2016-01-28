@@ -22,7 +22,12 @@ class PageRank(xpregel.XPregelBase):
         ctx.setVertexValue(value)
         numOutEdges = len(ctx.outEdges)
         if numOutEdges > 0:
-            ctx.sendMessageToAllNeighbors(value / numOutEdges)
+            msg = value / numOutEdges
+            for d in ctx.outEdges:
+                ctx.sendMessage(d, msg)
+#        if numOutEdges > 0:
+#            ctx.sendMessageToAllNeighbors(value / numOutEdges)
+
 
     def aggregator(self, outputs):
         return sum(outputs)

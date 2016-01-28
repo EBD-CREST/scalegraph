@@ -373,7 +373,7 @@ void NativePyXPregelAdapter::updateShmemProperty() {
     DISPLAYPROPI(message_value_type);
 
     memcpy(shmemProperty, &property, sizeof(NativePyXPregelAdapterProperty));
-    msync(shmemProperty, sizeof(NativePyXPregelAdapterProperty), MS_SYNC);
+    msync(shmemProperty, sizeof(NativePyXPregelAdapterProperty), MS_SYNC|MS_INVALIDATE);
 }
 
 

@@ -773,6 +773,9 @@ final class WorkerPlaceGraph[V,E] /*{ V haszero, E haszero } */{
 				mLastAggVal = aggVal;
 				mInEdgesMask = ectx.mInEdgesMask;
 				ectx.del();
+
+				Logger.print("Last Aggregated Value: " + mLastAggVal.toString());
+
 				return ;
 			}
 
