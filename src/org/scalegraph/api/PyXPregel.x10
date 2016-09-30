@@ -53,7 +53,7 @@ final public class PyXPregel {
 
 		adapter.initialize();
 		python.initialize();
-		python.sysPathAppend("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+		python.sysPathAppend("../../../python/scalegraph");
 
 		try {
 			val main = python.importAddModule("__main__");
@@ -81,7 +81,7 @@ final public class PyXPregel {
 	}
 
 	public def loadClosures() {
-		val path = FilePath(FilePath.FILEPATH_FS_OS, "/Users/tosiyuki/EBD/scalegraph-dev/build/" + "_xpregel_closure.bin");
+		val path = FilePath(FilePath.FILEPATH_FS_OS, "../../../../build/" + "_xpregel_closure.bin");
 		val file = new GenericFile(path, FileMode.Open, FileAccess.Read);
 
 		val buffSize = 16;
@@ -123,7 +123,7 @@ final public class PyXPregel {
 
 		adapter.initialize();
 		python.initialize();
-		python.sysPathAppend("/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph");
+		python.sysPathAppend("../../../python/scalegraph");
 
 //		val loadedClosures = loadClosures();
 		val loadedClosures = closures();

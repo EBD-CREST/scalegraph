@@ -24,7 +24,7 @@ main(int argc, char** argv) {
     X10XPregelAdapterInitialize();
     Py_Initialize();
     PyRun_SimpleString("import sys");
-    PyRun_SimpleString("sys.path.append('/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph')");
+    PyRun_SimpleString("sys.path.append('../..//python/scalegraph')");
 
     int place_id = atoi(argv[1]);
     int thread_id = atoi(argv[2]);

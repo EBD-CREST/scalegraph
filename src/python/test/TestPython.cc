@@ -11,20 +11,20 @@
 #include <x10/compiler/Synthetic.h>
 #include <x10/lang/String.h>
 
-//#line 6 "/Users/tosiyuki/Development/toshi-github/EBD/scalegraph-dev/src/python/test/TestPython.x10"
+//#line 6 "./TestPython.x10"
 void TestPython::main( ::x10::lang::Rail<  ::x10::lang::String* >* args) {
     
-    //#line 7 "/Users/tosiyuki/Development/toshi-github/EBD/scalegraph-dev/src/python/test/TestPython.x10"
+    //#line 7 "./TestPython.x10"
      ::x10::io::Console::FMGL(OUT__get)() -> x10::io::Printer::println(reinterpret_cast< ::x10::lang::Any*>((&::TestPython_Strings::sl__33)));
     
-    //#line 9 "/Users/tosiyuki/Development/toshi-github/EBD/scalegraph-dev/src/python/test/TestPython.x10"
+    //#line 9 "./TestPython.x10"
     NativePythonIntegrate python = NativePythonIntegrate::_make();
     
-    //#line 10 "/Users/tosiyuki/Development/toshi-github/EBD/scalegraph-dev/src/python/test/TestPython.x10"
+    //#line 10 "./TestPython.x10"
     python -> NativePythonIntegrate::test();
 }
 
-//#line 5 "/Users/tosiyuki/Development/toshi-github/EBD/scalegraph-dev/src/python/test/TestPython.x10"
+//#line 5 "./TestPython.x10"
  ::TestPython* TestPython::TestPython____this__TestPython() {
     return this;
     

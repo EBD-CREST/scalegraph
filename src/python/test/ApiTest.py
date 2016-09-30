@@ -10,7 +10,7 @@
 #
 
 import sys
-sys.path.append('/Users/tosiyuki/EBD/scalegraph-dev/src/python')
+sys.path.append('../')
 
 from scalegraph import GraphAlgorithm
 

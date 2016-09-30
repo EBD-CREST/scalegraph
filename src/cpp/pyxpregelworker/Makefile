@@ -1,5 +1,5 @@
 
-INCLUDE := -I/Users/tosiyuki/EBD/sx10/x10.runtime/src-cpp
+# INCLUDE := -I/path/to/sx10/x10.runtime/src-cpp
 
 PROG := pyxpregelworker
 SRCS := main.cc shmem.cc type.cc x10xpregeladapter.cc

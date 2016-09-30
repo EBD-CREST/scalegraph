@@ -132,7 +132,7 @@ final class PyWorkerPlaceGraph[V,E] /* { V haszero, E haszero } */ {
 
 	def integratePython() {
 		
-		val SCALEGRAPHPYTHONLIB :String = "/Users/tosiyuki/EBD/scalegraph-dev/src/python/scalegraph";
+		val SCALEGRAPHPYTHONLIB :String = "../../../python/scalegraph";
 
 		mPythonIntegrated.initialize();
 		mPythonIntegrated.sysPathAppend(SCALEGRAPHPYTHONLIB);

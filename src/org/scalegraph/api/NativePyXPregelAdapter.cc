@@ -156,7 +156,7 @@ void NativePyXPregelAdapter::initialize() {
         snprintf(arg1, arglen, "%lld", (long long)place_id);
         snprintf(arg2, arglen, "%lld", (long long)thread_id);
         snprintf(arg3, arglen, "%lld", (long long)num_threads);
-        execl("/Users/tosiyuki/EBD/scalegraph-dev/src/cpp/pyxpregelworker/pyxpregelworker",
+        execl("../../../cpp/pyxpregelworker/pyxpregelworker",
               arg0, arg1, arg2, arg3, 0);
         perror("pyxpregelworker");
 
